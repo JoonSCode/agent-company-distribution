@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/expertise-registry.v0.1.json",
+  "title": "Agent Company expertise registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schema_version", "default_specialist_limit", "roles"],
+  "properties": {
+    "format": {"const": "agent-company.expertise-registry/v0.1"},
+    "schema_version": {"const": "0.1"},
+    "default_specialist_limit": {"const": 2},
+    "roles": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/role"}
+    }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "roleId": {
+      "enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]
+    },
+    "specialist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_id",
+        "selection_status",
+        "task_types",
+        "decision_questions",
+        "distinct_evidence",
+        "allowed_use",
+        "loading_cost",
+        "stop_condition"
+      ],
+      "properties": {
+        "skill_id": {"type": "string", "minLength": 1},
+        "selection_status": {
+          "enum": ["automatic", "shadow_only", "demoted"]
+        },
+        "task_types": {"$ref": "#/$defs/strings"},
+        "decision_questions": {"$ref": "#/$defs/strings"},
+        "distinct_evidence": {"type": "string", "minLength": 1},
+        "allowed_use": {"enum": ["decision_support", "evidence_gathering", "implementation", "verification"]},
+        "loading_cost": {"enum": ["small", "medium", "large"]},
+        "stop_condition": {"type": "string", "minLength": 1}
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role_id",
+        "role_os_skill",
+        "role_kernel_id",
+        "default_task_type",
+        "default_verifier",
+        "optional_specialists"
+      ],
+      "properties": {
+        "role_id": {"$ref": "#/$defs/roleId"},
+        "role_os_skill": {"type": "string", "minLength": 1},
+        "role_kernel_id": {"type": "string", "pattern": "^role-kernel:[a-z-]+$"},
+        "default_task_type": {"type": "string", "minLength": 1},
+        "default_verifier": {"type": "string", "minLength": 1},
+        "optional_specialists": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/specialist"}
+        }
+      }
+    }
+  }
+}

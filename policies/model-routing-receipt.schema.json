@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/model-routing-receipt.v0.1.json",
+  "title": "Agent Company immutable model routing receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format", "canonical_algorithm", "receipt_id", "worker", "worker_packet",
+    "decision_binding", "observed_effective", "changed_files", "tests",
+    "failed_or_unverified", "credit_usage", "elapsed_seconds", "residual_risk",
+    "final_status"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.model-routing-receipt/v0.1"},
+    "canonical_algorithm": {"const": "sha256-canonical-json/v1"},
+    "receipt_id": {"$ref": "#/$defs/sha256"},
+    "worker": {"$ref": "#/$defs/worker"},
+    "worker_packet": {"$ref": "#/$defs/binding"},
+    "decision_binding": {"$ref": "#/$defs/decision"},
+    "observed_effective": {"$ref": "#/$defs/observed"},
+    "changed_files": {
+      "type": "array", "uniqueItems": true,
+      "items": {"$ref": "#/$defs/changedFile"}
+    },
+    "tests": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/test"}
+    },
+    "failed_or_unverified": {"$ref": "#/$defs/stringList"},
+    "credit_usage": {
+      "oneOf": [
+        {"$ref": "#/$defs/actualCredits"},
+        {"$ref": "#/$defs/estimatedCredits"},
+        {"$ref": "#/$defs/unknownCredits"}
+      ]
+    },
+    "elapsed_seconds": {"type": "number", "minimum": 0},
+    "residual_risk": {"$ref": "#/$defs/stringList"},
+    "final_status": {"enum": ["completed", "failed", "blocked", "unverified"]}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "text": {"type": "string", "minLength": 1},
+    "profile": {
+      "enum": [
+        "mechanical", "standard-implementation", "bounded-deep", "integration",
+        "specialist-reasoning", "role-lead-judgment", "company-judgment"
+      ]
+    },
+    "stringList": {
+      "type": "array", "uniqueItems": true,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": {"$ref": "#/$defs/text"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "worker": {
+      "type": "object", "additionalProperties": false,
+      "required": ["worker_id", "role", "task_type"],
+      "properties": {
+        "worker_id": {"$ref": "#/$defs/text"},
+        "role": {"enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]},
+        "task_type": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"}
+      }
+    },
+    "attempt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sequence", "semantic_profile", "cause"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "semantic_profile": {"$ref": "#/$defs/profile"},
+        "cause": {
+          "enum": [
+            "selected", "administratively_disabled", "runtime_unavailable",
+            "profile_saturated", "tool_unsupported", "runtime_mismatch"
+          ]
+        }
+      }
+    },
+    "decision": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "ref", "decision_id", "request_digest", "registry_digest",
+        "registry_projection_digest", "policy_digest", "policy_projection_digest",
+        "rate_card_digest", "capacity_digest", "requested_profile",
+        "selected_profile", "selection_reason", "ordered_attempts"
+      ],
+      "properties": {
+        "ref": {"$ref": "#/$defs/text"},
+        "decision_id": {"$ref": "#/$defs/sha256"},
+        "request_digest": {"$ref": "#/$defs/sha256"},
+        "registry_digest": {"$ref": "#/$defs/sha256"},
+        "registry_projection_digest": {"$ref": "#/$defs/sha256"},
+        "policy_digest": {"$ref": "#/$defs/sha256"},
+        "policy_projection_digest": {"$ref": "#/$defs/sha256"},
+        "rate_card_digest": {"$ref": "#/$defs/sha256"},
+        "capacity_digest": {"$ref": "#/$defs/sha256"},
+        "requested_profile": {"$ref": "#/$defs/profile"},
+        "selected_profile": {"$ref": "#/$defs/profile"},
+        "selection_reason": {"$ref": "#/$defs/text"},
+        "ordered_attempts": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"$ref": "#/$defs/attempt"}
+        }
+      }
+    },
+    "observed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_kind", "model_id", "reasoning_effort", "evidence_ref", "evidence_sha256"],
+      "properties": {
+        "source_kind": {"const": "host_runtime_observation"},
+        "model_id": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]},
+        "reasoning_effort": {"enum": ["medium", "high", "xhigh", "max"]},
+        "evidence_ref": {"$ref": "#/$defs/text"},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "changedFile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "summary"],
+      "properties": {
+        "path": {"$ref": "#/$defs/text"},
+        "summary": {"$ref": "#/$defs/text"}
+      }
+    },
+    "test": {
+      "type": "object", "additionalProperties": false,
+      "required": ["command", "status", "actual_result"],
+      "properties": {
+        "command": {"$ref": "#/$defs/text"},
+        "status": {"enum": ["passed", "failed", "unverified"]},
+        "actual_result": {"$ref": "#/$defs/text"}
+      }
+    },
+    "actualCredits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provenance", "credits", "evidence_ref", "evidence_sha256"],
+      "properties": {
+        "provenance": {"const": "actual"},
+        "credits": {"type": "number", "minimum": 0},
+        "evidence_ref": {"$ref": "#/$defs/text"},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "estimatedCredits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provenance", "credits", "basis"],
+      "properties": {
+        "provenance": {"const": "estimated"},
+        "credits": {"type": "number", "minimum": 0},
+        "basis": {"$ref": "#/$defs/text"}
+      }
+    },
+    "unknownCredits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provenance", "reason"],
+      "properties": {
+        "provenance": {"const": "unknown"},
+        "reason": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}

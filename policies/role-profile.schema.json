@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/role-profile.v0.1.json",
+  "title": "Agent Company role profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "id",
+    "name",
+    "uses_king_sejong",
+    "authority_boundary",
+    "mission",
+    "owns",
+    "does_not_own",
+    "skills",
+    "memory_refs",
+    "tools",
+    "approval_rules",
+    "handoff_shape",
+    "native_agent"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "../policies/role-profile.schema.json"
+    },
+    "schema_version": {
+      "const": "0.1"
+    },
+    "id": {
+      "enum": [
+        "founder",
+        "planning",
+        "marketing",
+        "design",
+        "development",
+        "qa-release"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uses_king_sejong": {
+      "const": true
+    },
+    "authority_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mission": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owns": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "does_not_own": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "skills": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "memory_refs": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "tools": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "approval_rules": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "handoff_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "policy_ref",
+        "required_fields"
+      ],
+      "properties": {
+        "format": {
+          "const": "agent_company_bounded_handoff.v0.1"
+        },
+        "policy_ref": {
+          "const": "policies/bounded-handoff.schema.json"
+        },
+        "required_fields": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "native_agent": {
+      "$ref": "#/$defs/nativeAgent"
+    }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "nativeAgent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "sandbox_mode"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^agent-company-(founder|planning|marketing|design|development|qa-release)$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sandbox_mode": {
+          "enum": [
+            "read-only",
+            "workspace-write"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_reasoning_effort": {
+          "enum": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        "nickname_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9 _-]+$"
+          }
+        }
+      }
+    }
+  }
+}

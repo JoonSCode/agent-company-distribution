@@ -1,0 +1,13 @@
+{
+  "format": "agent-company.model-routing-policy/v0.1",
+  "required_inputs": ["role", "task_type", "ambiguity", "expected_change_scope", "failure_impact", "reversibility", "automated_verifiability", "critical_path", "speed_or_credit_priority", "specialist_tools", "prior_attempts_and_failure_causes", "authority_signals", "dynamic_risk_signals", "capacity_snapshot"],
+  "precedence": [
+    {"priority": 1, "predicate_id": "company_authority_required", "disposition": "return_to_company_root", "profile": "company-judgment", "trigger_summary": "company authority conflict, goal change, irreversible decision, promotion, or rollback"},
+    {"priority": 2, "predicate_id": "role_lead_judgment_required", "disposition": "return_to_role_lead", "profile": "role-lead-judgment", "trigger_summary": "role-lead product, design, contract, requirements, scope, approval, same-cause-twice, unclear intent, or dynamic critical risk"},
+    {"priority": 3, "predicate_id": "specialist_risk_or_unknown_cause", "disposition": "select_profile", "profile": "specialist-reasoning", "trigger_summary": "initial unknown cause or security, data integrity, migration, lineage, rollback, concurrency, or performance risk"},
+    {"priority": 4, "predicate_id": "integration_scope_or_approved_retry", "disposition": "select_profile", "profile": "integration", "trigger_summary": "multi-module, critical-path, long-context, or approved retry; execution failure alone is insufficient"},
+    {"priority": 5, "predicate_id": "bounded_deep_suitable", "disposition": "select_profile", "profile": "bounded-deep", "trigger_summary": "difficult long work that is clear, fully verifiable, credit-prioritized, and parallelizable"},
+    {"priority": 6, "predicate_id": "standard_implementation_suitable", "disposition": "select_profile", "profile": "standard-implementation", "trigger_summary": "clear multi-file implementation using existing patterns"},
+    {"priority": 7, "predicate_id": "default_mechanical", "disposition": "select_profile", "profile": "mechanical", "trigger_summary": "unconditional default for single-site, fixture, documentation, evidence, simple test, or repetitive work"}
+  ]
+}

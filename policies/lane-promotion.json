@@ -1,0 +1,44 @@
+{
+  "format": "agent-company.lane-promotion/v0.2",
+  "authority": "staffing_recommendation_only",
+  "default_state": "shadow",
+  "workflow_provenance": {
+    "owner": "king-sejong-core",
+    "ref_template": "${SEJONG_HOME}/runs/agent-company/{run_id}.workflow-run.json",
+    "copy_raw_history": false
+  },
+  "core_route_gate": {
+    "evaluated_after_core_selection": true,
+    "delegation_capable_routes": ["bounded_subagents", "team_executor"],
+    "other_routes_result": "shadow_inactive"
+  },
+  "recommendation_scope": {
+    "allowed_fields": ["ordinary_role_count", "ordinary_role_ids"],
+    "forbidden_overrides": ["selected_route", "backend", "backend_provenance", "approval_gate", "execution_scope", "completion_status"]
+  },
+  "promotion_thresholds": {
+    "minimum_repeated_runs": 3,
+    "minimum_verified_quality_gain": 0.1,
+    "maximum_token_overhead_ratio": 0.35,
+    "maximum_latency_overhead_ratio": 0.35,
+    "require_no_critical_verification_regression": true,
+    "require_fresh_independent_verifier": true,
+    "require_consistent_fixture_hash": true,
+    "require_explicit_approval": true
+  },
+  "approval": {
+    "accepted_types": ["explicit_user_request", "uigwe_approved_scope"],
+    "recommendation_is_approval": false
+  },
+  "automatic_demotion": {
+    "target_state": "shadow",
+    "triggers": [
+      "critical_verification_regression",
+      "verified_quality_regression",
+      "missing_verifier_evidence",
+      "stale_verifier_evidence",
+      "fixture_identity_mismatch",
+      "overhead_threshold_exceeded"
+    ]
+  }
+}

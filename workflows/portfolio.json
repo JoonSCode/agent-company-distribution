@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "id": "portfolio",
+  "job_type": "portfolio",
+  "objective": "Compare app-studio bets using common constraints, demand evidence, founder fit, and falsifiable next experiments.",
+  "stages": [
+    {"id": "portfolio-constraints", "owner_roles": ["planning", "founder"], "assignment_mode": "first-selected", "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["Founder and Marketing evidence", "option set", "time and capital constraints", "decision criterion", "company-plan topology when Planning is active"]},
+    {"id": "founder-fit-and-cost", "owner_roles": ["founder"], "depends_on": ["portfolio-constraints"], "execution_hint": "parallel-candidate", "exit_evidence": ["founder fit", "opportunity cost", "strategic risks"]},
+    {"id": "demand-and-distribution", "owner_roles": ["marketing"], "depends_on": ["portfolio-constraints"], "execution_hint": "parallel-candidate", "exit_evidence": ["demand evidence", "reachable channel", "commercial unknowns"]},
+    {"id": "prototype-evidence", "owner_roles": ["design"], "depends_on": ["portfolio-constraints"], "execution_hint": "parallel-candidate-when-activated", "exit_evidence": ["selected tier", "prototype quality evidence", "experience risks"]},
+    {"id": "portfolio-decision", "owner_roles": ["founder"], "depends_on": ["founder-fit-and-cost", "demand-and-distribution", "prototype-evidence"], "execution_hint": "sequential-fan-in", "exit_evidence": ["decision recommendation", "rejected options", "stop conditions"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "uigwe", "ceo_report_required": true}
+}

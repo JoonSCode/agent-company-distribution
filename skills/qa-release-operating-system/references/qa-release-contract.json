@@ -1,0 +1,179 @@
+{
+  "format": "agent-company.qa-release-contract/v0.2",
+  "execution_handoff": "agent-company.execution-handoff/v0.4",
+  "verification_format": "agent-company.qa-verification/v0.2",
+  "historical_formats": {
+    "agent-company.execution-handoff/v0.3": "parseable evidence only; never current completion authority"
+  },
+  "limits": {
+    "canonical_qa_verification_bytes": 20000,
+    "default_max_criteria": 8,
+    "max_observations": 20,
+    "max_shared_references": 32
+  },
+  "candidate_bindings": {
+    "exact": ["identity_ref", "identity_sha256"],
+    "partial": ["identity_ref", "reason"],
+    "unknown": ["reason"]
+  },
+  "reference_resolutions": {
+    "exact": ["id", "ref", "sha256"],
+    "unresolved": ["id", "ref", "reason"],
+    "not_applicable": ["id", "reason"],
+    "placeholder_digest_policy": "reject"
+  },
+  "ledgers": {
+    "plan": ["criteria", "risk_boundary_matrix"],
+    "observation": ["observations", "evidence_facts", "references"],
+    "decision": ["decisions", "blockers", "readiness"]
+  },
+  "evidence_fact_fields": ["id", "provenance", "claim_scope", "disposition", "statement", "reference_ids"],
+  "fact_provenance": ["direct", "reported"],
+  "evidence_fact_dispositions": ["supporting"],
+  "criterion_statuses": ["passed", "failed", "blocked", "unverified"],
+  "named_dimension_closure": {
+    "dimensions": ["artifact", "surface", "channel", "state", "risk"],
+    "record_fields": ["dimension", "id", "criterion_id", "disposition", "evidence_fact_ids"],
+    "requires_explicit_row": true,
+    "catch_all_is_invalid": true
+  },
+  "applicable_identity_chain": [
+    "source",
+    "archive_or_package",
+    "signature",
+    "tag",
+    "attestation",
+    "selected_distribution_artifact",
+    "installed_artifact",
+    "channel_identity"
+  ],
+  "qa_decisions": ["recommend", "reject"],
+  "channel_disposition": {
+    "required_fields": ["channel_id", "qa_decision", "evidence_fact_ids"]
+  },
+  "decision_invariants": {
+    "passed_or_failed": "direct + full coverage + exact candidate + matching surface and qualifier + available + matching terminal result",
+    "reported_or_partial": "supporting evidence only",
+    "missing_evidence": "unverified",
+    "unavailable_surface": "blocked",
+    "open_blocker": "readiness must reject",
+    "recommend": "all criteria passed and no open blockers"
+  },
+  "ios_surface_qualifier_ladder": [
+    {"surface": "automated", "qualifiers": ["automated"]},
+    {"surface": "simulator", "qualifiers": ["simulator"]},
+    {"surface": "real_device", "qualifiers": ["physical_device"]},
+    {"surface": "permission_lifecycle", "qualifiers": ["simulator", "physical_device"]},
+    {"surface": "storekit", "qualifiers": ["storekit_local", "sandbox_account"]},
+    {"surface": "app_store_connect", "qualifiers": ["remote_account"]},
+    {"surface": "manual", "qualifiers": ["manual", "simulator", "physical_device"]}
+  ],
+  "permission_lifecycle_states": [
+    "not_determined",
+    "denied",
+    "limited",
+    "granted",
+    "revoked",
+    "settings_return",
+    "relaunch"
+  ],
+  "cross_record_invariants": [
+    "IDs are unique within each ledger",
+    "decisions and risk_boundary_matrix cover criteria exactly once in criterion order",
+    "observation, fact, blocker, and reference IDs resolve within the payload",
+    "permission observations cover every state required by their criterion"
+  ],
+  "validation_boundary": "parse_evidence and evaluate both apply the complete validate_evidence invariant set",
+  "candidate_identity_fields": ["app_id", "version", "build", "git_commit", "source_state_sha256", "configuration"],
+  "observation_candidate_binding": "sha256 of canonical candidate_identity_fields JSON",
+  "observation_required_fields": [
+    "criterion_id",
+    "surface",
+    "status",
+    "candidate_identity_sha256",
+    "initial_state",
+    "action",
+    "observed_result",
+    "evidence_ref",
+    "cleanup",
+    "stop_condition"
+  ],
+  "observation_structures": {
+    "initial_state": ["state_id", "detail"],
+    "action": ["kind", "detail"],
+    "observed_result": ["outcome", "detail"],
+    "cleanup": ["disposition", "detail"],
+    "stop_condition": ["kind", "detail"]
+  },
+  "action_kinds": ["automated_check", "simulator_interaction", "device_interaction", "permission_transition", "storekit_transaction", "account_inspection", "manual_observation", "availability_check"],
+  "observation_cleanup_dispositions": ["not_needed", "removed", "reset", "sanitized_artifact", "no_state_created"],
+  "stop_kinds": ["terminal_result", "criterion_observed", "acceptance_failed", "surface_unavailable", "evidence_missing", "safety_stop"],
+  "statuses": ["passed", "failed", "blocked", "unverified"],
+  "observed_outcomes": ["acceptance_observed", "acceptance_failed", "availability_blocked", "evidence_missing"],
+  "status_outcome_matrix": {
+    "passed": ["acceptance_observed"],
+    "failed": ["acceptance_failed"],
+    "blocked": ["availability_blocked"],
+    "unverified": ["evidence_missing"]
+  },
+  "status_stop_matrix": {
+    "passed": ["terminal_result", "criterion_observed"],
+    "failed": ["acceptance_failed", "safety_stop"],
+    "blocked": ["surface_unavailable", "safety_stop"],
+    "unverified": ["evidence_missing", "surface_unavailable"]
+  },
+  "real_device_action_matrix": {
+    "passed": ["device_interaction"],
+    "failed": ["device_interaction"],
+    "blocked": ["device_interaction", "availability_check"],
+    "unverified": ["device_interaction", "availability_check"]
+  },
+  "matching_surfaces": [
+    {"id": "automated", "proves": "the named automated assertion only"},
+    {"id": "simulator", "proves": "the observed supported simulator flow and state"},
+    {"id": "real_device", "proves": "the observed named physical device behavior"},
+    {"id": "permissions_privacy", "proves": "the observed permission and privacy state transitions"},
+    {"id": "storekit", "proves": "the observed purchase, cancellation, restore, or entitlement path"},
+    {"id": "app_store_connect", "proves": "the observed app, version, build, agreement, or submission state"},
+    {"id": "manual", "proves": "the recorded user-visible manual observation"}
+  ],
+  "required_report_fields": [
+    "status",
+    "qa_readiness",
+    "candidate",
+    "criteria_status",
+    "passed_evidence",
+    "failed_evidence",
+    "blocked_evidence",
+    "unverified_surfaces",
+    "cleanup",
+    "residual_risks",
+    "specialist_routes",
+    "passed_count",
+    "failed_count",
+    "blocked_count",
+    "unverified_count",
+    "failed_criteria",
+    "blocked_criteria",
+    "unverified_criteria",
+    "next_recommended_surface",
+    "final_verification_surface"
+  ],
+  "criteria_status_fields": ["criterion_id", "surface", "status", "evidence"],
+  "cleanup_fields": ["screenshots_removed", "state_reset", "disposition"],
+  "cleanup_dispositions": {
+    "removed": {"screenshots_removed": true, "state_reset": true},
+    "incomplete": "required when either cleanup flag is false"
+  },
+  "privacy_rejection_classes": ["secret", "api_key", "jwt", "private_key", "absolute_user_path", "raw_device_path", "transcript", "connector_payload"],
+  "specialist_routing": {
+    "hard_dependencies": [],
+    "examples": ["ios-release-readiness-review", "build-ios-apps:ios-debugger-agent", "omo:visual-qa"],
+    "missing_route_behavior": "continue_with_general_contract_and_narrow_claim"
+  },
+  "authority_boundary": {
+    "qa_may": ["plan proportional checks", "observe matching surfaces", "report partial success", "reject readiness"],
+    "qa_must_not": ["self-verify final completion", "approve Uigwe", "approve external action", "submit or release without approval"],
+    "final_verification_owner": "seungjeongwon"
+  }
+}

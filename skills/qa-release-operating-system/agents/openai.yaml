@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA Release Operating System"
+  short_description: "Verify exact release candidates on matching surfaces."
+  default_prompt: "Use $qa-release-operating-system to verify this exact candidate proportionally, report observed and missing evidence, and hand final verification to Seungjeongwon."

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/role-session.v0.2.json",
+  "title": "Agent Company logical role session",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "session_id",
+    "role",
+    "status",
+    "active_job_id",
+    "resource_policy",
+    "catalog_binding",
+    "checkpoint",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.role-session/v0.2"},
+    "session_id": {"type": "string", "pattern": "^[a-z0-9]+(?:[a-z0-9-]*[a-z0-9])?$"},
+    "role": {"enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]},
+    "status": {"enum": ["idle", "active", "closed"]},
+    "active_job_id": {"type": ["string", "null"], "minLength": 1},
+    "resource_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_concurrency", "persistent_worker", "background_workers"],
+      "properties": {
+        "max_concurrency": {"const": 1},
+        "persistent_worker": {"const": false},
+        "background_workers": {"const": false}
+      }
+    },
+    "catalog_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry_sha256", "manifest_sha256"],
+      "properties": {
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "last_job_id",
+        "context_ids",
+        "receipt_ids",
+        "read_ledger_ids",
+        "read_ledger_refs",
+        "handoff_refs",
+        "read_ledger_sha256s",
+        "handoff_sha256s"
+      ],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 0},
+        "last_job_id": {"type": ["string", "null"]},
+        "context_ids": {"$ref": "#/$defs/sha256Strings"},
+        "receipt_ids": {"$ref": "#/$defs/sha256Strings"},
+        "read_ledger_ids": {"$ref": "#/$defs/sha256Strings"},
+        "read_ledger_refs": {"$ref": "#/$defs/strings"},
+        "handoff_refs": {"$ref": "#/$defs/strings"},
+        "read_ledger_sha256s": {"$ref": "#/$defs/sha256Strings"},
+        "handoff_sha256s": {"$ref": "#/$defs/sha256Strings"}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "active"}}, "required": ["status"]},
+      "then": {"properties": {"active_job_id": {"type": "string", "minLength": 1}}},
+      "else": {"properties": {"active_job_id": {"type": "null"}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "strings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "sha256Strings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/sha256"},
+      "uniqueItems": true
+    }
+  }
+}

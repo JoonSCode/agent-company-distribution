@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Operating System"
+  short_description: "Run evidence-backed, platform-native app design."
+  default_prompt: "Use $design-operating-system to turn this product intent into a proportional, source-backed design direction and independent verification handoff."

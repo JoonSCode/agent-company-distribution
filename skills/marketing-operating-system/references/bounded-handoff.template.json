@@ -1,0 +1,125 @@
+{
+  "actions_taken": [],
+  "artifacts": [],
+  "execution_handoff_version": "agent-company.execution-handoff/v0.3",
+  "forbidden_claims": [],
+  "format": "agent_company_bounded_handoff.v0.1",
+  "inferred": [],
+  "knowledge_context_binding": {
+    "attestation_scope": "resolver_materialized_selection",
+    "context_id": "de4eaf849c38ecd765d4117898d534fc97def4072b27e691994b52b4ad56b272",
+    "decision_questions": [
+      "Which evidence-backed marketing decision should be made next?",
+      "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
+    ],
+    "format": "agent-company.knowledge-context/v0.2",
+    "issued_at": "2026-07-30T00:00:00Z",
+    "issued_by": "agent-company-expertise-resolver/v0.2",
+    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "materialized_references": [
+      {
+        "id": "role-kernel:marketing",
+        "ref": "skills/marketing-operating-system/references/marketing-contract.json",
+        "sha256": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683",
+        "version": "0.1.0"
+      },
+      {
+        "id": "task-pack:marketing:demand-positioning",
+        "ref": "skills/marketing-operating-system/references/task-packs/demand-positioning.md",
+        "sha256": "c4b4747213a124b82cf4edd803ad346d4410fc6e847b89bf77b51de70441c2ac",
+        "version": "0.1.0"
+      }
+    ],
+    "objective_sha256": "f76e6b25b61b5cc54b3548aa3e0500238881cf4a41c16292482161f65a559667",
+    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "required_reference_ids": [
+      "role-kernel:marketing",
+      "task-pack:marketing:demand-positioning"
+    ],
+    "role": "marketing",
+    "routing_sha256": "8426633fd0a5cf188fe1d9655ba501dffa6d0045bd520dd61f49df6816504cee",
+    "selection": {
+      "ambiguous_task_types": [],
+      "classification_basis": "role_default",
+      "matched_triggers": [],
+      "role_os_skill": "marketing-operating-system",
+      "specialists": [],
+      "task_pack_id": "task-pack:marketing:demand-positioning"
+    },
+    "specialist_skills": [],
+    "task_type": "demand-positioning"
+  },
+  "knowledge_usage_receipt": {
+    "attestation_scope": "worker_reported_use_independent_verification_required",
+    "context_id": "de4eaf849c38ecd765d4117898d534fc97def4072b27e691994b52b4ad56b272",
+    "decision_questions": [
+      "Which evidence-backed marketing decision should be made next?",
+      "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
+    ],
+    "format": "agent-company.knowledge-usage-receipt/v0.2",
+    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "objective_sha256": "f76e6b25b61b5cc54b3548aa3e0500238881cf4a41c16292482161f65a559667",
+    "receipt_id": "dd6437b54df5590404b1a0d0f8f45a6f1cb29c18940e9a443397b499d61d58b9",
+    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "reported_at": "2026-07-30T00:01:00Z",
+    "reported_by": "role-worker",
+    "required_reference_ids": [
+      "role-kernel:marketing",
+      "task-pack:marketing:demand-positioning"
+    ],
+    "role": "marketing",
+    "specialist_skills": [],
+    "task_type": "demand-positioning",
+    "unused_reference_ids": [],
+    "used_references": [
+      {
+        "decisions_supported": [
+          "Which evidence-backed marketing decision should be made next?",
+          "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
+        ],
+        "id": "role-kernel:marketing",
+        "ref": "skills/marketing-operating-system/references/marketing-contract.json",
+        "sha256": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683",
+        "version": "0.1.0"
+      },
+      {
+        "decisions_supported": [
+          "Which evidence-backed marketing decision should be made next?",
+          "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
+        ],
+        "id": "task-pack:marketing:demand-positioning",
+        "ref": "skills/marketing-operating-system/references/task-packs/demand-positioning.md",
+        "sha256": "c4b4747213a124b82cf4edd803ad346d4410fc6e847b89bf77b51de70441c2ac",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "known": [],
+  "next_recommended_surface": "sejong",
+  "objective": "Replace with the live marketing decision.",
+  "operating_contract_binding": {
+    "ref": "skills/marketing-operating-system/references/marketing-contract.json",
+    "sha256": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683"
+  },
+  "risks": [],
+  "role": "marketing",
+  "role_evidence": {
+    "blocker": {
+      "id": "role-evidence-pending",
+      "next_check": "Supply candidate-bound evidence for the selected task.",
+      "reason": "No task-specific role evidence was supplied."
+    },
+    "context_binding": {},
+    "disposition": "blocked",
+    "payload": null,
+    "task_pack_id": "task-pack:marketing:demand-positioning",
+    "task_type": "demand-positioning"
+  },
+  "scope": {
+    "allowed_paths": [],
+    "read_refs": [],
+    "stop_condition": "Return bounded marketing evidence and recommendations only.",
+    "write_refs": []
+  },
+  "unknown": []
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/capability-bindings.v0.1.json",
+  "title": "Agent Company passive capability bindings",
+  "description": "Provider-neutral evidence capabilities with native-first, zero-authority provider bindings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schema_version",
+    "authority_contract",
+    "resolution_policy",
+    "capabilities"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.capability-bindings/v0.1"},
+    "schema_version": {"const": "0.1"},
+    "authority_contract": {"$ref": "#/$defs/authorityContract"},
+    "resolution_policy": {"$ref": "#/$defs/resolutionPolicy"},
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/capability"}
+    }
+  },
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyUniqueTexts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonEmptyText"}
+    },
+    "roleId": {
+      "enum": [
+        "founder",
+        "planning",
+        "marketing",
+        "design",
+        "development",
+        "qa-release"
+      ]
+    },
+    "authorityContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain_owner",
+        "lead_router",
+        "mode",
+        "provider_authority",
+        "forbidden_behaviors"
+      ],
+      "properties": {
+        "domain_owner": {"const": "agent-company"},
+        "lead_router": {"const": "king-sejong"},
+        "mode": {"const": "passive_binding"},
+        "provider_authority": {"const": "none"},
+        "forbidden_behaviors": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "task_classification",
+              "role_routing",
+              "planning",
+              "approval",
+              "continuation",
+              "gate_ownership",
+              "synthesis",
+              "final_verification",
+              "outcome_contract_mutation"
+            ]
+          }
+        }
+      }
+    },
+    "resolutionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_binding_kind",
+        "optional_selection",
+        "unavailable_optional",
+        "native_unavailable",
+        "availability_source",
+        "runtime_state_root"
+      ],
+      "properties": {
+        "default_binding_kind": {"const": "native"},
+        "optional_selection": {"const": "explicit_request_only"},
+        "unavailable_optional": {"const": "fallback_to_native_with_native_claim"},
+        "native_unavailable": {"const": "fail_closed"},
+        "availability_source": {"const": "caller_supplied"},
+        "runtime_state_root": {"const": "sejong"}
+      }
+    },
+    "bindingFields": {
+      "type": "object",
+      "required": [
+        "provider_id",
+        "provider_kind",
+        "provider_refs",
+        "evidence_shape",
+        "claim_scope",
+        "limitations"
+      ],
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "provider_kind": {
+          "enum": ["native", "optional"]
+        },
+        "provider_refs": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+        "evidence_shape": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+        "claim_scope": {"$ref": "#/$defs/nonEmptyText"},
+        "limitations": {"$ref": "#/$defs/nonEmptyUniqueTexts"}
+      }
+    },
+    "nativeBinding": {
+      "allOf": [
+        {"$ref": "#/$defs/bindingFields"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "provider_id": {"const": "native"},
+            "provider_kind": {"const": "native"},
+            "provider_refs": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+            "evidence_shape": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+            "claim_scope": {"$ref": "#/$defs/nonEmptyText"},
+            "limitations": {"$ref": "#/$defs/nonEmptyUniqueTexts"}
+          }
+        }
+      ]
+    },
+    "optionalBinding": {
+      "allOf": [
+        {"$ref": "#/$defs/bindingFields"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "provider_id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "not": {"const": "native"}
+            },
+            "provider_kind": {"const": "optional"},
+            "provider_refs": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+            "evidence_shape": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+            "claim_scope": {"$ref": "#/$defs/nonEmptyText"},
+            "limitations": {"$ref": "#/$defs/nonEmptyUniqueTexts"}
+          }
+        }
+      ]
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_id",
+        "owner_roles",
+        "requirement_owner",
+        "purpose",
+        "evidence_required",
+        "native_binding",
+        "optional_bindings"
+      ],
+      "properties": {
+        "capability_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "owner_roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/roleId"}
+        },
+        "requirement_owner": {"const": "agent-company-task-pack"},
+        "purpose": {"$ref": "#/$defs/nonEmptyText"},
+        "evidence_required": {"$ref": "#/$defs/nonEmptyUniqueTexts"},
+        "native_binding": {"$ref": "#/$defs/nativeBinding"},
+        "optional_bindings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/optionalBinding"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "schema_version": "0.1",
+  "selection_rule": "Choose the smallest valid squad. Add a conditional role or specialist only when a named decision or evidence gap requires it.",
+  "parallel_rule": "Open a parallel candidate only when slices have disjoint ownership, declared inputs, and an independence condition. King Sejong Core owns wave execution and fan-in.",
+  "role_output_contract": "Every role returns bounded evidence and artifact references. Sejong lead synthesizes; Seungjeongwon verifies.",
+  "recipes": [
+    {
+      "id": "squad-new-app",
+      "job_type": "new-app",
+      "required_roles": ["planning", "design", "development", "qa-release"],
+      "conditional_roles": [
+        {"role": "marketing", "when": "launch positioning, market evidence, or a promotion experiment is in scope"},
+        {"role": "founder", "when": "portfolio priority, commercial wedge, or a major strategic tradeoff is unsettled"}
+      ],
+      "parallel_candidates": [
+        {
+          "after": "product-brief",
+          "roles": ["design", "development"],
+          "slices": ["interaction direction", "technical feasibility"],
+          "independence_condition": "Both roles can inspect the approved brief without changing the other's files or committing to implementation."
+        },
+        {
+          "after": "implementation",
+          "roles": ["design", "qa-release"],
+          "slices": ["post-implementation design-review evidence", "matching-surface manual QA"],
+          "independence_condition": "Both roles inspect the same frozen candidate; Design reports intent mismatch while QA observes runtime outcomes, and neither approves final completion."
+        }
+      ]
+    },
+    {
+      "id": "squad-improvement",
+      "job_type": "improvement",
+      "required_roles": ["development", "qa-release"],
+      "conditional_roles": [
+        {"role": "planning", "when": "company-plan topology is required because multiple milestones, cross-role dependencies, or material replanning must be coordinated"},
+        {"role": "design", "when": "the changed outcome includes a user-facing flow, interaction, or visual behavior"},
+        {"role": "marketing", "when": "the improvement changes positioning, acquisition, activation, or retention messaging"}
+      ],
+      "parallel_candidates": [
+        {
+          "id": "improvement-development-two-slice-root",
+          "surface": "company-plan",
+          "after": "$company-plan",
+          "dependency_condition": "no-direct-predecessor",
+          "roles": ["development", "development"],
+          "stage_ids": ["development-leaf", "development-leaf-b"],
+          "slices": ["Implement", "implement second slice"],
+          "independence_condition": "Both Development slices consume the same approved company plan, own disjoint write scopes, and fan in before shared QA."
+        },
+        {
+          "id": "improvement-development-two-slice-after-planning",
+          "surface": "company-plan",
+          "after": "planning-leaf",
+          "dependency_condition": "same-direct-predecessor",
+          "roles": ["development", "development"],
+          "stage_ids": ["development-leaf", "development-leaf-b"],
+          "slices": ["Implement", "implement second slice"],
+          "independence_condition": "Both Development slices consume the same completed Planning leaf, own disjoint write scopes, and fan in before shared QA."
+        },
+        {
+          "after": "problem-frame",
+          "roles": ["design", "development"],
+          "slices": ["experience diagnosis", "implementation diagnosis"],
+          "independence_condition": "Design is activated and both diagnoses are read-only until Sejong fan-in."
+        },
+        {
+          "after": "implementation",
+          "roles": ["design", "qa-release"],
+          "slices": ["post-implementation design-review evidence", "matching-surface manual QA"],
+          "independence_condition": "Design is activated and both roles inspect the same frozen candidate without sharing disposition authority."
+        }
+      ]
+    },
+    {
+      "id": "squad-planning",
+      "job_type": "planning",
+      "required_roles": ["planning"],
+      "conditional_roles": [
+        {"role": "founder", "when": "the plan chooses a portfolio or commercial direction"},
+        {"role": "design", "when": "a product-flow decision needs interaction judgment"},
+        {"role": "development", "when": "technical feasibility can reverse the plan"},
+        {"role": "marketing", "when": "demand, positioning, distribution, or monetization can reverse the plan"}
+      ],
+      "parallel_candidates": []
+    },
+    {
+      "id": "squad-promotion",
+      "job_type": "promotion",
+      "required_roles": ["marketing"],
+      "conditional_roles": [
+        {"role": "planning", "when": "company-plan topology is required because the experiment spans multiple roles, milestones, or reentry decisions"},
+        {"role": "design", "when": "new visual creative or a product-facing campaign experience is required"},
+        {"role": "development", "when": "instrumentation, landing implementation, or product activation changes are required"}
+      ],
+      "parallel_candidates": [
+        {
+          "after": "audience-and-objective",
+          "roles": ["marketing", "marketing"],
+          "stage_ids": ["message-and-channel", "measurement-plan"],
+          "slices": ["message and channel evidence", "measurement and falsification plan"],
+          "independence_condition": "The same Marketing role may use separate evidence workers after audience, objective, and prohibited claims are fixed."
+        },
+        {
+          "after": "audience-and-objective",
+          "roles": ["marketing", "marketing", "design"],
+          "stage_ids": ["message-and-channel", "measurement-plan", "visual-creative"],
+          "slices": ["message and channel evidence", "measurement and falsification plan", "visual-creative evidence"],
+          "independence_condition": "Design is activated; all slices use the same fixed audience, objective, claims, and brand constraints before Sejong fan-in."
+        }
+      ]
+    },
+    {
+      "id": "squad-release",
+      "job_type": "release",
+      "required_roles": ["development", "qa-release"],
+      "conditional_roles": [
+        {"role": "marketing", "when": "release notes, store metadata, or launch communication is in scope"},
+        {"role": "planning", "when": "scope cuts or known-risk acceptance require product judgment"}
+      ],
+      "parallel_candidates": [
+        {
+          "after": "candidate-freeze",
+          "roles": ["qa-release", "marketing"],
+          "slices": ["release verification", "draft release communication"],
+          "independence_condition": "Marketing is activated, works draft-only, and does not mutate the frozen candidate."
+        }
+      ]
+    },
+    {
+      "id": "squad-incident",
+      "job_type": "incident",
+      "required_roles": ["development", "qa-release"],
+      "conditional_roles": [
+        {"role": "planning", "when": "impact prioritization or degraded-mode product behavior needs a decision"},
+        {"role": "marketing", "when": "a customer-facing status or recovery communication must be drafted"}
+      ],
+      "parallel_candidates": [
+        {
+          "after": "containment-boundary",
+          "roles": ["development", "qa-release"],
+          "slices": ["root-cause trace", "reproduction and impact matrix"],
+          "independence_condition": "Both slices remain read-only until the evidence is fanned in and a repair is selected."
+        }
+      ]
+    },
+    {
+      "id": "squad-portfolio",
+      "job_type": "portfolio",
+      "required_roles": ["founder", "marketing"],
+      "conditional_roles": [
+        {"role": "planning", "when": "company-plan topology is required because the portfolio decision spans multiple milestones, dependent experiments, or material replanning"},
+        {"role": "design", "when": "prototype quality or product experience determines the bet"},
+        {"role": "development", "when": "technical cost or platform leverage determines the bet"}
+      ],
+      "parallel_candidates": [
+        {
+          "after": "portfolio-constraints",
+          "roles": ["founder", "marketing"],
+          "slices": ["founder-fit and opportunity cost", "demand and distribution evidence"],
+          "independence_condition": "Both roles use the same option set and constraints, and neither ranks the portfolio before Sejong fan-in."
+        },
+        {
+          "after": "portfolio-constraints",
+          "roles": ["founder", "marketing", "design"],
+          "slices": ["founder-fit and opportunity cost", "demand and distribution evidence", "prototype-evidence quality"],
+          "independence_condition": "Design is activated; all three roles use the same option set and constraints, and none ranks the portfolio before Sejong fan-in."
+        },
+        {
+          "id": "portfolio-founder-marketing-design-after-planning",
+          "surface": "company-plan",
+          "after": "portfolio-constraints",
+          "dependency_condition": "same-direct-predecessor",
+          "roles": ["founder", "marketing", "design"],
+          "stage_ids": ["founder-fit-and-cost", "demand-and-distribution", "prototype-evidence"],
+          "slices": ["founder-fit and opportunity cost", "demand and distribution evidence", "prototype-evidence quality"],
+          "independence_condition": "Design is activated; all three roles use the same option set and constraints, and none ranks the portfolio before Sejong fan-in."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/runtime-reference-set.v0.1.json",
+  "title": "Agent Company parent-issued runtime reference set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "set_id",
+    "job_id",
+    "role",
+    "task_type",
+    "objective_sha256",
+    "issuer",
+    "issued_at",
+    "references"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.runtime-reference-set/v0.1"},
+    "set_id": {"$ref": "#/$defs/sha256"},
+    "job_id": {"type": "string", "minLength": 1},
+    "role": {"enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]},
+    "task_type": {"type": "string", "minLength": 1},
+    "objective_sha256": {"$ref": "#/$defs/sha256"},
+    "issuer": {"const": "sejong-lead"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/reference"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "strings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "reviewed_at", "expires_at", "recheck_triggers"],
+      "properties": {
+        "mode": {"enum": ["time_bounded", "revalidate_before_use", "job_bound"]},
+        "reviewed_at": {"type": "string", "format": "date"},
+        "expires_at": {"type": ["string", "null"], "format": "date"},
+        "recheck_triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "layer",
+        "ref",
+        "sha256",
+        "decision_questions",
+        "authority_class",
+        "allowed_uses",
+        "freshness",
+        "approved_by"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"const": "0.1.0"},
+        "layer": {"enum": ["current_source_set", "job_evidence"]},
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "decision_questions": {"$ref": "#/$defs/strings"},
+        "authority_class": {"enum": ["primary", "operational", "vetted_reference"]},
+        "allowed_uses": {"$ref": "#/$defs/strings"},
+        "freshness": {"$ref": "#/$defs/freshness"},
+        "approved_by": {"const": "sejong-lead"}
+      }
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "actions_taken": [],
+  "artifacts": [],
+  "execution_handoff_version": "agent-company.execution-handoff/v0.3",
+  "forbidden_claims": [
+    "final verification authority",
+    "gate approval authority",
+    "override King Sejong",
+    "replaces King Sejong"
+  ],
+  "format": "agent_company_bounded_handoff.v0.1",
+  "inferred": [],
+  "knowledge_context_binding": {
+    "attestation_scope": "resolver_materialized_selection",
+    "context_id": "09a3d172b36b7fab74f1182a5d06a2c3bc792a70d789d6bceece835155912c63",
+    "decision_questions": [
+      "How should the approved objective become bounded, dependency-safe, verifiable work?",
+      "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
+    ],
+    "format": "agent-company.knowledge-context/v0.2",
+    "issued_at": "2026-07-30T00:00:00Z",
+    "issued_by": "agent-company-expertise-resolver/v0.2",
+    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "materialized_references": [
+      {
+        "id": "role-kernel:planning",
+        "ref": "skills/planning-operating-system/references/planning-contract.json",
+        "sha256": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451",
+        "version": "0.1.0"
+      },
+      {
+        "id": "task-pack:planning:execution-plan",
+        "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
+        "sha256": "734e9f26afebb468892b98046b0f8d6f2fbef9568ed9a34b285648ac9f40639a",
+        "version": "0.1.0"
+      }
+    ],
+    "objective_sha256": "9c0f7e66bef544fe0cd76b255126e18375d5b168edd31cf81905fa25370a144c",
+    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "required_reference_ids": [
+      "role-kernel:planning",
+      "task-pack:planning:execution-plan"
+    ],
+    "role": "planning",
+    "routing_sha256": "8426633fd0a5cf188fe1d9655ba501dffa6d0045bd520dd61f49df6816504cee",
+    "selection": {
+      "ambiguous_task_types": [],
+      "classification_basis": "role_default",
+      "matched_triggers": [],
+      "role_os_skill": "planning-operating-system",
+      "specialists": [],
+      "task_pack_id": "task-pack:planning:execution-plan"
+    },
+    "specialist_skills": [],
+    "task_type": "execution-planning"
+  },
+  "knowledge_usage_receipt": {
+    "attestation_scope": "worker_reported_use_independent_verification_required",
+    "context_id": "09a3d172b36b7fab74f1182a5d06a2c3bc792a70d789d6bceece835155912c63",
+    "decision_questions": [
+      "How should the approved objective become bounded, dependency-safe, verifiable work?",
+      "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
+    ],
+    "format": "agent-company.knowledge-usage-receipt/v0.2",
+    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "objective_sha256": "9c0f7e66bef544fe0cd76b255126e18375d5b168edd31cf81905fa25370a144c",
+    "receipt_id": "eac4d54da26fcb0fc1804acf628cce4f288ba86f7303b77a6c9c466fc7bd7efd",
+    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "reported_at": "2026-07-30T00:01:00Z",
+    "reported_by": "role-worker",
+    "required_reference_ids": [
+      "role-kernel:planning",
+      "task-pack:planning:execution-plan"
+    ],
+    "role": "planning",
+    "specialist_skills": [],
+    "task_type": "execution-planning",
+    "unused_reference_ids": [],
+    "used_references": [
+      {
+        "decisions_supported": [
+          "How should the approved objective become bounded, dependency-safe, verifiable work?",
+          "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
+        ],
+        "id": "role-kernel:planning",
+        "ref": "skills/planning-operating-system/references/planning-contract.json",
+        "sha256": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451",
+        "version": "0.1.0"
+      },
+      {
+        "decisions_supported": [
+          "How should the approved objective become bounded, dependency-safe, verifiable work?",
+          "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
+        ],
+        "id": "task-pack:planning:execution-plan",
+        "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
+        "sha256": "734e9f26afebb468892b98046b0f8d6f2fbef9568ed9a34b285648ac9f40639a",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "known": [],
+  "next_recommended_surface": "seungjeongwon",
+  "objective": "Replace with the approved planning objective.",
+  "operating_contract_binding": {
+    "ref": "skills/planning-operating-system/references/planning-contract.json",
+    "sha256": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451"
+  },
+  "risks": [],
+  "role": "planning",
+  "role_evidence": {
+    "blocker": {
+      "id": "role-evidence-pending",
+      "next_check": "Supply candidate-bound evidence for the selected task.",
+      "reason": "No task-specific role evidence was supplied."
+    },
+    "context_binding": {},
+    "disposition": "blocked",
+    "payload": null,
+    "task_pack_id": "task-pack:planning:execution-plan",
+    "task_type": "execution-planning"
+  },
+  "scope": {
+    "allowed_paths": [],
+    "read_refs": [],
+    "stop_condition": "Return bounded actionable leaves, dependencies, and verification targets.",
+    "write_refs": []
+  },
+  "unknown": []
+}

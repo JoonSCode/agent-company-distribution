@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/company-state.v0.1.json",
+  "title": "Agent Company Resumable State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "company_id",
+    "charter_binding",
+    "revision",
+    "fencing_token",
+    "next_tick_at",
+    "last_tick_key",
+    "last_handoff_ref",
+    "portfolio",
+    "active_cycle",
+    "cycle_history",
+    "observations"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.company-state/v0.1"},
+    "company_id": {"const": "agent-company"},
+    "charter_binding": {"$ref": "#/$defs/binding"},
+    "revision": {"type": "integer", "minimum": 0},
+    "fencing_token": {"type": "integer", "minimum": 0},
+    "next_tick_at": {"type": "string", "format": "date-time"},
+    "last_tick_key": {"$ref": "#/$defs/nullableText"},
+    "last_handoff_ref": {"$ref": "#/$defs/nullableText"},
+    "portfolio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apps", "initiatives"],
+      "properties": {
+        "apps": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/app"}
+        },
+        "initiatives": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/initiative"}
+        }
+      }
+    },
+    "active_cycle": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/cycle"}
+      ]
+    },
+    "cycle_history": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/cycleClosure"}
+    },
+    "observations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/observation"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullableText": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {"type": "null"}
+      ]
+    },
+    "textList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": {"const": "policies/company-charter.json"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gross_revenue",
+        "net_revenue",
+        "subscription_revenue",
+        "iap_revenue",
+        "ad_revenue",
+        "refunds",
+        "marketing_spend",
+        "infrastructure_cost",
+        "installs",
+        "active_users",
+        "paying_users",
+        "new_paying_users"
+      ],
+      "properties": {
+        "gross_revenue": {"$ref": "#/$defs/nullableNumber"},
+        "net_revenue": {"$ref": "#/$defs/nullableNumber"},
+        "subscription_revenue": {"$ref": "#/$defs/nullableNumber"},
+        "iap_revenue": {"$ref": "#/$defs/nullableNumber"},
+        "ad_revenue": {"$ref": "#/$defs/nullableNumber"},
+        "refunds": {"$ref": "#/$defs/nullableNumber"},
+        "marketing_spend": {"$ref": "#/$defs/nullableNumber"},
+        "infrastructure_cost": {"$ref": "#/$defs/nullableNumber"},
+        "installs": {"$ref": "#/$defs/nullableNumber"},
+        "active_users": {"$ref": "#/$defs/nullableNumber"},
+        "paying_users": {"$ref": "#/$defs/nullableNumber"},
+        "new_paying_users": {"$ref": "#/$defs/nullableNumber"}
+      }
+    },
+    "nullableNumber": {
+      "oneOf": [
+        {"type": "number"},
+        {"type": "null"}
+      ]
+    },
+    "derived": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contribution_margin", "arppu", "cac", "payback_months"],
+      "properties": {
+        "contribution_margin": {"$ref": "#/$defs/nullableNumber"},
+        "arppu": {"$ref": "#/$defs/nullableNumber"},
+        "cac": {"$ref": "#/$defs/nullableNumber"},
+        "payback_months": {"$ref": "#/$defs/nullableNumber"}
+      }
+    },
+    "commercialState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_status", "period_start", "period_end", "currency", "metrics", "derived"],
+      "properties": {
+        "evidence_status": {"enum": ["unknown", "pending", "observed"]},
+        "period_start": {"$ref": "#/$defs/nullableText"},
+        "period_end": {"$ref": "#/$defs/nullableText"},
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "derived": {"$ref": "#/$defs/derived"}
+      }
+    },
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["app_id", "name", "kind", "lifecycle", "repository_ref", "commercial_state"],
+      "properties": {
+        "app_id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["existing-app", "new-opportunity"]},
+        "lifecycle": {"enum": ["discovery", "build", "released", "growth", "maintenance", "paused", "retired"]},
+        "repository_ref": {"$ref": "#/$defs/nullableText"},
+        "commercial_state": {"$ref": "#/$defs/commercialState"}
+      }
+    },
+    "initiative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "initiative_id",
+        "origin",
+        "app_id",
+        "job_type",
+        "status",
+        "priority",
+        "objective",
+        "commercial_hypothesis",
+        "success_metrics",
+        "failure_metrics",
+        "guardrails",
+        "created_at",
+        "updated_at",
+        "plan_ref",
+        "plan_sha256"
+      ],
+      "properties": {
+        "initiative_id": {"type": "string", "minLength": 1},
+        "origin": {"enum": ["ceo-directed", "company-initiated"]},
+        "app_id": {"$ref": "#/$defs/nullableText"},
+        "job_type": {"enum": ["new-app", "improvement", "planning", "promotion", "release", "incident", "portfolio"]},
+        "status": {"enum": ["ready", "active", "awaiting-approval", "verifying", "completed", "stopped"]},
+        "priority": {"type": "integer", "minimum": 0},
+        "objective": {"type": "string", "minLength": 1},
+        "commercial_hypothesis": {"type": "string", "minLength": 1},
+        "success_metrics": {"$ref": "#/$defs/textList"},
+        "failure_metrics": {"$ref": "#/$defs/textList"},
+        "guardrails": {"$ref": "#/$defs/textList"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "plan_ref": {"$ref": "#/$defs/nullableText"},
+        "plan_sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "cycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cycle_id", "initiative_id", "tick_key", "phase", "started_at", "updated_at", "job_ref", "next_action_ref", "evidence_refs"],
+      "properties": {
+        "cycle_id": {"type": "string", "minLength": 1},
+        "initiative_id": {"type": "string", "minLength": 1},
+        "tick_key": {"type": "string", "minLength": 1},
+        "phase": {"enum": ["job-created", "planning", "delegating", "executing", "verifying", "commercial-review", "awaiting-approval"]},
+        "started_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "job_ref": {"type": "string", "minLength": 1},
+        "next_action_ref": {"type": "string", "minLength": 1},
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "cycleClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cycle_id", "initiative_id", "tick_key", "outcome", "closed_at", "job_ref", "handoff_ref", "evidence_refs"],
+      "properties": {
+        "cycle_id": {"type": "string", "minLength": 1},
+        "initiative_id": {"type": "string", "minLength": 1},
+        "tick_key": {"type": "string", "minLength": 1},
+        "outcome": {"enum": ["completed", "stopped"]},
+        "closed_at": {"type": "string", "format": "date-time"},
+        "job_ref": {"type": "string", "minLength": 1},
+        "handoff_ref": {"type": "string", "minLength": 1},
+        "evidence_refs": {"$ref": "#/$defs/textList"}
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_id", "app_id", "captured_at", "source_ref", "source_sha256", "evidence_status", "currency", "attribution", "confidence", "freshness", "limitations", "metrics"],
+      "properties": {
+        "observation_id": {"type": "string", "minLength": 1},
+        "app_id": {"type": "string", "minLength": 1},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "source_ref": {"type": "string", "minLength": 1},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "evidence_status": {"enum": ["pending", "observed"]},
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        "attribution": {"enum": ["unknown", "unattributed", "attributed"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "freshness": {"enum": ["fresh", "stale", "unknown"]},
+        "limitations": {"$ref": "#/$defs/textList"},
+        "metrics": {"$ref": "#/$defs/metrics"}
+      }
+    }
+  }
+}

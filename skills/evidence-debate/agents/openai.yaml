@@ -1,0 +1,4 @@
+interface:
+  display_name: "Evidence Debate"
+  short_description: "Run bounded evidence-based debate for Agent Company decisions."
+  default_prompt: "Use evidence-debate to compare a claim, the strongest objections, and the evidence needed before recommending the next Sejong surface."

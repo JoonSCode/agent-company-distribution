@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/discord-staffing.v0.1-draft.json",
+  "title": "Agent Company Discord Staffing Projection Draft",
+  "description": "A projection-only policy and result that cannot override King Sejong Core routing, models, leases, review, or completion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "authority", "core_decision_format", "assignments", "forbidden_overrides", "promotion"],
+  "properties": {
+    "format": {"const": "agent-company.discord-staffing/v0.1-draft"},
+    "authority": {"const": "staffing_projection_only"},
+    "core_decision_format": {"const": "sejong.discord-model-route/v0.1-draft"},
+    "assignments": {"$ref": "#/$defs/Assignments"},
+    "forbidden_overrides": {"$ref": "#/$defs/ForbiddenOverrides"},
+    "promotion": {"$ref": "#/$defs/Promotion"}
+  },
+  "$defs": {
+    "Sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "ForbiddenOverrides": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {"enum": ["selected_route", "model", "sandbox", "approval_gate", "execution_scope", "lease", "review_verdict", "completion_status"]}
+    },
+    "Assignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["terra", "luna", "sol", "antigravity"],
+      "properties": {
+        "terra": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["company_role", "function", "may_change_core_decision", "may_modify_code"],
+          "properties": {
+            "company_role": {"const": "founder"},
+            "function": {"const": "controller_projection"},
+            "may_change_core_decision": {"const": false},
+            "may_modify_code": {"const": false}
+          }
+        },
+        "luna": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["company_role", "function", "authority"],
+          "properties": {
+            "company_role": {"const": "development"},
+            "function": {"const": "implementation_worker"},
+            "authority": {"const": "evidence_only"}
+          }
+        },
+        "sol": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["company_role", "function", "sandbox", "authority"],
+          "properties": {
+            "company_role": {"const": "qa-release"},
+            "function": {"const": "independent_reviewer"},
+            "sandbox": {"const": "read-only"},
+            "authority": {"const": "approval_recommendation_only"}
+          }
+        },
+        "antigravity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["company_role", "function", "sandbox", "state", "canonical_authority"],
+          "properties": {
+            "company_role": {"type": "null"},
+            "function": {"const": "shadow_second_opinion"},
+            "sandbox": {"const": "read-only"},
+            "state": {"const": "shadow"},
+            "canonical_authority": {"const": false}
+          }
+        }
+      }
+    },
+    "Promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_state", "automatic_promotion", "requires_repeated_task_class_evidence", "requires_fresh_independent_review", "requires_explicit_approval"],
+      "properties": {
+        "default_state": {"const": "shadow"},
+        "automatic_promotion": {"const": false},
+        "requires_repeated_task_class_evidence": {"const": true},
+        "requires_fresh_independent_review": {"const": true},
+        "requires_explicit_approval": {"const": true}
+      }
+    }
+  }
+}

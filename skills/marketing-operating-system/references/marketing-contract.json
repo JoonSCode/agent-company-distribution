@@ -1,0 +1,122 @@
+{
+  "format": "agent-company.marketing-contract/v0.1",
+  "decision_readiness": [
+    {
+      "status": "blocked",
+      "required_evidence": ["known", "inferred", "unknown", "one evidence action"],
+      "allowed_outputs": ["bounded evidence plan", "non-deployable hypotheses"],
+      "forbidden_outputs": ["deployable campaign", "final allocation", "unsupported audience claim"]
+    },
+    {
+      "status": "conditional",
+      "required_evidence": ["credible direction", "material assumption", "stop condition"],
+      "allowed_outputs": ["one bounded test artifact"],
+      "forbidden_outputs": ["unqualified causal claim", "final marketing approval"]
+    },
+    {
+      "status": "ready",
+      "required_evidence": ["decision inputs", "success and failure criteria", "trust guardrail"],
+      "allowed_outputs": ["requested marketing artifact", "bounded execution handoff"],
+      "forbidden_outputs": ["gate approval", "final completion claim"]
+    }
+  ],
+  "stages": [
+    {"id": "decision", "required_evidence": ["decision_question", "product_stage"]},
+    {"id": "demand", "required_evidence": ["customer behavior", "competitive alternatives"]},
+    {"id": "strategy", "required_evidence": ["target choice", "positioning", "primary objective", "non-goals"]},
+    {"id": "system", "required_evidence": ["channel job", "growth mechanism or funnel boundary"]},
+    {"id": "experiment", "required_evidence": ["hypothesis", "comparison", "decision rules"]},
+    {"id": "learning", "required_evidence": ["outcome", "downstream quality", "next decision"]}
+  ],
+  "required_decision_fields": [
+    "decision_question",
+    "stage",
+    "known",
+    "inferred",
+    "unknown",
+    "primary_objective",
+    "rejected_or_deferred_tactics",
+    "next_decision",
+    "execution_surface",
+    "recommended_reasoning_owner"
+  ],
+  "positioning_contract": {
+    "required_fields": ["target_choice", "buying_situation", "competitive_alternatives", "differentiated_capability", "measurable_improvement_threshold"],
+    "measurable_improvement_threshold": {
+      "required_fields": ["metric", "denominator", "comparison", "observation_window", "minimum_improvement", "guardrails"],
+      "calibration_rule": "Pre-specify the minimum improvement from decision-relevant evidence; when it cannot be calibrated, record the missing evidence and keep the decision conditional."
+    }
+  },
+  "experiment_contract": {
+    "format": "agent-company.marketing-experiment/v0.1",
+    "required_fields": ["hypothesis", "intervention", "audience", "comparison", "arms_and_allocation", "unit_of_assignment", "exposure_eligibility", "instrumentation", "primary_metric", "primary_metric_denominator", "observation_window", "success_criteria", "failure_criteria", "downstream_quality_guardrail", "trust_guardrail", "guardrails", "decision_rule", "confounders", "stop_or_rollback", "owner", "win_action", "loss_action", "inconclusive_action", "tested_variable", "fixed_variables", "external_outcome_transfer"],
+    "conditional_request": {
+      "requires_complete_blueprint": true,
+      "allowed_output": "one bounded test artifact",
+      "forbidden_output": "omitting the requested experiment blueprint"
+    },
+    "causal_claim_requires": ["known assignment or exposure mechanism", "valid comparison", "sufficient observation"],
+    "directional_only_when": ["assignment is unknown", "comparison is observational", "power is insufficient"],
+    "boundary_rules": {
+      "fixed_variables_required": true,
+      "tested_variable_must_not_be_fixed": true,
+      "external_outcome_transfer": "forbidden"
+    }
+  },
+  "evidence_action_contract": {
+    "format": "agent-company.marketing-evidence-action/v0.1",
+    "required_fields": ["objective", "method", "success_criteria", "failure_criteria", "downstream_quality_guardrail", "trust_guardrail", "stop_or_rollback", "owner", "no_live_action"],
+    "no_live_action": true,
+    "boundary_rule": "An evidence action records its criteria, guardrails, and stop-or-rollback rule exactly once inside its decision slice."
+  },
+  "decision_contract": {
+    "format": "agent-company.marketing-decision/v0.1",
+    "required_fields": ["format", "decision_scope", "decision_question", "stage", "known", "inferred", "unknown", "primary_objective", "rejected_or_deferred_tactics", "decision_slices", "next_decision", "execution_surface", "recommended_reasoning_owner"],
+    "decision_slice_fields": ["decision_id", "decision_kind", "readiness", "blockers", "allowed_output"],
+    "decision_kinds": ["artifact", "execution", "scale"],
+    "decision_scopes": ["narrow", "compound_monetization"],
+    "readiness": ["blocked", "conditional", "ready"],
+    "allowed_output": ["none", "evidence_action", "bounded_blueprint", "execution_handoff"],
+    "rules": {
+      "blocked_artifact_forbids_experiment": true,
+      "bounded_blueprint_requires_complete_experiment": true,
+      "execution_and_scale_are_independent_fail_closed_gates": true,
+      "decision_slices_minimum": 1,
+      "decision_slices_maximum": 3,
+      "decision_slices_require_unique_kinds_and_identifiers": true,
+      "compound_monetization_requires": ["artifact", "execution", "scale"],
+      "evidence_action_required_iff_output": true,
+      "evidence_action_forbidden_outside_output": true,
+      "canonical_nested_semantics": "Experiment or evidence-action semantics appear once in their applicable nested slice."
+    }
+  },
+  "monetization_economics_contract": {
+    "required_fields": ["revenue_basis", "currency", "included_adjustments", "excluded_adjustments", "economic_denominator", "acquisition_cost_treatment", "acquisition_cost_allocation_rule", "cohort_maturity_rule", "marginal_scale_rule"],
+    "revenue_basis": ["gross", "settled", "net"],
+    "acquisition_cost_treatment": ["held_constant_excluded_from_primary", "allocated_to_assigned_cohort", "not_applicable"],
+    "ready_scale_requires": ["unambiguous revenue basis", "declared currency and adjustments", "assigned economic denominator", "cohort maturity", "marginal scale evidence"]
+  },
+  "measurement_contract": {
+    "required_signal_classes": ["business outcome", "leading behavior", "downstream quality"],
+    "long_horizon_when_applicable": true,
+    "attribution_is_causal_proof": false
+  },
+  "decision_output_policy": {
+    "lead_fields": ["recommendation_or_deferral", "decision_readiness", "controlling_evidence", "reversal_condition", "next_decision"],
+    "materiality_rule": "A missing fact blocks only the decision slice it can reverse; unrelated unknowns remain visible but do not suppress a supported artifact or test.",
+    "evidence_trace_rule": "Cite decisive evidence IDs adjacent to each material recommendation or reversal condition. Do not restate source evidence unless needed to explain an inference, and do not require a separate trace table in the user-facing artifact.",
+    "expansion_rule": "Expand only evidence, alternatives, metrics, and experiment fields that can change the named marketing decision.",
+    "omission_rule": "Do not restate the full operating system, produce multiple speculative tactics, or fill empty framework sections.",
+    "handoff_rule": "Emit the complete machine contract only for the requested decision artifact or bounded handoff."
+  },
+  "specialist_routing": {
+    "hard_dependencies": [],
+    "request_when": "a named evidence gap can reverse the marketing decision",
+    "missing_specialist_fallback": "record the unknown and narrow the claim"
+  },
+  "authority_boundary": {
+    "marketing_may": ["diagnose demand", "recommend positioning", "design bounded experiments", "prepare marketing handoffs"],
+    "marketing_must_not": ["take unapproved live account action", "fabricate proof", "approve gates", "claim final verification"],
+    "final_verification_owner": "seungjeongwon"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/specialist-request.v0.1.json",
+  "title": "Agent Company Specialist Request",
+  "description": "A bounded request for evidence or judgment that returns to the requesting role and consumes the Core delegation budget.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "request_id",
+    "job_id",
+    "requester_role",
+    "specialty",
+    "decision_question",
+    "missing_evidence",
+    "scope",
+    "expected_output",
+    "budget_cost",
+    "decision_owner",
+    "stop_condition",
+    "forbidden_claims"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.specialist-request/v0.1"},
+    "request_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "requester_role": {
+      "enum": ["founder", "planning", "design", "development", "marketing", "qa-release"]
+    },
+    "specialty": {"type": "string", "minLength": 1},
+    "decision_question": {"type": "string", "minLength": 1},
+    "missing_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["read_refs", "allowed_outputs"],
+      "properties": {
+        "read_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "allowed_outputs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "expected_output": {"type": "string", "minLength": 1},
+    "budget_cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workers", "spawn_depth", "rounds"],
+      "properties": {
+        "workers": {"type": "integer", "minimum": 1},
+        "spawn_depth": {"type": "integer", "minimum": 0},
+        "rounds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "decision_owner": {"const": "sejong-lead"},
+    "stop_condition": {"type": "string", "minLength": 1},
+    "forbidden_claims": {
+      "type": "array",
+      "contains": {"const": "final verification"},
+      "items": {
+        "enum": ["Uigwe approval", "final synthesis", "final verification", "scope widening"]
+      }
+    }
+  }
+}

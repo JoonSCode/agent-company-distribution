@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kinnolabs.local/agent-company/metric-event.schema.json",
+  "title": "Agent Company sanitized metric event v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format", "event_id", "occurred_at", "task_class", "lane", "core_route",
+    "core_backend", "role_count", "worker_count", "elapsed_ms", "retries", "outcome", "verification"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.metric-event/v0.2"},
+    "event_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
+    "occurred_at": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$"},
+    "task_class": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"},
+    "lane": {"enum": ["direct", "role", "squad"]},
+    "core_route": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"},
+    "core_backend": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"},
+    "role_count": {"type": "integer", "minimum": 0},
+    "worker_count": {"type": "integer", "minimum": 0},
+    "tool_count": {"type": "integer", "minimum": 0},
+    "token_count": {"type": "integer", "minimum": 0},
+    "elapsed_ms": {"type": "integer", "minimum": 0},
+    "retries": {"type": "integer", "minimum": 0},
+    "outcome": {"enum": ["succeeded", "partial", "failed", "cancelled"]},
+    "verification": {"enum": ["passed", "partial", "failed", "not-run"]},
+    "attempt_receipt": {"$ref": "#/$defs/attemptReceipt"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["attempt_receipt"],
+        "properties": {"verification": {"const": "passed"}}
+      },
+      "then": {
+        "properties": {
+          "attempt_receipt": {
+            "properties": {
+              "verified_quality_score": {"type": "number"},
+              "critical_verification_regression": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["attempt_receipt"],
+        "properties": {"verification": {"const": "not-run"}}
+      },
+      "then": {
+        "properties": {
+          "attempt_receipt": {
+            "properties": {"verified_quality_score": {"const": null}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["attempt_receipt"],
+        "properties": {"verification": {"enum": ["partial", "failed"]}}
+      },
+      "then": {
+        "properties": {
+          "attempt_receipt": {
+            "properties": {"verified_quality_score": {"type": "number"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["attempt_receipt"],
+        "properties": {
+          "attempt_receipt": {
+            "properties": {"critical_verification_regression": {"const": true}},
+            "required": ["critical_verification_regression"]
+          }
+        }
+      },
+      "then": {
+        "properties": {"outcome": {"enum": ["partial", "failed", "cancelled"]}}
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "continuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action", "adjacent_work", "stable_prefix_reusable", "context_health",
+        "model_change_required", "independent_verification_required",
+        "inherited_context_risk", "invalidation_reasons", "prior_attempt_id",
+        "prior_identity_sha256"
+      ],
+      "properties": {
+        "action": {"enum": ["resume", "start_new"]},
+        "adjacent_work": {"type": "boolean"},
+        "stable_prefix_reusable": {"type": "boolean"},
+        "context_health": {"enum": ["healthy", "degraded", "bloated"]},
+        "model_change_required": {"type": "boolean"},
+        "independent_verification_required": {"type": "boolean"},
+        "inherited_context_risk": {"type": "boolean"},
+        "invalidation_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "source_changed", "decision_changed", "capsule_changed", "rules_changed",
+              "plugin_changed", "tool_schema_changed", "model_contract_changed",
+              "verification_contradiction"
+            ]
+          }
+        },
+        "prior_attempt_id": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "prior_identity_sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "prior_attempt_id": {"type": "string"},
+                "prior_identity_sha256": {"$ref": "#/$defs/sha256"}
+              }
+            },
+            {
+              "properties": {
+                "prior_attempt_id": {"const": null},
+                "prior_identity_sha256": {"const": null}
+              }
+            }
+          ]
+        },
+        {
+          "if": {"properties": {"action": {"const": "resume"}}},
+          "then": {
+            "properties": {
+              "adjacent_work": {"const": true},
+              "stable_prefix_reusable": {"const": true},
+              "context_health": {"const": "healthy"},
+              "model_change_required": {"const": false},
+              "independent_verification_required": {"const": false},
+              "inherited_context_risk": {"const": false},
+              "invalidation_reasons": {"maxItems": 0},
+              "prior_attempt_id": {"type": "string"},
+              "prior_identity_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"action": {"const": "start_new"}}},
+          "then": {
+            "anyOf": [
+              {"properties": {"adjacent_work": {"const": false}}},
+              {"properties": {"stable_prefix_reusable": {"const": false}}},
+              {"properties": {"context_health": {"enum": ["degraded", "bloated"]}}},
+              {"properties": {"model_change_required": {"const": true}}},
+              {"properties": {"independent_verification_required": {"const": true}}},
+              {"properties": {"inherited_context_risk": {"const": true}}},
+              {"properties": {"invalidation_reasons": {"minItems": 1}}},
+              {"properties": {"prior_attempt_id": {"const": null}}},
+              {"properties": {"prior_identity_sha256": {"const": null}}}
+            ]
+          }
+        }
+      ]
+    },
+    "evidenceRef": {
+      "type": "string",
+      "pattern": "^(?:artifact|evidence|repo|sejong)://[a-z0-9][a-z0-9._-]*(?:/[a-z0-9][a-z0-9._-]*){0,7}$",
+      "not": {
+        "pattern": "/(?:home|private|tmp|users|var|volumes)(?:/|$)"
+      }
+    },
+    "localArtifactReuse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status", "artifact_count", "artifact_set_sha256", "evidence_refs"
+      ],
+      "properties": {
+        "status": {"enum": ["none", "observed"]},
+        "artifact_count": {"type": "integer", "minimum": 0},
+        "artifact_set_sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidenceRef"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "none"}}},
+          "then": {
+            "properties": {
+              "artifact_count": {"const": 0},
+              "artifact_set_sha256": {"const": null},
+              "evidence_refs": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "observed"}}},
+          "then": {
+            "properties": {
+              "artifact_count": {"minimum": 1},
+              "artifact_set_sha256": {"$ref": "#/$defs/sha256"},
+              "evidence_refs": {"minItems": 1}
+            }
+          }
+        }
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_sha256", "decision_sha256", "capsule_sha256", "rules_sha256",
+        "plugin_set_sha256", "tool_schema_sha256", "stable_prefix_sha256"
+      ],
+      "properties": {
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "decision_sha256": {"$ref": "#/$defs/sha256"},
+        "capsule_sha256": {"$ref": "#/$defs/sha256"},
+        "rules_sha256": {"$ref": "#/$defs/sha256"},
+        "plugin_set_sha256": {"$ref": "#/$defs/sha256"},
+        "tool_schema_sha256": {"$ref": "#/$defs/sha256"},
+        "stable_prefix_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_tokens", "cached_input_tokens", "cache_write_input_tokens",
+        "output_tokens", "reasoning_tokens"
+      ],
+      "properties": {
+        "input_tokens": {"type": "integer", "minimum": 0},
+        "cached_input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "cache_write_input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 0},
+        "reasoning_tokens": {"type": "integer", "minimum": 0}
+      }
+    },
+    "attemptReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format", "attempt_id", "routing_mode", "requested_profile", "effective_model",
+        "reasoning_effort", "service_tier", "continuation", "cache_strategy",
+        "local_artifact_reuse", "identity", "usage", "rework_count",
+        "verified_quality_score", "critical_verification_regression", "verifier_id",
+        "verified_at", "verification_evidence_sha256", "verification_evidence_refs"
+      ],
+      "properties": {
+        "format": {"const": "agent-company.attempt-cost-receipt/v0.1"},
+        "attempt_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "routing_mode": {"const": "shadow"},
+        "requested_profile": {
+          "enum": [
+            "exploration-high", "execution-low", "execution-medium", "execution-high",
+            "verification-high"
+          ]
+        },
+        "effective_model": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{1,127}$"
+        },
+        "reasoning_effort": {"enum": ["none", "low", "medium", "high", "xhigh"]},
+        "service_tier": {"enum": ["default", "fast", "flex", "priority"]},
+        "continuation": {"$ref": "#/$defs/continuation"},
+        "cache_strategy": {"enum": ["none", "implicit", "explicit"]},
+        "local_artifact_reuse": {"$ref": "#/$defs/localArtifactReuse"},
+        "identity": {"$ref": "#/$defs/identity"},
+        "usage": {"$ref": "#/$defs/usage"},
+        "rework_count": {"type": "integer", "minimum": 0},
+        "verified_quality_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "critical_verification_regression": {"type": ["boolean", "null"]},
+        "verifier_id": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "verified_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?(?:Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "verification_evidence_sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "verification_evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidenceRef"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"verified_quality_score": {"type": "number"}}},
+          "then": {
+            "properties": {
+              "critical_verification_regression": {"type": "boolean"},
+              "verifier_id": {"type": "string"},
+              "verified_at": {"type": "string"},
+              "verification_evidence_sha256": {"$ref": "#/$defs/sha256"},
+              "verification_evidence_refs": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"verified_quality_score": {"const": null}}},
+          "then": {
+            "properties": {
+              "critical_verification_regression": {"const": null},
+              "verifier_id": {"const": null},
+              "verified_at": {"const": null},
+              "verification_evidence_sha256": {"const": null},
+              "verification_evidence_refs": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

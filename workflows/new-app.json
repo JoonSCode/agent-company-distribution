@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1",
+  "id": "new-app",
+  "job_type": "new-app",
+  "objective": "Move an approved app opportunity through product definition, experience and feasibility evidence, implementation, and release-readiness verification.",
+  "stages": [
+    {"id": "product-brief", "owner_roles": ["planning"], "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["target user", "problem", "scope", "success and failure criteria"]},
+    {"id": "experience-direction", "owner_roles": ["design"], "depends_on": ["product-brief"], "execution_hint": "parallel-candidate", "exit_evidence": ["flow", "states", "design risks"]},
+    {"id": "technical-feasibility", "owner_roles": ["development"], "depends_on": ["product-brief"], "execution_hint": "parallel-candidate", "exit_evidence": ["architecture boundary", "feasibility", "technical risks"]},
+    {"id": "implementation", "owner_roles": ["development"], "depends_on": ["experience-direction", "technical-feasibility"], "execution_hint": "sequential", "exit_evidence": ["implemented slice", "automated verification"]},
+    {"id": "design-review", "owner_roles": ["design"], "depends_on": ["implementation"], "execution_hint": "parallel-candidate", "exit_evidence": ["match", "deviation", "unknown", "severity"]},
+    {"id": "manual-qa", "owner_roles": ["qa-release"], "depends_on": ["implementation"], "execution_hint": "sequential", "exit_evidence": ["matching-surface observation", "release risks"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}
+}

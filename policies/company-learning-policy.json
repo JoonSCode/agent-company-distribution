@@ -1,0 +1,18 @@
+{
+  "format": "agent-company.learning-policy/v0.1",
+  "evidence": {
+    "minimum_independent_runs": 3,
+    "source_evidence_policy": "structured_sanitized_refs_only"
+  },
+  "proposal": {
+    "status": "proposed",
+    "activation_authority": "none",
+    "requested_approval": "ceo_explicit"
+  },
+  "registry": {
+    "owner": "agent-company",
+    "max_active": 8,
+    "max_shadow": 4,
+    "deletion_authority": "managed_hash_match_only"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1",
+  "id": "promotion",
+  "job_type": "promotion",
+  "objective": "Run one evidence-backed promotion or growth experiment with explicit claims, guardrails, and measurement.",
+  "stages": [
+    {"id": "audience-and-objective", "owner_roles": ["planning", "marketing"], "assignment_mode": "first-selected", "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["Marketing evidence", "primary objective", "prohibited claims", "company-plan topology when Planning is active"]},
+    {"id": "message-and-channel", "owner_roles": ["marketing"], "depends_on": ["audience-and-objective"], "execution_hint": "parallel-candidate", "exit_evidence": ["positioning", "draft asset", "channel rationale"]},
+    {"id": "measurement-plan", "owner_roles": ["marketing"], "depends_on": ["audience-and-objective"], "execution_hint": "parallel-candidate", "exit_evidence": ["success", "failure", "quality and trust guardrails"]},
+    {"id": "visual-creative", "owner_roles": ["design"], "depends_on": ["audience-and-objective"], "execution_hint": "parallel-candidate-when-activated", "exit_evidence": ["selected tier", "visual or product-facing direction", "accessibility and brand risks"]},
+    {"id": "approved-execution", "owner_roles": ["marketing"], "depends_on": ["message-and-channel", "measurement-plan", "visual-creative"], "execution_hint": "approval-gated-or-draft-only", "exit_evidence": ["Core action receipt or draft-only artifact"]},
+    {"id": "learning-report", "owner_roles": ["marketing"], "depends_on": ["approved-execution"], "execution_hint": "sequential", "exit_evidence": ["observed result", "causal limits", "next decision"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}
+}

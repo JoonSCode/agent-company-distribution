@@ -1,0 +1,865 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/bounded-handoff.v0.1.json",
+  "schema_version": "0.1",
+  "id": "agent_company_bounded_handoff.v0.1",
+  "purpose": "Bound role-agent output so it can be consumed by King Sejong without granting private profiles route, gate, or final verification authority.",
+  "authority_boundary": {
+    "king_sejong": "King Sejong remains the lead router and synthesis authority.",
+    "uigwe": "Uigwe remains the planning and gate-readiness authority.",
+    "seungjeongwon": "Seungjeongwon remains the execution and final verification path.",
+    "agent_company_profiles": "Profiles produce bounded evidence, recommendations, and implementation slices; they do not override King Sejong."
+  },
+  "type": "object",
+  "required": [
+    "format",
+    "role",
+    "objective",
+    "scope",
+    "known",
+    "inferred",
+    "unknown",
+    "actions_taken",
+    "artifacts",
+    "risks",
+    "next_recommended_surface",
+    "forbidden_claims"
+  ],
+  "properties": {
+    "format": {
+      "const": "agent_company_bounded_handoff.v0.1"
+    },
+    "execution_handoff_version": {
+      "enum": [
+        "agent-company.execution-handoff/v0.2",
+        "agent-company.execution-handoff/v0.3",
+        "agent-company.execution-handoff/v0.4"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "founder",
+        "planning",
+        "marketing",
+        "design",
+        "development",
+        "qa-release"
+      ]
+    },
+    "objective": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "allowed_paths",
+        "read_refs",
+        "write_refs",
+        "stop_condition"
+      ]
+    },
+    "known": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inferred": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unknown": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actions_taken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_recommended_surface": {
+      "type": "string",
+      "enum": [
+        "sejong",
+        "jangyeongsil",
+        "jiphyeonjeon",
+        "uigwe",
+        "seungjeongwon",
+        "sillok",
+        "danjong"
+      ]
+    },
+    "forbidden_claims": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "final verification authority",
+          "gate approval authority",
+          "override King Sejong",
+          "replaces King Sejong"
+        ]
+      }
+    },
+    "operating_contract_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "knowledge_context_binding": {"$ref": "#/$defs/knowledgeContext"},
+    "knowledge_usage_receipt": {"$ref": "#/$defs/knowledgeUsageReceipt"},
+    "qa_verification": {
+      "oneOf": [
+        {"$ref": "#/$defs/qaVerificationV03"},
+        {"$ref": "#/$defs/qaVerificationV02"}
+      ]
+    },
+    "role_evidence": {"$ref": "#/$defs/roleEvidence"},
+    "model_routing_receipt_binding": {
+      "$ref": "#/$defs/modelRoutingReceiptBinding"
+    },
+    "assignment_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "worker_id",
+        "assignment_id",
+        "leaf_id",
+        "role_plan_id",
+        "role_plan_ref",
+        "role_plan_sha256",
+        "receipt_id"
+      ],
+      "properties": {
+        "worker_id": {"type": "string", "minLength": 1},
+        "assignment_id": {"type": "string", "minLength": 1},
+        "leaf_id": {"type": "string", "minLength": 1},
+        "role_plan_id": {"type": "string", "minLength": 1},
+        "role_plan_ref": {"type": "string", "minLength": 1},
+        "role_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "receipt_id": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}}, "required": ["execution_handoff_version"]},
+      "then": {"required": ["knowledge_context_binding", "knowledge_usage_receipt"]}
+    },
+    {
+      "if": {
+        "properties": {
+          "role": {"enum": ["founder", "planning", "marketing", "design", "development"]},
+          "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}
+        },
+        "required": ["role", "execution_handoff_version"]
+      },
+      "then": {"required": ["role_evidence"]}
+    },
+    {
+      "if": {"properties": {"role": {"const": "marketing"}, "execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.2", "agent-company.execution-handoff/v0.3"]}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/marketing-operating-system/references/marketing-contract.json"},
+          "sha256": {"const": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683"}
+        }}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "design"}, "execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.2", "agent-company.execution-handoff/v0.3"]}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/design-operating-system/references/design-contract.json"},
+          "sha256": {"const": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702"}
+        }}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "development"}, "execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.2", "agent-company.execution-handoff/v0.3"]}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/development-operating-system/references/development-contract.json"},
+          "sha256": {"const": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff"}
+        }}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "qa-release"}, "execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.2", "agent-company.execution-handoff/v0.3", "agent-company.execution-handoff/v0.4"]}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/qa-release-operating-system/references/qa-release-contract.json"},
+          "sha256": {"const": "1d28cb70df55b058244d3995997fbea37a262775539e4bfcacc66a21b7743f23"}
+        }}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "qa-release"}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["qa_verification"],
+        "properties": {"qa_verification": {"$ref": "#/$defs/qaVerificationV03"}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "qa-release"}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.4"}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["qa_verification", "knowledge_context_binding", "knowledge_usage_receipt"],
+        "properties": {"qa_verification": {"$ref": "#/$defs/qaVerificationV02"}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"enum": ["founder", "planning", "marketing", "design", "development"]}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.4"}}, "required": ["role", "execution_handoff_version"]},
+      "then": false
+    },
+    {
+      "if": {"properties": {"role": {"enum": ["founder", "planning", "marketing", "design", "development"]}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}}, "required": ["role", "execution_handoff_version"]},
+      "then": {"not": {"required": ["qa_verification"]}}
+    },
+    {
+      "if": {"properties": {"role": {"const": "founder"}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/founder-operating-system/references/founder-contract.json"},
+          "sha256": {"const": "b0aa74ed14ad41072adf01e700028ba185b052fd29e7c9a613b5ba265f7fffc7"}
+        }}}
+      }
+    },
+    {
+      "if": {"properties": {"role": {"const": "planning"}, "execution_handoff_version": {"const": "agent-company.execution-handoff/v0.3"}}, "required": ["role", "execution_handoff_version"]},
+      "then": {
+        "required": ["operating_contract_binding"],
+        "properties": {"operating_contract_binding": {"properties": {
+          "ref": {"const": "skills/planning-operating-system/references/planning-contract.json"},
+          "sha256": {"const": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451"}
+        }}}
+      }
+    },
+    {
+      "if": {"required": ["operating_contract_binding"]},
+      "then": {"required": ["execution_handoff_version"]}
+    },
+    {
+      "if": {"required": ["knowledge_context_binding"]},
+      "then": {
+        "required": ["execution_handoff_version"],
+        "properties": {"execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.3", "agent-company.execution-handoff/v0.4"]}}
+      }
+    },
+    {
+      "if": {"required": ["knowledge_usage_receipt"]},
+      "then": {
+        "required": ["execution_handoff_version"],
+        "properties": {"execution_handoff_version": {"enum": ["agent-company.execution-handoff/v0.3", "agent-company.execution-handoff/v0.4"]}}
+      }
+    }
+  ],
+  "$defs": {
+    "modelRoutingReceiptBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256", "receipt_id", "decision_id", "worker_id"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "receipt_id": {"$ref": "#/$defs/sha256"},
+        "decision_id": {"$ref": "#/$defs/sha256"},
+        "worker_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "stringList": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "roleEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_type",
+        "task_pack_id",
+        "context_binding",
+        "disposition",
+        "payload",
+        "blocker"
+      ],
+      "properties": {
+        "task_type": {"type": "string", "minLength": 1},
+        "task_pack_id": {"type": "string", "minLength": 1},
+        "context_binding": {
+          "type": "object",
+          "maxProperties": 12
+        },
+        "disposition": {"enum": ["completed", "blocked"]},
+        "payload": {
+          "oneOf": [
+            {"type": "object", "maxProperties": 64},
+            {"type": "null"}
+          ]
+        },
+        "blocker": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "reason", "next_check"],
+              "properties": {
+                "id": {"type": "string", "minLength": 1},
+                "reason": {"type": "string", "minLength": 1},
+                "next_check": {"type": "string", "minLength": 1}
+              }
+            },
+            {"type": "null"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"disposition": {"const": "completed"}},
+            "required": ["disposition"]
+          },
+          "then": {
+            "properties": {
+              "payload": {"type": "object"},
+              "blocker": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"disposition": {"const": "blocked"}},
+            "required": ["disposition"]
+          },
+          "then": {
+            "properties": {
+              "payload": {"type": "null"},
+              "blocker": {"type": "object"}
+            }
+          }
+        }
+      ]
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "knowledgeContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "context_id",
+        "role",
+        "task_type",
+        "objective_sha256",
+        "decision_questions",
+        "registry_sha256",
+        "manifest_sha256",
+        "routing_sha256",
+        "required_reference_ids",
+        "specialist_skills",
+        "selection",
+        "materialized_references",
+        "issued_by",
+        "issued_at",
+        "attestation_scope"
+      ],
+      "properties": {
+        "format": {"const": "agent-company.knowledge-context/v0.2"},
+        "context_id": {"$ref": "#/$defs/sha256"},
+        "role": {"enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]},
+        "task_type": {"type": "string", "minLength": 1},
+        "objective_sha256": {"$ref": "#/$defs/sha256"},
+        "decision_questions": {"$ref": "#/$defs/stringList"},
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "routing_sha256": {"$ref": "#/$defs/sha256"},
+        "required_reference_ids": {"$ref": "#/$defs/stringList"},
+        "specialist_skills": {"$ref": "#/$defs/stringList"},
+        "selection": {"$ref": "#/$defs/expertiseSelection"},
+        "materialized_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "ref", "sha256"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+              "ref": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        "issued_by": {"const": "agent-company-expertise-resolver/v0.2"},
+        "issued_at": {"type": "string", "format": "date-time"},
+        "attestation_scope": {"const": "resolver_materialized_selection"}
+      }
+    },
+    "specialistDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_id",
+        "decision_question",
+        "expected_marginal_value",
+        "matched_triggers",
+        "loading_cost"
+      ],
+      "properties": {
+        "skill_id": {"type": "string", "minLength": 1},
+        "decision_question": {"type": "string", "minLength": 1},
+        "expected_marginal_value": {"type": "string", "minLength": 1},
+        "matched_triggers": {"$ref": "#/$defs/stringList"},
+        "loading_cost": {"enum": ["small", "medium", "large"]}
+      }
+    },
+    "expertiseSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role_os_skill",
+        "task_pack_id",
+        "classification_basis",
+        "matched_triggers",
+        "ambiguous_task_types",
+        "specialists"
+      ],
+      "properties": {
+        "role_os_skill": {"type": "string", "minLength": 1},
+        "task_pack_id": {"type": "string", "minLength": 1},
+        "classification_basis": {
+          "enum": ["explicit_hint", "trigger_match", "trigger_priority", "role_default"]
+        },
+        "matched_triggers": {"$ref": "#/$defs/stringList"},
+        "ambiguous_task_types": {"$ref": "#/$defs/stringList"},
+        "specialists": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/specialistDecision"}
+        }
+      }
+    },
+    "qaCandidate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["identity_ref", "identity_sha256"],
+          "properties": {
+            "identity_ref": {"type": "string", "minLength": 1},
+            "identity_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["unknown_reason"],
+          "properties": {"unknown_reason": {"type": "string", "minLength": 1}}
+        }
+      ]
+    },
+    "qaVerificationV03": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proof_cells", "release_blockers"],
+      "properties": {
+        "proof_cells": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterion_or_risk", "candidate", "fixture", "environment", "initial_state", "ordered_actions", "binary_observable", "matching_surface", "expected_sanitized_artifact", "cleanup", "stop_condition", "status"],
+            "properties": {
+              "criterion_or_risk": {"type": "string", "minLength": 1},
+              "candidate": {"$ref": "#/$defs/qaCandidate"},
+              "fixture": {"$ref": "#/$defs/qaFixture"},
+              "environment": {"$ref": "#/$defs/qaEnvironment"},
+              "initial_state": {"type": "string", "minLength": 1},
+              "ordered_actions": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["sequence", "detail"],
+                  "properties": {
+                    "sequence": {"type": "integer", "minimum": 1},
+                    "detail": {"type": "string", "minLength": 1}
+                  }
+                }
+              },
+              "binary_observable": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["assertion", "observed"],
+                "properties": {
+                  "assertion": {"type": "string", "minLength": 1},
+                  "observed": {"type": "boolean"}
+                }
+              },
+              "matching_surface": {"type": "string", "minLength": 1},
+              "expected_sanitized_artifact": {"$ref": "#/$defs/qaArtifact"},
+              "cleanup": {"type": "string", "minLength": 1},
+              "stop_condition": {"type": "string", "minLength": 1},
+              "status": {"enum": ["planned", "passed", "failed", "blocked", "unverified"]}
+            }
+          }
+        },
+        "release_blockers": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "lane", "owner", "candidate", "next_check", "binary_artifact", "cleanup", "stop_condition", "status"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "lane": {"type": "string", "minLength": 1},
+              "owner": {"type": "string", "minLength": 1},
+              "candidate": {"$ref": "#/$defs/qaCandidate"},
+              "next_check": {"type": "string", "minLength": 1},
+              "binary_artifact": {"$ref": "#/$defs/qaBlockerArtifact"},
+              "cleanup": {"type": "string", "minLength": 1},
+              "stop_condition": {"type": "string", "minLength": 1},
+              "status": {"enum": ["planned", "passed", "failed", "blocked", "unverified"]}
+            }
+          }
+        }
+      }
+    },
+    "qaFixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "qaEnvironment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["config_ref", "sha256"],
+      "properties": {
+        "config_ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "qaArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "qaBlockerArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256", "status"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "status": {"enum": ["required", "captured", "unavailable"]}
+      }
+    },
+    "qaNonPlaceholderSha256": {
+      "type": "string",
+      "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+    },
+    "qaCandidateV02": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "identity_ref", "identity_sha256"],
+          "properties": {
+            "binding": {"const": "exact"},
+            "identity_ref": {"type": "string", "minLength": 1},
+            "identity_sha256": {"$ref": "#/$defs/qaNonPlaceholderSha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "identity_ref", "reason"],
+          "properties": {
+            "binding": {"const": "partial"},
+            "identity_ref": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "reason"],
+          "properties": {
+            "binding": {"const": "unknown"},
+            "reason": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "qaReferenceV02": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "resolution", "ref", "sha256"],
+          "properties": {
+            "id": {"type": "string", "minLength": 1},
+            "resolution": {"const": "exact"},
+            "ref": {"type": "string", "minLength": 1},
+            "sha256": {"$ref": "#/$defs/qaNonPlaceholderSha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "resolution", "ref", "reason"],
+          "properties": {
+            "id": {"type": "string", "minLength": 1},
+            "resolution": {"const": "unresolved"},
+            "ref": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "resolution", "reason"],
+          "properties": {
+            "id": {"type": "string", "minLength": 1},
+            "resolution": {"const": "not_applicable"},
+            "reason": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "qaCriterionV02": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "claim", "required_surface", "required_qualifier", "required_permission_states", "expected_observable"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["acceptance", "risk", "boundary"]},
+        "claim": {"type": "string", "minLength": 1},
+        "required_surface": {"enum": ["automated", "simulator", "real_device", "permission_lifecycle", "storekit", "app_store_connect", "manual"]},
+        "required_qualifier": {"enum": ["automated", "simulator", "physical_device", "storekit_local", "sandbox_account", "remote_account", "manual"]},
+        "required_permission_states": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["not_determined", "denied", "limited", "granted", "revoked", "settings_return", "relaunch"]}
+        },
+        "expected_observable": {"type": "string", "minLength": 1}
+      }
+    },
+    "qaObservationV02": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "criterion_id", "provenance", "candidate", "surface", "qualifier", "coverage", "availability", "result", "permission_states", "fact_ids", "ref_ids"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "criterion_id": {"type": "string", "minLength": 1},
+        "provenance": {"enum": ["direct", "reported"]},
+        "candidate": {"$ref": "#/$defs/qaCandidateV02"},
+        "surface": {"enum": ["automated", "simulator", "real_device", "permission_lifecycle", "storekit", "app_store_connect", "manual"]},
+        "qualifier": {"enum": ["automated", "simulator", "physical_device", "storekit_local", "sandbox_account", "remote_account", "manual"]},
+        "coverage": {"enum": ["full", "partial"]},
+        "availability": {"enum": ["available", "unavailable"]},
+        "result": {"enum": ["passed", "failed", "unobserved"]},
+        "permission_states": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["not_determined", "denied", "limited", "granted", "revoked", "settings_return", "relaunch"]}
+        },
+        "fact_ids": {"$ref": "#/$defs/stringList"},
+        "ref_ids": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "qaEvidenceFactV02": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "provenance", "claim_scope", "statement", "ref_ids"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "provenance": {"enum": ["direct", "reported"]},
+        "claim_scope": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "ref_ids": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "qaVerificationV02": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "candidate", "references", "criteria", "observations", "evidence_facts", "risk_boundary_matrix", "decisions", "blockers", "readiness"],
+      "properties": {
+        "format": {"const": "agent-company.qa-verification/v0.2"},
+        "candidate": {"$ref": "#/$defs/qaCandidateV02"},
+        "references": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/qaReferenceV02"}
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/qaCriterionV02"}
+        },
+        "observations": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {"$ref": "#/$defs/qaObservationV02"}
+        },
+        "evidence_facts": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {"$ref": "#/$defs/qaEvidenceFactV02"}
+        },
+        "risk_boundary_matrix": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterion_id", "risk_id", "boundary_id", "impact", "non_substitute_surface"],
+            "properties": {
+              "criterion_id": {"type": "string", "minLength": 1},
+              "risk_id": {"type": "string", "minLength": 1},
+              "boundary_id": {"type": "string", "minLength": 1},
+              "impact": {"enum": ["low", "medium", "high", "critical"]},
+              "non_substitute_surface": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterion_id", "status", "observation_ids"],
+            "properties": {
+              "criterion_id": {"type": "string", "minLength": 1},
+              "status": {"enum": ["passed", "failed", "blocked", "unverified"]},
+              "observation_ids": {"$ref": "#/$defs/stringList"}
+            }
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "criterion_id", "status", "owner", "next_check", "ref_ids"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "criterion_id": {"type": "string", "minLength": 1},
+              "status": {"enum": ["open", "resolved"]},
+              "owner": {"type": "string", "minLength": 1},
+              "next_check": {"type": "string", "minLength": 1},
+              "ref_ids": {"$ref": "#/$defs/stringList"}
+            }
+          }
+        },
+        "readiness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["decision", "open_blocker_ids"],
+          "properties": {
+            "decision": {"enum": ["recommend", "reject"]},
+            "open_blocker_ids": {"$ref": "#/$defs/stringList"}
+          }
+        }
+      }
+    },
+    "knowledgeUsageReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "receipt_id",
+        "context_id",
+        "role",
+        "task_type",
+        "objective_sha256",
+        "decision_questions",
+        "registry_sha256",
+        "manifest_sha256",
+        "required_reference_ids",
+        "used_references",
+        "unused_reference_ids",
+        "specialist_skills",
+        "reported_by",
+        "reported_at",
+        "attestation_scope"
+      ],
+      "properties": {
+        "format": {"const": "agent-company.knowledge-usage-receipt/v0.2"},
+        "receipt_id": {"$ref": "#/$defs/sha256"},
+        "context_id": {"$ref": "#/$defs/sha256"},
+        "role": {"enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]},
+        "task_type": {"type": "string", "minLength": 1},
+        "objective_sha256": {"$ref": "#/$defs/sha256"},
+        "decision_questions": {"$ref": "#/$defs/stringList"},
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "required_reference_ids": {"$ref": "#/$defs/stringList"},
+        "used_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "ref", "sha256", "decisions_supported"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "version": {"type": "string", "minLength": 1},
+              "ref": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "decisions_supported": {"$ref": "#/$defs/stringList"}
+            }
+          }
+        },
+        "unused_reference_ids": {"$ref": "#/$defs/stringList"},
+        "specialist_skills": {"$ref": "#/$defs/stringList"},
+        "reported_by": {"const": "role-worker"},
+        "reported_at": {"type": "string", "format": "date-time"},
+        "attestation_scope": {"const": "worker_reported_use_independent_verification_required"}
+      }
+    }
+  }
+}

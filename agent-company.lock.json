@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-company.local/schemas/agent-company.lock.v0.1.json",
+  "schema_version": "0.1",
+  "lockfile_kind": "dependency_resolution",
+  "resolved_dependencies": {
+    "king_sejong": {
+      "kind": "codex_skill_distribution",
+      "relationship": "external_dependency",
+      "copy_strategy": "none",
+      "selected_source": "local_develop_checkout",
+      "local_develop_checkout": {
+        "path": "../king-sejong",
+        "git_root": "../king-sejong",
+        "commit": "e361624eb1dcf90914ab2501e947ab728a93ac26",
+        "branch": "main",
+        "worktree_status": "clean",
+        "content_sha256": "2f3f986d7d369efc2b0f645efbe2d50fcdc079631b52fcff76442ae26989c1c0",
+        "reproducible": true,
+        "inspectable": true
+      },
+      "github_ref_fallback": {
+        "url": "https://github.com/JoonSCode/king-sejong.git",
+        "ref": "main",
+        "resolved_commit": "e361624eb1dcf90914ab2501e947ab728a93ac26"
+      }
+    }
+  },
+  "generation_inputs": {
+    "dependency_manifest": "agent-company.deps.json",
+    "resolution_policy": "prefer local develop checkout, fall back to GitHub ref with resolved commit",
+    "determinism": "The commit and content hash identify the resolved clean local dependency state."
+  }
+}

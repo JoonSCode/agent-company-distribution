@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1",
+  "id": "planning",
+  "job_type": "planning",
+  "objective": "Produce an evidence-backed decision and Uigwe-ready plan without prematurely executing it.",
+  "stages": [
+    {"id": "decision-frame", "owner_roles": ["planning"], "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["decision question", "known", "inferred", "unknown"]},
+    {"id": "bounded-specialist-input", "owner_roles": ["planning"], "depends_on": ["decision-frame"], "execution_hint": "conditional", "exit_evidence": ["requested evidence", "specialist worker refs"]},
+    {"id": "uigwe-handoff", "owner_roles": ["planning"], "depends_on": ["decision-frame"], "execution_hint": "sequential", "exit_evidence": ["success criteria", "non-goals", "verification plan"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "uigwe", "ceo_report_required": true}
+}

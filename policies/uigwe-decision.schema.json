@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/uigwe-decision.v0.1.json",
+  "title": "Agent Company Uigwe Decision",
+  "description": "A decision-specific user or CEO resolution artifact that resumes one paused Agent Company job without gaining Uigwe authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "decision_id",
+    "job_id",
+    "decision_authority",
+    "uigwe_packet",
+    "resolutions"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.uigwe-decision/v0.1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "decision_authority": {"enum": ["user", "ceo"]},
+    "uigwe_packet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "ref"],
+      "properties": {
+        "job_id": {"type": "string", "minLength": 1},
+        "ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "resolutions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "resolution"],
+        "properties": {
+          "question": {"type": "string", "minLength": 1},
+          "resolution": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/automation-proposal.v0.1.json",
+  "title": "Agent Company Automation Proposal Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {"const": "agent-company.automation-proposal/v0.1"},
+    "proposal_id": {"$ref": "#/$defs/NonEmptyString"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "lesson_candidate": {"$ref": "#/$defs/CandidateBinding"},
+    "pattern_key": {"$ref": "#/$defs/NonEmptyString"},
+    "evidence": {"$ref": "#/$defs/Evidence"},
+    "company_context": {"$ref": "#/$defs/CompanyContext"},
+    "expected_benefit": {"$ref": "#/$defs/SanitizedString"},
+    "risk": {"$ref": "#/$defs/SanitizedString"},
+    "scope": {"$ref": "#/$defs/Scope"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "requested_approval": {"const": "ceo_explicit"},
+    "status": {"const": "proposed"},
+    "activation_authority": {"const": "none"}
+  },
+  "required": [
+    "format",
+    "proposal_id",
+    "generated_at",
+    "lesson_candidate",
+    "pattern_key",
+    "evidence",
+    "company_context",
+    "expected_benefit",
+    "risk",
+    "scope",
+    "expires_at",
+    "requested_approval",
+    "status",
+    "activation_authority"
+  ],
+  "$defs": {
+    "NonEmptyString": {"type": "string", "minLength": 1},
+    "SanitizedString": {
+      "type": "string",
+      "minLength": 1,
+      "allOf": [
+        {"not": {"pattern": "(?:/Users/|/home/|[A-Za-z]:\\\\\\\\Users\\\\\\\\)"}},
+        {"not": {"pattern": "(?:sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9]{12,}|[Aa][Pp][Ii][_-]?[Kk][Ee][Yy][ ]*[:=])"}}
+      ]
+    },
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "CandidateBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "not": {"pattern": "^(?:/|~|[A-Za-z]:\\\\\\\\)"}
+        },
+        "sha256": {"$ref": "#/$defs/Sha256"},
+        "format": {"const": "sejong.lesson-candidate/v0.1-draft"}
+      },
+      "required": ["ref", "sha256", "format"]
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "independent_run_count": {"type": "integer", "minimum": 3},
+        "occurrence_count": {"type": "integer", "minimum": 3},
+        "source_evidence_policy": {"const": "structured_sanitized_refs_only"}
+      },
+      "required": [
+        "independent_run_count",
+        "occurrence_count",
+        "source_evidence_policy"
+      ]
+    },
+    "CompanyContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "company_id": {"$ref": "#/$defs/NonEmptyString"},
+        "initiative_id": {"$ref": "#/$defs/NonEmptyString"},
+        "target": {"$ref": "#/$defs/NonEmptyString"}
+      },
+      "required": ["company_id", "initiative_id", "target"]
+    },
+    "Scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "owner": {"const": "agent-company"},
+        "applies_to": {"$ref": "#/$defs/NonEmptyString"},
+        "managed_by": {"const": "agent-company"}
+      },
+      "required": ["owner", "applies_to", "managed_by"]
+    }
+  }
+}

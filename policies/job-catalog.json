@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1",
+  "authority_owner": "agent-company-policy",
+  "runtime_owner": "king-sejong-core",
+  "supported_job_types": [
+    "new-app",
+    "improvement",
+    "planning",
+    "promotion",
+    "release",
+    "incident",
+    "portfolio"
+  ],
+  "jobs": [
+    {
+      "id": "new-app",
+      "purpose": "Take an app opportunity from clarified product intent through implementation and release-ready evidence.",
+      "minimum_squad_recipe_id": "squad-new-app",
+      "workflow_ref": "workflows/new-app.json",
+      "default_budget": {"max_total_workers": 7, "max_concurrency": 3, "max_spawn_depth": 2, "max_rounds": 4},
+      "material_ambiguity_examples": ["target user or core problem", "product scope or platform", "monetization or release boundary"]
+    },
+    {
+      "id": "improvement",
+      "purpose": "Diagnose and improve an existing app outcome with proportional design, development, and QA work.",
+      "minimum_squad_recipe_id": "squad-improvement",
+      "workflow_ref": "workflows/improvement.json",
+      "default_budget": {"max_total_workers": 6, "max_concurrency": 2, "max_spawn_depth": 2, "max_rounds": 4},
+      "material_ambiguity_examples": ["desired user outcome", "acceptable behavior change", "migration or compatibility boundary"]
+    },
+    {
+      "id": "planning",
+      "purpose": "Turn a product or business question into an evidence-backed, Uigwe-ready plan.",
+      "minimum_squad_recipe_id": "squad-planning",
+      "workflow_ref": "workflows/planning.json",
+      "default_budget": {"max_total_workers": 3, "max_concurrency": 2, "max_spawn_depth": 2, "max_rounds": 3},
+      "material_ambiguity_examples": ["decision objective", "success criterion", "non-goal"]
+    },
+    {
+      "id": "promotion",
+      "purpose": "Plan, create, and evaluate a bounded marketing or growth experiment.",
+      "minimum_squad_recipe_id": "squad-promotion",
+      "workflow_ref": "workflows/promotion.json",
+      "default_budget": {"max_total_workers": 8, "max_concurrency": 3, "max_spawn_depth": 2, "max_rounds": 4},
+      "material_ambiguity_examples": ["audience or pain", "claim or proof", "channel or spend authority"]
+    },
+    {
+      "id": "release",
+      "purpose": "Assemble, verify, and report a release candidate without performing unapproved external publication.",
+      "minimum_squad_recipe_id": "squad-release",
+      "workflow_ref": "workflows/release.json",
+      "default_budget": {"max_total_workers": 4, "max_concurrency": 2, "max_spawn_depth": 1, "max_rounds": 3},
+      "material_ambiguity_examples": ["release target", "known-risk acceptance", "external submission authority"]
+    },
+    {
+      "id": "incident",
+      "purpose": "Bound, diagnose, repair, and verify an app or operating incident.",
+      "minimum_squad_recipe_id": "squad-incident",
+      "workflow_ref": "workflows/incident.json",
+      "default_budget": {"max_total_workers": 6, "max_concurrency": 2, "max_spawn_depth": 1, "max_rounds": 4},
+      "material_ambiguity_examples": ["blast radius", "data-loss tolerance", "rollback or live mutation authority"]
+    },
+    {
+      "id": "portfolio",
+      "purpose": "Compare app-studio bets and choose the next bounded experiment without hiding opportunity cost.",
+      "minimum_squad_recipe_id": "squad-portfolio",
+      "workflow_ref": "workflows/portfolio.json",
+      "default_budget": {"max_total_workers": 5, "max_concurrency": 3, "max_spawn_depth": 2, "max_rounds": 3},
+      "material_ambiguity_examples": ["portfolio objective", "capital or time constraint", "stop or promotion threshold"]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1",
+  "id": "release",
+  "job_type": "release",
+  "objective": "Freeze, verify, and report a release candidate while separating readiness from approved external submission.",
+  "stages": [
+    {"id": "candidate-freeze", "owner_roles": ["development"], "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["candidate ref", "included changes", "known risks"]},
+    {"id": "release-verification", "owner_roles": ["qa-release"], "depends_on": ["candidate-freeze"], "execution_hint": "parallel-candidate", "exit_evidence": ["automated checks", "manual QA", "readiness verdict"]},
+    {"id": "release-communication", "owner_roles": ["marketing"], "depends_on": ["candidate-freeze"], "execution_hint": "parallel-candidate-when-activated", "exit_evidence": ["draft release notes", "claim evidence"]},
+    {"id": "external-submission", "owner_roles": ["qa-release"], "depends_on": ["release-verification"], "execution_hint": "approval-gated", "exit_evidence": ["Core action receipt or explicit not-submitted state"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}
+}

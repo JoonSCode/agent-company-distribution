@@ -1,0 +1,186 @@
+{
+  "format": "agent-company.copywriting-evaluation-rubric/v0.1",
+  "scoring": {
+    "scale": {
+      "0.0": "fails or contradicts the requirement",
+      "0.5": "partially satisfies it with material risk or missing evidence",
+      "1.0": "satisfies it with reviewable evidence"
+    },
+    "aggregate_threshold": 0.9,
+    "minimum_dimension_score": 0.75,
+    "hard_gate_score": 1.0,
+    "not_applicable_rule": "A dimension may be omitted only with a reason tied to the brief; renormalize remaining weights."
+  },
+  "dimensions": [
+    {
+      "id": "truth_and_evidence",
+      "weight": 0.14,
+      "hard_gate": true,
+      "question": "Does every material capability, outcome, comparison, price, privacy, and proof claim match current evidence?",
+      "passing_evidence": [
+        "claim-evidence map",
+        "matching product behavior",
+        "current approved terms"
+      ],
+      "failure_signals": [
+        "invented capability or outcome",
+        "certainty stronger than evidence",
+        "roadmap or synthetic result presented as observed fact"
+      ]
+    },
+    {
+      "id": "user_need_and_moment",
+      "weight": 0.1,
+      "hard_gate": false,
+      "question": "Does the copy address what the person needs to understand or do in this exact moment?",
+      "passing_evidence": [
+        "named user job",
+        "trigger and system state",
+        "one primary objective"
+      ],
+      "failure_signals": [
+        "organization-first message",
+        "generic copy reusable on unrelated surfaces",
+        "content unrelated to the current task"
+      ]
+    },
+    {
+      "id": "action_and_consequence",
+      "weight": 0.12,
+      "hard_gate": true,
+      "question": "Are the primary action, commitment level, consequence, and next state explicit and accurate?",
+      "passing_evidence": [
+        "specific action label",
+        "material consequence before commitment",
+        "next-state description"
+      ],
+      "failure_signals": [
+        "vague positive label",
+        "hidden payment, privacy, destructive, or irreversible consequence",
+        "CTA does not match the destination"
+      ]
+    },
+    {
+      "id": "clarity_and_hierarchy",
+      "weight": 0.1,
+      "hard_gate": false,
+      "question": "Can a scanning reader understand the essential meaning and priority?",
+      "passing_evidence": [
+        "essential meaning first",
+        "one job per component",
+        "familiar and specific language"
+      ],
+      "failure_signals": [
+        "cleverness delays meaning",
+        "redundant title and body",
+        "dense text caused by unresolved hierarchy"
+      ]
+    },
+    {
+      "id": "recovery_and_effort",
+      "weight": 0.08,
+      "hard_gate": false,
+      "question": "When the state blocks progress, does the copy protect effort and support recovery?",
+      "passing_evidence": [
+        "specific recovery",
+        "saved-progress statement when known",
+        "non-blaming language"
+      ],
+      "failure_signals": [
+        "generic error",
+        "lost input is hidden",
+        "user is blamed",
+        "copy replaces a needed undo or validation behavior"
+      ]
+    },
+    {
+      "id": "voice_tone_and_emotion",
+      "weight": 0.08,
+      "hard_gate": false,
+      "question": "Does the artifact preserve brand voice while adapting tone to user state and stakes?",
+      "passing_evidence": [
+        "voice behavior",
+        "tone rationale",
+        "high-stakes adjustment"
+      ],
+      "failure_signals": [
+        "forced humor",
+        "celebratory failure copy",
+        "patronizing or overly familiar tone",
+        "brand adjective without behavioral evidence"
+      ]
+    },
+    {
+      "id": "agency_and_trust",
+      "weight": 0.12,
+      "hard_gate": true,
+      "question": "Does the copy preserve informed choice and avoid manipulation?",
+      "passing_evidence": [
+        "visible meaningful alternatives",
+        "real urgency and proof only",
+        "easy decline, defer, cancel, or recovery where supported"
+      ],
+      "failure_signals": [
+        "confirmshaming",
+        "fabricated scarcity or proof",
+        "coercive consent",
+        "obstruction or cancellation friction"
+      ]
+    },
+    {
+      "id": "accessibility_and_localization",
+      "weight": 0.1,
+      "hard_gate": true,
+      "question": "Does meaning survive assistive technology, large text, localization, variable substitution, and cultural context?",
+      "passing_evidence": [
+        "accessible name and visible-label alignment",
+        "nonvisual instructions",
+        "target-locale naturalness",
+        "long-content check"
+      ],
+      "failure_signals": [
+        "meaning depends on color or position",
+        "fragment concatenation",
+        "literal translated phrasing",
+        "truncation changes meaning"
+      ]
+    },
+    {
+      "id": "surface_and_platform_fit",
+      "weight": 0.08,
+      "hard_gate": false,
+      "question": "Does the copy fit the current component, channel, platform, build, and policy?",
+      "passing_evidence": [
+        "matching-surface review",
+        "current platform source",
+        "length and implementation constraints"
+      ],
+      "failure_signals": [
+        "metadata contradicts the build",
+        "copy assumes a different control or flow",
+        "stale platform limit or policy"
+      ]
+    },
+    {
+      "id": "decision_and_measurement_quality",
+      "weight": 0.08,
+      "hard_gate": false,
+      "question": "For variants or conversion work, can the artifact teach a bounded decision without sacrificing downstream quality?",
+      "passing_evidence": [
+        "named hypothesis",
+        "fixed comparison",
+        "success, failure, inconclusive, quality, and trust rules"
+      ],
+      "failure_signals": [
+        "variants differ without a hypothesis",
+        "multiple variables change",
+        "clicks or conversion treated as sufficient causal proof"
+      ]
+    }
+  ],
+  "verdicts": {
+    "pass": "Every hard gate is 1.0, no dimension is below 0.75, and the weighted aggregate is at least 0.90.",
+    "revise": "No hard gate fails, but one or more soft dimensions or the aggregate misses threshold.",
+    "block": "Any hard gate fails or the brief is not ready for deployable copy."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/model-routing-policy.v0.1.json",
+  "title": "Agent Company deterministic model routing policy",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "required_inputs", "precedence"],
+  "properties": {
+    "format": {"const": "agent-company.model-routing-policy/v0.1"},
+    "required_inputs": {"type": "array", "minItems": 14, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "precedence": {"type": "array", "minItems": 7, "maxItems": 7, "items": {"$ref": "#/$defs/rule"}}
+  },
+  "$defs": {"rule": {"type": "object", "additionalProperties": false, "required": ["priority", "predicate_id", "disposition", "profile", "trigger_summary"], "properties": {"priority": {"type": "integer", "minimum": 1, "maximum": 7}, "predicate_id": {"enum": ["company_authority_required", "role_lead_judgment_required", "specialist_risk_or_unknown_cause", "integration_scope_or_approved_retry", "bounded_deep_suitable", "standard_implementation_suitable", "default_mechanical"]}, "disposition": {"enum": ["return_to_company_root", "return_to_role_lead", "select_profile"]}, "profile": {"enum": ["company-judgment", "role-lead-judgment", "specialist-reasoning", "integration", "bounded-deep", "standard-implementation", "mechanical"]}, "trigger_summary": {"type": "string", "minLength": 1}}}}
+}

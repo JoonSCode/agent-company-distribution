@@ -1,0 +1,4 @@
+interface:
+  display_name: "Problem Discovery"
+  short_description: "Find candidate problems without deciding commercial fit."
+  default_prompt: "Use problem-discovery to surface candidate problems from notes, reviews, communities, interviews, or observed workflows, then return evidence and uncertainty."

@@ -1,0 +1,76 @@
+{
+  "format": "agent-company.design-quality-evaluation/v0.1",
+  "purpose": "Compare the previous Design profile and candidate operating system under identical conditions before activation.",
+  "briefs": [
+    {
+      "id": "minimum-settings-label",
+      "tier": "minimum",
+      "prompt": "Improve an ambiguous destructive settings label without changing navigation, data behavior, or the component family.",
+      "required_states": ["default", "confirmation", "cancelled", "completed"]
+    },
+    {
+      "id": "minimum-card-readability",
+      "tier": "minimum",
+      "prompt": "Improve the readability and hierarchy of an existing summary card while preserving its content, interaction, and system component semantics.",
+      "required_states": ["default", "extra-large Dynamic Type", "dark appearance", "long localized text"]
+    },
+    {
+      "id": "standard-library-search",
+      "tier": "standard",
+      "prompt": "Design search for a personal content library with recent searches, suggestions, filters, zero results, retry, and keyboard behavior.",
+      "required_states": ["empty query", "suggestions", "results", "zero results", "offline", "error"]
+    },
+    {
+      "id": "standard-import-flow",
+      "tier": "standard",
+      "prompt": "Design a multi-item import flow that communicates progress, partial success, duplicates, cancellation, and retry without losing completed work.",
+      "required_states": ["selection", "importing", "partial success", "duplicate", "cancelled", "retry"]
+    },
+    {
+      "id": "deep-private-onboarding",
+      "tier": "deep",
+      "prompt": "Design onboarding for a local-first app that requests photo access only when needed and preserves a useful path after denial or limited access.",
+      "required_states": ["first run", "pre-permission", "limited", "denied", "granted", "settings recovery"]
+    },
+    {
+      "id": "deep-ai-action-review",
+      "tier": "deep",
+      "prompt": "Design an AI-assisted bulk action that explains uncertainty, lets people review and edit proposals, prevents accidental destructive execution, and supports undo and recovery.",
+      "required_states": ["proposal", "uncertainty", "review", "edited", "confirmation", "partial failure", "undo", "recovery"]
+    }
+  ],
+  "shared_conditions": [
+    "Use the same input brief, product facts, target platform, time limit and tool-call budget for baseline and candidate.",
+    "Do not expose candidate identity, implementation order, skill name or expected winner to the reviewer.",
+    "Store raw outputs and their SHA-256 hashes before scoring.",
+    "Score observable artifacts and decisions, not prose polish or prompt similarity."
+  ],
+  "rubric": [
+    {"id": "task_fit", "weight": 0.18, "hard_no_regression": false},
+    {"id": "hierarchy", "weight": 0.13, "hard_no_regression": false},
+    {"id": "critical_states", "weight": 0.15, "hard_no_regression": true},
+    {"id": "accessibility", "weight": 0.15, "hard_no_regression": true},
+    {"id": "platform_fit", "weight": 0.13, "hard_no_regression": true},
+    {"id": "implementability", "weight": 0.10, "hard_no_regression": false},
+    {"id": "distinctiveness", "weight": 0.08, "hard_no_regression": false},
+    {"id": "process_proportionality", "weight": 0.05, "hard_no_regression": false},
+    {"id": "authority_boundary", "weight": 0.03, "hard_no_regression": true}
+  ],
+  "score_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "anchors": {
+      "1": "missing or harmful",
+      "3": "adequate with material gaps",
+      "5": "complete, coherent and directly evidenced"
+    }
+  },
+  "activation_thresholds": {
+    "hard_dimensions": "candidate score must be greater than or equal to baseline for every brief",
+    "minimum_brief_wins": 4,
+    "minimum_weighted_aggregate_gain": 0.2,
+    "tie_or_inconclusive": "fail activation and request another independent review"
+  },
+  "activation_rule": "Pass only when every hard dimension is no-regression, at least four of six briefs improve, weighted aggregate gain is at least 0.2 on the five-point scale, and no review is inconclusive.",
+  "evidence_boundary": "Synthetic paired evaluation measures contract behavior only and is not proof of real-user task success, satisfaction, retention, trust, or accessibility conformance."
+}

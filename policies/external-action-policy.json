@@ -1,0 +1,49 @@
+{
+  "schema_version": "0.1",
+  "default_decision": "deny",
+  "policy_owner": "agent-company",
+  "mechanism_owner": "king-sejong-core",
+  "boundary": "Agent Company classifies app-studio actions. King Sejong Core validates approval references, idempotency, execution receipts, and evidence.",
+  "classes": [
+    {
+      "id": "local-reversible",
+      "effect": "local-reversible",
+      "approval": "not-required-within-job-scope",
+      "examples": ["read repository files", "edit scoped local files", "run local tests", "render a local draft"]
+    },
+    {
+      "id": "external-read-only",
+      "effect": "external-read-only",
+      "approval": "existing-user-authorization-required",
+      "examples": ["read connected analytics", "inspect App Store state", "research public sources"]
+    },
+    {
+      "id": "external-draft-only",
+      "effect": "external-draft-only",
+      "approval": "not-required-for-unsent-draft",
+      "examples": ["draft an email", "draft social copy", "prepare store metadata without submission"]
+    },
+    {
+      "id": "external-mutating-reversible",
+      "effect": "external-mutation",
+      "approval": "explicit-ceo-approval",
+      "examples": ["create a remote issue", "upload a TestFlight build", "change remote metadata", "send an email"]
+    },
+    {
+      "id": "public-or-irreversible",
+      "effect": "public-or-irreversible",
+      "approval": "explicit-ceo-approval",
+      "examples": ["publish a social post", "submit an App Store release", "deploy to production", "delete remote data"]
+    },
+    {
+      "id": "financial-or-secret",
+      "effect": "financial-or-secret",
+      "approval": "explicit-ceo-approval",
+      "examples": ["spend campaign budget", "purchase a service", "rotate a production secret", "change banking or tax data"]
+    }
+  ],
+  "unknown_action": {
+    "decision": "deny",
+    "next_step": "Classify the action explicitly or ask the CEO before execution."
+  }
+}

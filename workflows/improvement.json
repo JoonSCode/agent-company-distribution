@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1",
+  "id": "improvement",
+  "job_type": "improvement",
+  "objective": "Improve one observed product outcome with the minimum design and engineering change that passes matching-surface QA.",
+  "stages": [
+    {"id": "problem-frame", "owner_roles": ["planning", "development"], "assignment_mode": "first-selected", "depends_on": [], "execution_hint": "sequential", "exit_evidence": ["current behavior", "desired outcome", "acceptance criteria", "company-plan topology when Planning is active"]},
+    {"id": "experience-diagnosis", "owner_roles": ["design"], "depends_on": ["problem-frame"], "execution_hint": "parallel-candidate-when-activated", "exit_evidence": ["experience cause", "interaction recommendation"]},
+    {"id": "implementation-diagnosis", "owner_roles": ["development"], "depends_on": ["problem-frame"], "execution_hint": "parallel-candidate", "exit_evidence": ["code cause", "smallest safe change"]},
+    {"id": "implementation", "owner_roles": ["development"], "depends_on": ["implementation-diagnosis"], "execution_hint": "sequential", "exit_evidence": ["changed behavior", "regression tests"]},
+    {"id": "design-review", "owner_roles": ["design"], "depends_on": ["implementation"], "execution_hint": "parallel-candidate-when-activated", "exit_evidence": ["match", "deviation", "unknown", "severity"]},
+    {"id": "manual-qa", "owner_roles": ["qa-release"], "depends_on": ["implementation"], "execution_hint": "sequential", "exit_evidence": ["observed acceptance result", "residual risk"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}
+}

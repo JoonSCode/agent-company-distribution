@@ -1,0 +1,4 @@
+interface:
+  display_name: "Copywriting Operating System"
+  short_description: "Knowledge-backed UX and conversion copy"
+  default_prompt: "Use $copywriting-operating-system to create or critique truthful, surface-aware copy from a settled brief."

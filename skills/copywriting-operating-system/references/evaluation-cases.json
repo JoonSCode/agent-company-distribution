@@ -1,0 +1,190 @@
+{
+  "format": "agent-company.copywriting-evaluation-cases/v0.1",
+  "purpose": "Frozen cases for comparing copywriting skill revisions on the same evidence and constraints.",
+  "cases": [
+    {
+      "id": "ux-photo-permission",
+      "mode": "ux-writing",
+      "owner_role": "design",
+      "scenario": "An iOS app needs photo-library access only when the user starts importing a travel souvenir.",
+      "known": [
+        "Import requires the user-selected photos.",
+        "The app works in a reduced mode without import.",
+        "The product has not proven that all processing stays on device."
+      ],
+      "required_behaviors": [
+        "Explain the immediate import benefit.",
+        "Offer a non-coercive later or reduced-mode path.",
+        "Avoid an unsupported local-only privacy claim."
+      ],
+      "forbidden_outputs": [
+        "The app needs full access to work.",
+        "Your photos never leave this device.",
+        "Allow access or miss out."
+      ]
+    },
+    {
+      "id": "ux-permanent-delete",
+      "mode": "ux-writing",
+      "owner_role": "design",
+      "scenario": "A person permanently deletes a collection item after it has already been moved to Recently Deleted.",
+      "known": [
+        "The action cannot be undone.",
+        "Only one selected item is deleted.",
+        "The item name is available."
+      ],
+      "required_behaviors": [
+        "Name the item and irreversible consequence.",
+        "Use a specific destructive action label.",
+        "Keep the safe escape unambiguous."
+      ],
+      "forbidden_outputs": [
+        "Are you sure?",
+        "Continue",
+        "Clean up item"
+      ]
+    },
+    {
+      "id": "ux-network-error-preserves-draft",
+      "mode": "ux-writing",
+      "owner_role": "design",
+      "scenario": "A publish request fails because the network is unavailable, but the draft is saved locally.",
+      "known": [
+        "Publication failed.",
+        "The local draft is saved.",
+        "Retry is supported."
+      ],
+      "required_behaviors": [
+        "Distinguish failed publication from saved draft state.",
+        "Offer retry.",
+        "Avoid blaming the user or claiming a server cause."
+      ],
+      "forbidden_outputs": [
+        "Invalid request.",
+        "Something went wrong.",
+        "Our servers are down."
+      ]
+    },
+    {
+      "id": "ux-empty-versus-no-results",
+      "mode": "copy-review",
+      "owner_role": "design",
+      "scenario": "The same generic empty-state copy is used for first use and a search with no matches.",
+      "known": [
+        "The product can distinguish both states.",
+        "First use supports creating an item.",
+        "No results supports clearing filters."
+      ],
+      "required_behaviors": [
+        "Create state-specific meaning and next actions.",
+        "Preserve the search query.",
+        "Reject the generic shared line."
+      ],
+      "forbidden_outputs": [
+        "Nothing here yet"
+      ]
+    },
+    {
+      "id": "conversion-subscription-trial",
+      "mode": "conversion-copy",
+      "owner_role": "marketing",
+      "scenario": "A paywall offers a seven-day trial that renews monthly.",
+      "known": [
+        "The exact price and eligibility are supplied in the brief.",
+        "Restore purchases is supported.",
+        "No retention or productivity outcome is proven."
+      ],
+      "required_behaviors": [
+        "State trial, renewal, price, and commitment accurately.",
+        "Use supported capability value.",
+        "Keep restore and cancellation context discoverable."
+      ],
+      "forbidden_outputs": [
+        "Guaranteed to save hours every week.",
+        "Free forever.",
+        "Last chance."
+      ]
+    },
+    {
+      "id": "conversion-app-store-current-build",
+      "mode": "copy-review",
+      "owner_role": "marketing",
+      "scenario": "An App Store subtitle claims automatic location recovery, but the current build only suggests candidates for user review.",
+      "known": [
+        "The user must review candidates.",
+        "Exact automatic recovery is not proven.",
+        "The store assets target the current build."
+      ],
+      "required_behaviors": [
+        "Reject the automatic-recovery claim.",
+        "Describe suggestions and review-before-save.",
+        "Require current screenshots and metadata consistency."
+      ],
+      "forbidden_outputs": [
+        "Automatically restore every missing location.",
+        "One-tap perfect recovery."
+      ]
+    },
+    {
+      "id": "brand-incident-tone",
+      "mode": "brand-voice",
+      "owner_role": "marketing",
+      "scenario": "A playful brand needs to communicate an unresolved sync incident.",
+      "known": [
+        "Impact is still being measured.",
+        "A workaround is verified.",
+        "The next update time is known."
+      ],
+      "required_behaviors": [
+        "Reduce playfulness for the high-stakes moment.",
+        "Separate known impact from unknowns.",
+        "Provide the workaround and update expectation."
+      ],
+      "forbidden_outputs": [
+        "Oopsie, our servers are having a little nap!",
+        "Everything is fixed."
+      ]
+    },
+    {
+      "id": "localization-natural-korean-onboarding",
+      "mode": "copy-review",
+      "owner_role": "design",
+      "scenario": "English onboarding strings were translated literally into Korean.",
+      "known": [
+        "The product uses polite conversational Korean.",
+        "The next action imports the user's first item.",
+        "The English source says Get started and Unlock your memories."
+      ],
+      "required_behaviors": [
+        "Rewrite for the actual action in natural Korean.",
+        "Preserve the established speech level.",
+        "Check line wrapping and mixed Korean-English terminology."
+      ],
+      "forbidden_outputs": [
+        "시작하기를 가져오세요",
+        "당신의 추억을 잠금 해제하세요"
+      ]
+    },
+    {
+      "id": "ai-feature-agency-and-limits",
+      "mode": "copy-review",
+      "owner_role": "design",
+      "scenario": "An AI-assisted suggestion can be wrong and requires review before applying changes.",
+      "known": [
+        "The suggestion is probabilistic.",
+        "No change is applied before confirmation.",
+        "Undo is available after confirmation."
+      ],
+      "required_behaviors": [
+        "Describe the suggestion without implying certainty.",
+        "Make review and confirmation explicit.",
+        "Mention undo where it helps the decision."
+      ],
+      "forbidden_outputs": [
+        "AI fixed everything for you.",
+        "100% accurate.",
+        "Changes already applied."
+      ]
+    }
+  ]
+}

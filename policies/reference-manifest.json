@@ -1,0 +1,937 @@
+{
+  "format": "agent-company.reference-manifest/v0.1",
+  "schema_version": "0.1",
+  "supported_layers": [
+    "role_kernel",
+    "task_pack",
+    "current_source_set",
+    "job_evidence",
+    "evaluation_set"
+  ],
+  "references": [
+    {
+      "id": "role-kernel:founder",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "founder",
+      "ref": "skills/founder-operating-system/references/founder-contract.json",
+      "source_url": null,
+      "sha256": "b0aa74ed14ad41072adf01e700028ba185b052fd29e7c9a613b5ba265f7fffc7",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "Which opportunity deserves the next scarce unit of company attention?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "decision_support",
+        "portfolio_recommendation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "role authority change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:founder:portfolio-decision",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "founder",
+      "ref": "skills/founder-operating-system/references/task-packs/portfolio-decision.md",
+      "source_url": null,
+      "sha256": "20488dfa0c3bc61596b4644fa5316450ec21c3e9d90d4f70dca1672aab23e08c",
+      "applies_to_tasks": [
+        "portfolio-decision"
+      ],
+      "decision_questions": [
+        "What evidence-backed portfolio decision decision should the founder role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "portfolio_recommendation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:founder"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:founder:opportunity-validation",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "founder",
+      "ref": "skills/founder-operating-system/references/task-packs/opportunity-validation.md",
+      "source_url": null,
+      "sha256": "987b8e390f446939b37383a071f1817eb84fb77d0365b8fdb8320ef6afca7ce7",
+      "applies_to_tasks": [
+        "opportunity-validation"
+      ],
+      "decision_questions": [
+        "What evidence-backed opportunity validation decision should the founder role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "portfolio_recommendation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:founder"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:founder:continue-change-stop",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "founder",
+      "ref": "skills/founder-operating-system/references/task-packs/continue-change-stop.md",
+      "source_url": null,
+      "sha256": "8f8957c73eb6e070a950e2a6ed86246a3dc0d8349d98384d62e8bdb3eed522f3",
+      "applies_to_tasks": [
+        "continue-change-stop"
+      ],
+      "decision_questions": [
+        "What evidence-backed continue change stop decision should the founder role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "portfolio_recommendation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:founder"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "role-kernel:planning",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "planning",
+      "ref": "skills/planning-operating-system/references/planning-contract.json",
+      "source_url": null,
+      "sha256": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "How should the approved objective become bounded, dependency-safe, verifiable work?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "decision_support",
+        "plan_decomposition",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "Uigwe contract change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:planning:execution-plan",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "planning",
+      "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
+      "source_url": null,
+      "sha256": "734e9f26afebb468892b98046b0f8d6f2fbef9568ed9a34b285648ac9f40639a",
+      "applies_to_tasks": [
+        "execution-planning"
+      ],
+      "decision_questions": [
+        "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "plan_decomposition",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:planning"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:planning:dependency-risk",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "planning",
+      "ref": "skills/planning-operating-system/references/task-packs/dependency-risk.md",
+      "source_url": null,
+      "sha256": "5e35e0b7263e12b12cd35b8cdcce80d5a3e61147b6835ce2a999baefb5f051fb",
+      "applies_to_tasks": [
+        "dependency-risk"
+      ],
+      "decision_questions": [
+        "What evidence-backed dependency risk decision should the planning role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "plan_decomposition",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:planning"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:planning:acceptance-verification",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "planning",
+      "ref": "skills/planning-operating-system/references/task-packs/acceptance-verification.md",
+      "source_url": null,
+      "sha256": "ef31afb45e17294f239fa0e6d477d0083f00e660d7f2913e6fdc128635d27647",
+      "applies_to_tasks": [
+        "acceptance-verification"
+      ],
+      "decision_questions": [
+        "What evidence-backed acceptance verification decision should the planning role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "plan_decomposition",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:planning"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "role-kernel:marketing",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "marketing",
+      "ref": "skills/marketing-operating-system/references/marketing-contract.json",
+      "source_url": null,
+      "sha256": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "Which evidence-backed marketing decision should be made next?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "decision_support",
+        "experiment_design",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "role authority change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:marketing:demand-positioning",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "marketing",
+      "ref": "skills/marketing-operating-system/references/task-packs/demand-positioning.md",
+      "source_url": null,
+      "sha256": "c4b4747213a124b82cf4edd803ad346d4410fc6e847b89bf77b51de70441c2ac",
+      "applies_to_tasks": [
+        "demand-positioning"
+      ],
+      "decision_questions": [
+        "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "experiment_design",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:marketing"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:marketing:experiment-growth",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "marketing",
+      "ref": "skills/marketing-operating-system/references/task-packs/experiment-growth.md",
+      "source_url": null,
+      "sha256": "0430fdd77fb3e0a789193a89074fc8d21ef36f4a8e56f823e827595f5c437357",
+      "applies_to_tasks": [
+        "experiment-growth"
+      ],
+      "decision_questions": [
+        "What evidence-backed experiment growth decision should the marketing role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "experiment_design",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:marketing"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:marketing:mobile-monetization",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "marketing",
+      "ref": "skills/marketing-operating-system/references/task-packs/mobile-monetization.md",
+      "source_url": null,
+      "sha256": "11ccabf7ea43e6c09b05f820ba942ef987e352bf8f079ca91ec836b72261a9c7",
+      "applies_to_tasks": [
+        "mobile-monetization"
+      ],
+      "decision_questions": [
+        "What evidence-backed mobile monetization decision should the marketing role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "experiment_design",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:marketing"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "role-kernel:design",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "design",
+      "ref": "skills/design-operating-system/references/design-contract.json",
+      "source_url": null,
+      "sha256": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "Which proportional experience direction best serves the named user task?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "decision_support",
+        "design_evidence",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "platform contract change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:design:flow-interaction",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "design",
+      "ref": "skills/design-operating-system/references/task-packs/flow-interaction.md",
+      "source_url": null,
+      "sha256": "ee384955d6c07d29e8085196027b89d184c2b5abeaddc128f44e391bff1870ae",
+      "applies_to_tasks": [
+        "flow-interaction"
+      ],
+      "decision_questions": [
+        "What evidence-backed flow interaction decision should the design role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "design_evidence",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:design"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:design:visual-system-accessibility",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "design",
+      "ref": "skills/design-operating-system/references/task-packs/visual-system-accessibility.md",
+      "source_url": null,
+      "sha256": "4eae5a7eede1da0c6962aff2d7fdac79b4a22b669155b0c310e73934117e9a0d",
+      "applies_to_tasks": [
+        "visual-system-accessibility"
+      ],
+      "decision_questions": [
+        "What evidence-backed visual system accessibility decision should the design role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "design_evidence",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "large",
+      "dependencies": [
+        "role-kernel:design"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:design:implementation-design-qa",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "design",
+      "ref": "skills/design-operating-system/references/task-packs/implementation-design-qa.md",
+      "source_url": null,
+      "sha256": "f445fd5f848c14e02ef8cc1b95da05bd16ee4dc6473be1186c0174adb6457b0a",
+      "applies_to_tasks": [
+        "implementation-design-qa"
+      ],
+      "decision_questions": [
+        "What evidence-backed implementation design qa decision should the design role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "design_evidence",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "large",
+      "dependencies": [
+        "role-kernel:design"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "role-kernel:development",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "development",
+      "ref": "skills/development-operating-system/references/development-contract.json",
+      "source_url": null,
+      "sha256": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "What is the smallest correct implementation that satisfies the observable outcome?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "decision_support",
+        "implementation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "engineering policy change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:development:feature-implementation",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "development",
+      "ref": "skills/development-operating-system/references/task-packs/feature-implementation.md",
+      "source_url": null,
+      "sha256": "f89576e51b93c5be8bdda380decf343ce7d4f5e45915379f3ae14ea3b454c331",
+      "applies_to_tasks": [
+        "feature-implementation"
+      ],
+      "decision_questions": [
+        "What evidence-backed feature implementation decision should the development role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "implementation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:development"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:development:causal-debugging",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "development",
+      "ref": "skills/development-operating-system/references/task-packs/causal-debugging.md",
+      "source_url": null,
+      "sha256": "044085dd0e12ee4ad5dfa3817d80eae5a684ffb26aefacbf44df7d2cb8503ca5",
+      "applies_to_tasks": [
+        "causal-debugging"
+      ],
+      "decision_questions": [
+        "What evidence-backed causal debugging decision should the development role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "implementation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:development"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:development:architecture-risk",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "development",
+      "ref": "skills/development-operating-system/references/task-packs/architecture-risk.md",
+      "source_url": null,
+      "sha256": "0ca2ff7d96b5f2bd9839772eaba71af800f2263bd7746afa1b5e1898b0e60171",
+      "applies_to_tasks": [
+        "architecture-risk"
+      ],
+      "decision_questions": [
+        "What evidence-backed architecture risk decision should the development role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "decision_support",
+        "implementation",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [
+        "role-kernel:development"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "role-kernel:qa-release",
+      "version": "0.1.0",
+      "layer": "role_kernel",
+      "owner_role": "qa-release",
+      "ref": "skills/qa-release-operating-system/references/qa-release-contract.json",
+      "source_url": null,
+      "sha256": "1d28cb70df55b058244d3995997fbea37a262775539e4bfcacc66a21b7743f23",
+      "applies_to_tasks": [
+        "*"
+      ],
+      "decision_questions": [
+        "Does the exact candidate satisfy the named criterion on its matching surface?"
+      ],
+      "authority_class": "canonical",
+      "allowed_uses": [
+        "verification",
+        "release_risk",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "platform or release policy change",
+          "quality regression"
+        ]
+      },
+      "loading_cost": "small",
+      "dependencies": [],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:qa-release:test-strategy",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "qa-release",
+      "ref": "skills/qa-release-operating-system/references/task-packs/test-strategy.md",
+      "source_url": null,
+      "sha256": "0c0841d1f3b56436167fa9ff9c99f269feac963ee5b624f81c6f1e9adb085ed6",
+      "applies_to_tasks": [
+        "test-strategy"
+      ],
+      "decision_questions": [
+        "What evidence-backed test strategy decision should the qa-release role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "verification",
+        "release_risk",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:qa-release"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:qa-release:ios-matching-surfaces",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "qa-release",
+      "ref": "skills/qa-release-operating-system/references/task-packs/ios-matching-surfaces.md",
+      "source_url": null,
+      "sha256": "8cdedfa15ddc13aa24f121038a3ced43bee8a3ba566184f78f7210d063218e80",
+      "applies_to_tasks": [
+        "ios-matching-surfaces"
+      ],
+      "decision_questions": [
+        "What evidence-backed ios matching surfaces decision should the qa-release role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "verification",
+        "release_risk",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:qa-release"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "task-pack:qa-release:release-readiness",
+      "version": "0.1.0",
+      "layer": "task_pack",
+      "owner_role": "qa-release",
+      "ref": "skills/qa-release-operating-system/references/task-packs/release-readiness.md",
+      "source_url": null,
+      "sha256": "307e5cfbb148df56856dd2f8d171067dbcb02aba2eacdc00fcd51b6ed114eef9",
+      "applies_to_tasks": [
+        "release-readiness"
+      ],
+      "decision_questions": [
+        "What evidence-backed release readiness decision should the qa-release role make, and what evidence would change it?"
+      ],
+      "authority_class": "operational",
+      "allowed_uses": [
+        "verification",
+        "release_risk",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "hash_pinned",
+        "reviewed_at": "2026-07-30",
+        "expires_at": null,
+        "recheck_triggers": [
+          "content change",
+          "task mapping change",
+          "evaluation regression"
+        ]
+      },
+      "loading_cost": "medium",
+      "dependencies": [
+        "role-kernel:qa-release"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "format": "agent-company.planning-contract/v0.2",
+  "plan_artifact_readiness": [
+    {"status": "blocked", "required_evidence": ["objective, criterion, authority, or irreversible-boundary gap","required decision owner","re-entry target"], "allowed_outputs": ["clarification request","bounded evidence plan","provisional criterion-covered topology"], "forbidden_outputs": ["executable handoff leaves","execution authorization","invented intent","gate approval"]},
+    {"status": "conditional", "required_evidence": ["stable intent","one execution unknown","bounded discovery leaf","stop condition"], "allowed_outputs": ["discovery or spike handoff"], "forbidden_outputs": ["full execution claim","changed success criteria"]},
+    {"status": "ready", "required_evidence": ["objective binding", "success criteria", "non-goals", "proposed leaves and failure design", "dependency graph", "closure checks", "verification ownership"], "allowed_outputs": ["bounded role plans", "decision-ready plan artifact"], "forbidden_outputs": ["Uigwe approval", "execution success", "final verification"]}
+  ],
+  "execution_startability": [
+    {"status": "blocked", "required_evidence": ["unmet pre-mutation start condition", "decision owner", "re-entry target"], "allowed_plan_artifacts": ["proposed topology", "functional owner roles", "rollback", "containment", "no-action", "abort", "proof design"], "forbidden_actions": ["mutation", "executable handoff", "execution authorization"]},
+    {"status": "bounded_discovery", "required_evidence": ["stable approved intent", "one bounded execution unknown", "discovery stop condition"], "allowed_plan_artifacts": ["bounded discovery handoff", "proof design", "re-entry target"], "forbidden_actions": ["production mutation", "full executable handoff", "execution success claim"]},
+    {"status": "allowed", "required_evidence": ["pre-mutation evidence", "satisfied required edges", "cycle review", "functional owner role", "named assignee", "assignee state", "independent verifier"], "allowed_plan_artifacts": ["executable handoff leaves", "handoff order", "proof design"], "forbidden_actions": ["Uigwe approval", "execution success claim", "final verification claim"]}
+  ],
+  "stages": [
+    {"id": "objective_binding", "required_evidence": ["approved objective", "decision owner", "source packet"]},
+    {"id": "outcome_contract", "required_evidence": ["success criteria", "non-goals", "must-preserve behavior", "acceptable tradeoffs"]},
+    {"id": "scope_model", "required_evidence": ["in scope", "out of scope", "authority boundaries", "external actions"]},
+    {"id": "dependency_model", "required_evidence": ["milestones", "dependency edges", "critical path", "satisfied prerequisites"]},
+    {"id": "actionable_decomposition", "required_evidence": ["proposed leaves", "first action", "done criteria", "scope", "failure path"]},
+    {"id": "closure_review", "required_evidence": ["criterion delivery proof", "dataflow edge", "mutation transition", "non-goal absence proof"]},
+    {"id": "verification_design", "required_evidence": ["matching proof surface", "evidence target", "falsification signal", "independent verifier"]},
+    {"id": "handoff_and_reentry", "required_evidence": ["outputs", "stop criteria", "escalation triggers", "Uigwe re-entry triggers"]}
+  ],
+  "provisional_topology_fields": ["milestones","dependency_edges","criterion_coverage","blocked_or_unknown_edges","topology_limits"],
+  "candidate_assignment_fields": ["owner_role","named_assignee","assignee_state"],
+  "candidate_execution_guidance": {
+    "artifact_ready_execution_blocked": {"plan_artifact_readiness": "ready", "execution_startability": "blocked", "proposed_leaf_and_failure_design": "complete", "owner_role": "planning", "named_assignee": "unknown", "assignee_state": "unknown"},
+    "known_role_unknown_assignee_state": {"owner_role": "development", "named_assignee": "unknown", "assignee_state": "unknown", "execution_startability": "blocked"},
+    "advisory_recommendation_execution_split": {"claim_kinds": ["recommendation", "execution"], "missing_final_execution_authority": {"recommendation": "ready_when_source_backed_and_artifact_owned", "execution": "blocked"}, "recommendation_must_not_claim_execution_approval": true},
+    "runtime_payload_boundary": "candidate guidance does not alter runtime invariant fields"
+  },
+  "executable_handoff_leaf_fields": ["id","criterion_id","objective","why","first_action","inputs","read_scope","write_scope","done_criteria","dependencies","state_transition","verification_method","evidence_target","falsification_signal","risks","stop_condition","owner","verifier","handoff_output","binary_completion"],
+  "planning_invariant_lanes": {
+    "start_gate": ["planning_readiness","control_timing","pre_mutation_evidence","startability_disposition","decision_owner"],
+    "dependency_authority": ["edge_id","surface_disposition","evidence_ref","recheck_trigger","fallback","cycle_review","authority_class","assignee_state","residual_risk_authority"],
+    "proof_surface_applicable": ["criterion_id","surface","applicability","candidate_lineage","verifier","binary_observable"],
+    "proof_surface_not_applicable": ["criterion_id","surface","applicability","reason","evidence_ref","decision_owner"],
+    "candidate_lineage": ["source","artifact","config","environment","runtime_topology"]
+  },
+  "closure_requirements": {
+    "criterion_delivery_proof": ["criterion_id","delivery_leaf_id","proof_target","verifier"],
+    "dataflow_edge": ["producer_leaf_id","write_artifact","consumer_leaf_id","read_artifact","observability","owner"],
+    "mutation_state_transition": ["mutation_id","from_state","action","to_state","no_action_state","abort_path","owner","proof_target"],
+    "non_goal_absence_proof": ["non_goal_id","prohibited_effect","absence_check","proof_target","verifier"]
+  },
+  "scope_rules": {
+    "scope_reduction_must_preserve_outcome": true,
+    "goal_change_requires_uigwe_reentry": true,
+    "non_goal_change_requires_uigwe_reentry": true,
+    "verification_bar_change_requires_uigwe_reentry": true,
+    "conditional_plan_artifact_readiness_is_discovery_only": true,
+    "allowed_execution_startability_requires_satisfied_required_edges": true,
+    "plan_artifact_readiness_and_execution_startability_are_distinct": true,
+    "broad_aspiration_is_not_actionable_leaf": true,
+    "blocked_execution_startability_must_not_authorize_execution": true
+  },
+  "decision_output_policy": {
+    "lead_fields": ["planning_readiness","execution_startability","controlling_unknowns","selected_topology","next_safe_action"],
+    "expansion_rule": "Expand only leaves, edges, risks, and proof rows that can change the selected topology, startability, or verification decision.",
+    "omission_rule": "Do not reproduce the full contract or create empty checklist rows; name a material omitted surface only when its absence affects the decision.",
+    "handoff_rule": "Emit the complete machine contract only when an executable handoff artifact is requested and startability permits it."
+  },
+  "verification_surfaces": ["schema or static contract","focused automated behavior","integrated runtime","user-visible or device observation","external account or release state","product or business outcome"],
+  "specialist_routing": {
+    "default_specialist_limit": 2,
+    "request_when": "the specialist changes a named planning decision with distinct bounded evidence or method",
+    "optional_skills": ["uigwe","data-analytics:design-kpis","data-analytics:gather-business-context","evidence-debate"],
+    "missing_specialist_fallback": "record the planning unknown, narrow the leaf, and preserve the re-entry trigger"
+  },
+  "authority_boundary": {
+    "planning_may": ["bind approved intent","decompose milestones and dependencies","define acceptance and verification plans","prepare role handoffs"],
+    "planning_must_not": ["invent or change product intent","approve Uigwe","claim execution success","self-verify completion","authorize external action"],
+    "planning_truth_owner": "uigwe",
+    "execution_truth_owner": "seungjeongwon"
+  },
+  "quality_gate": {
+    "comparison": "same approved objective, evidence, tools, and time budget",
+    "blind_review": true,
+    "hard_no_regression": ["goal fidelity","actionability","dependency integrity","verification clarity","authority boundary"],
+    "inconclusive_disposition": "do not claim improvement or promote the lane"
+  }
+}

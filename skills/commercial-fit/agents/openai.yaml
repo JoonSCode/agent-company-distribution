@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commercial Fit"
+  short_description: "Judge if a problem merits a business test."
+  default_prompt: "Use commercial-fit to assess frequency, willingness to pay, reachable buyer, founder fit, AI leverage, and one-week validation for a candidate problem."

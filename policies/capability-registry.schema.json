@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/capability-registry.v0.1.json",
+  "title": "Agent Company Capability Registry Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {"const": "agent-company.capability-registry/v0.1"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "owner": {"const": "agent-company"},
+    "budget": {"$ref": "#/$defs/Budget"},
+    "capabilities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/Capability"}
+    }
+  },
+  "required": ["format", "generated_at", "owner", "budget", "capabilities"],
+  "$defs": {
+    "NonEmptyString": {"type": "string", "minLength": 1},
+    "Sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "Budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_active": {"type": "integer", "minimum": 0, "maximum": 8},
+        "max_shadow": {"type": "integer", "minimum": 0, "maximum": 4}
+      },
+      "required": ["max_active", "max_shadow"]
+    },
+    "ProposalRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": {"$ref": "#/$defs/NonEmptyString"},
+        "sha256": {"$ref": "#/$defs/Sha256"}
+      },
+      "required": ["ref", "sha256"]
+    },
+    "Capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {"$ref": "#/$defs/NonEmptyString"},
+        "kind": {"type": "string", "enum": ["recipe", "skill", "hook_adapter"]},
+        "state": {
+          "type": "string",
+          "enum": ["proposed", "approved", "shadow", "active", "demoted", "retired"]
+        },
+        "triggers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/NonEmptyString"}
+        },
+        "managed_by": {"const": "agent-company"},
+        "proposal": {"$ref": "#/$defs/ProposalRef"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "rollback_ref": {"$ref": "#/$defs/NonEmptyString"},
+        "replacement_for": {
+          "oneOf": [{"$ref": "#/$defs/NonEmptyString"}, {"type": "null"}]
+        },
+        "installed": {"type": "boolean"},
+        "deletion_authority": {"const": "managed_hash_match_only"}
+      },
+      "required": [
+        "capability_id",
+        "kind",
+        "state",
+        "triggers",
+        "managed_by",
+        "proposal",
+        "expires_at",
+        "rollback_ref",
+        "replacement_for",
+        "installed",
+        "deletion_authority"
+      ]
+    }
+  }
+}

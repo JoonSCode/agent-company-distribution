@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/copywriting-brief.v0.1.json",
+  "title": "Copywriting Operating System Brief",
+  "description": "A bounded brief for creating or reviewing copy after product, marketing, or design decisions are sufficiently settled.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "mode",
+    "owner_role",
+    "decision_readiness",
+    "target_user",
+    "user_job",
+    "surface",
+    "moment",
+    "primary_objective",
+    "primary_action",
+    "product_truths",
+    "evidence_refs",
+    "allowed_claims",
+    "prohibited_claims",
+    "voice",
+    "tone",
+    "locale",
+    "constraints",
+    "success_definition",
+    "unknowns"
+  ],
+  "properties": {
+    "format": {
+      "const": "agent-company.copywriting-brief/v0.1"
+    },
+    "mode": {
+      "enum": [
+        "ux-writing",
+        "conversion-copy",
+        "brand-voice",
+        "copy-review"
+      ]
+    },
+    "owner_role": {
+      "enum": [
+        "marketing",
+        "design"
+      ]
+    },
+    "decision_readiness": {
+      "enum": [
+        "blocked",
+        "conditional",
+        "ready"
+      ]
+    },
+    "target_user": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "user_job": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "surface": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "moment": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "primary_objective": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "primary_action": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "product_truths": {
+      "$ref": "#/$defs/NonEmptyStringList"
+    },
+    "evidence_refs": {
+      "$ref": "#/$defs/NonEmptyStringList"
+    },
+    "allowed_claims": {
+      "$ref": "#/$defs/StringList"
+    },
+    "prohibited_claims": {
+      "$ref": "#/$defs/NonEmptyStringList"
+    },
+    "voice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attributes",
+        "prohibited_styles"
+      ],
+      "properties": {
+        "attributes": {
+          "$ref": "#/$defs/NonEmptyStringList"
+        },
+        "prohibited_styles": {
+          "$ref": "#/$defs/StringList"
+        }
+      }
+    },
+    "tone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user_state",
+        "stakes",
+        "direction"
+      ],
+      "properties": {
+        "user_state": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "stakes": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "direction": {
+          "$ref": "#/$defs/NonEmptyString"
+        }
+      }
+    },
+    "locale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "target",
+        "localization_strategy"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "target": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "localization_strategy": {
+          "enum": [
+            "native-authoring",
+            "localization",
+            "transcreation",
+            "review-only"
+          ]
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "length",
+        "platform",
+        "accessibility",
+        "legal_or_policy",
+        "implementation"
+      ],
+      "properties": {
+        "length": {
+          "$ref": "#/$defs/StringList"
+        },
+        "platform": {
+          "$ref": "#/$defs/StringList"
+        },
+        "accessibility": {
+          "$ref": "#/$defs/NonEmptyStringList"
+        },
+        "legal_or_policy": {
+          "$ref": "#/$defs/StringList"
+        },
+        "implementation": {
+          "$ref": "#/$defs/StringList"
+        }
+      }
+    },
+    "success_definition": {
+      "$ref": "#/$defs/NonEmptyStringList"
+    },
+    "unknowns": {
+      "$ref": "#/$defs/StringList"
+    },
+    "assumption": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "stop_condition": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+    "current_copy": {
+      "type": "string"
+    },
+    "matching_surface_refs": {
+      "$ref": "#/$defs/StringList"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision_readiness": {
+            "const": "blocked"
+          }
+        },
+        "required": [
+          "decision_readiness"
+        ]
+      },
+      "then": {
+        "properties": {
+          "unknowns": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_readiness": {
+            "const": "conditional"
+          }
+        },
+        "required": [
+          "decision_readiness"
+        ]
+      },
+      "then": {
+        "required": [
+          "assumption",
+          "stop_condition"
+        ],
+        "properties": {
+          "unknowns": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_readiness": {
+            "const": "ready"
+          }
+        },
+        "required": [
+          "decision_readiness"
+        ]
+      },
+      "then": {
+        "properties": {
+          "unknowns": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "StringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/NonEmptyString"
+      }
+    },
+    "NonEmptyStringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/NonEmptyString"
+      }
+    }
+  }
+}

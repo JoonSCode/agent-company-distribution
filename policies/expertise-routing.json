@@ -1,0 +1,137 @@
+{
+  "format": "agent-company.expertise-routing/v0.1",
+  "roles": [
+    {
+      "role_id": "founder",
+      "default_task_type": "portfolio-decision",
+      "task_rules": [
+        {
+          "task_type": "portfolio-decision",
+          "reference_id": "task-pack:founder:portfolio-decision",
+          "triggers": ["portfolio", "funding", "prioritize", "scarce", "포트폴리오", "우선순위", "투자"]
+        },
+        {
+          "task_type": "opportunity-validation",
+          "reference_id": "task-pack:founder:opportunity-validation",
+          "triggers": ["validate", "buyer", "willingness to pay", "commercial", "기회 검증", "구매자", "지불"]
+        },
+        {
+          "task_type": "continue-change-stop",
+          "reference_id": "task-pack:founder:continue-change-stop",
+          "triggers": ["continue", "change", "pause", "stop", "pivot", "계속", "변경", "중단", "피벗"]
+        }
+      ],
+      "specialist_rules": []
+    },
+    {
+      "role_id": "planning",
+      "default_task_type": "execution-planning",
+      "task_rules": [
+        {
+          "task_type": "execution-planning",
+          "reference_id": "task-pack:planning:execution-plan",
+          "triggers": ["execution plan", "milestone", "decompose", "계획", "마일스톤", "분해"]
+        },
+        {
+          "task_type": "dependency-risk",
+          "reference_id": "task-pack:planning:dependency-risk",
+          "triggers": ["dependency", "critical path", "migration", "risk", "의존성", "리스크", "마이그레이션"]
+        },
+        {
+          "task_type": "acceptance-verification",
+          "reference_id": "task-pack:planning:acceptance-verification",
+          "triggers": ["acceptance", "criterion", "verification matrix", "수용 기준", "검증 기준", "검증 매트릭스"]
+        }
+      ],
+      "specialist_rules": []
+    },
+    {
+      "role_id": "marketing",
+      "default_task_type": "demand-positioning",
+      "task_rules": [
+        {
+          "task_type": "demand-positioning",
+          "reference_id": "task-pack:marketing:demand-positioning",
+          "triggers": ["positioning", "demand", "audience", "message", "포지셔닝", "수요", "타깃", "메시지"]
+        },
+        {
+          "task_type": "experiment-growth",
+          "reference_id": "task-pack:marketing:experiment-growth",
+          "triggers": ["experiment", "growth", "conversion", "retention", "funnel", "실험", "성장", "전환", "유지"]
+        },
+        {
+          "task_type": "mobile-monetization",
+          "reference_id": "task-pack:marketing:mobile-monetization",
+          "triggers": ["paywall", "subscription", "monetization", "pricing", "구독", "페이월", "수익화", "가격"]
+        }
+      ],
+      "specialist_rules": []
+    },
+    {
+      "role_id": "design",
+      "default_task_type": "flow-interaction",
+      "task_rules": [
+        {
+          "task_type": "flow-interaction",
+          "reference_id": "task-pack:design:flow-interaction",
+          "triggers": ["flow", "interaction", "journey", "onboarding", "플로우", "인터랙션", "동선", "온보딩"]
+        },
+        {
+          "task_type": "visual-system-accessibility",
+          "reference_id": "task-pack:design:visual-system-accessibility",
+          "triggers": ["visual system", "design system", "accessibility", "contrast", "시각 시스템", "디자인 시스템", "접근성", "대비"]
+        },
+        {
+          "task_type": "implementation-design-qa",
+          "reference_id": "task-pack:design:implementation-design-qa",
+          "triggers": ["implementation design qa", "visual qa", "visual comparison", "pixel", "구현 검수", "시각 검수", "비교"]
+        }
+      ],
+      "specialist_rules": []
+    },
+    {
+      "role_id": "development",
+      "default_task_type": "feature-implementation",
+      "task_rules": [
+        {
+          "task_type": "feature-implementation",
+          "reference_id": "task-pack:development:feature-implementation",
+          "triggers": ["implement", "feature", "build", "add", "구현", "기능", "추가"]
+        },
+        {
+          "task_type": "causal-debugging",
+          "reference_id": "task-pack:development:causal-debugging",
+          "triggers": ["bug", "debug", "crash", "failure", "error", "버그", "디버그", "크래시", "오류"]
+        },
+        {
+          "task_type": "architecture-risk",
+          "reference_id": "task-pack:development:architecture-risk",
+          "triggers": ["architecture", "refactor", "performance", "security", "migration", "아키텍처", "리팩터", "성능", "보안"]
+        }
+      ],
+      "specialist_rules": []
+    },
+    {
+      "role_id": "qa-release",
+      "default_task_type": "test-strategy",
+      "task_rules": [
+        {
+          "task_type": "test-strategy",
+          "reference_id": "task-pack:qa-release:test-strategy",
+          "triggers": ["test strategy", "risk-based", "test plan", "테스트 전략", "테스트 계획", "위험 기반"]
+        },
+        {
+          "task_type": "ios-matching-surfaces",
+          "reference_id": "task-pack:qa-release:ios-matching-surfaces",
+          "triggers": ["ios", "simulator", "device", "storekit", "permission", "시뮬레이터", "실기기", "권한"]
+        },
+        {
+          "task_type": "release-readiness",
+          "reference_id": "task-pack:qa-release:release-readiness",
+          "triggers": ["release", "app store", "deploy", "ship", "rollback", "릴리스", "배포", "심사", "롤백"]
+        }
+      ],
+      "specialist_rules": []
+    }
+  ]
+}

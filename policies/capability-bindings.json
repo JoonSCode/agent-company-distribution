@@ -1,0 +1,178 @@
+{
+  "format": "agent-company.capability-bindings/v0.1",
+  "schema_version": "0.1",
+  "authority_contract": {
+    "domain_owner": "agent-company",
+    "lead_router": "king-sejong",
+    "mode": "passive_binding",
+    "provider_authority": "none",
+    "forbidden_behaviors": [
+      "task_classification",
+      "role_routing",
+      "planning",
+      "approval",
+      "continuation",
+      "gate_ownership",
+      "synthesis",
+      "final_verification",
+      "outcome_contract_mutation"
+    ]
+  },
+  "resolution_policy": {
+    "default_binding_kind": "native",
+    "optional_selection": "explicit_request_only",
+    "unavailable_optional": "fallback_to_native_with_native_claim",
+    "native_unavailable": "fail_closed",
+    "availability_source": "caller_supplied",
+    "runtime_state_root": "sejong"
+  },
+  "capabilities": [
+    {
+      "capability_id": "typed-implementation",
+      "owner_roles": ["development"],
+      "requirement_owner": "agent-company-task-pack",
+      "purpose": "Implement the smallest correct typed and test-backed change inside an approved scope.",
+      "evidence_required": [
+        "approved mechanism and write boundary",
+        "language-aware implementation evidence",
+        "focused regression evidence",
+        "independent QA handoff with residual risks"
+      ],
+      "native_binding": {
+        "provider_id": "native",
+        "provider_kind": "native",
+        "provider_refs": [
+          "task-pack:development:feature-implementation"
+        ],
+        "evidence_shape": [
+          "bounded implementation diff",
+          "type, syntax, or build feedback appropriate to the language",
+          "focused before-after tests",
+          "explicit unverified runtime or release claims"
+        ],
+        "claim_scope": "bounded typed and test-backed implementation",
+        "limitations": [
+          "Does not claim runtime behavior or release readiness before independent QA observation."
+        ]
+      },
+      "optional_bindings": [
+        {
+          "provider_id": "omo",
+          "provider_kind": "optional",
+          "provider_refs": [
+            "omo:programming"
+          ],
+          "evidence_shape": [
+            "language-specific implementation discipline",
+            "bounded typed diff",
+            "focused regression evidence",
+            "independent QA handoff"
+          ],
+          "claim_scope": "bounded typed and test-backed implementation",
+          "limitations": [
+            "Cannot widen the approved write scope or own routing, approval, continuation, or final verification."
+          ]
+        }
+      ]
+    },
+    {
+      "capability_id": "causal-debugging-support",
+      "owner_roles": ["development"],
+      "requirement_owner": "agent-company-task-pack",
+      "purpose": "Identify and falsify the causal mechanism behind an observed failure before selecting a repair.",
+      "evidence_required": [
+        "reproduction and first divergence",
+        "ranked hypotheses and falsification checks",
+        "distinguishing experiment or explicit evidence gap",
+        "smallest authorized repair and independent re-verification"
+      ],
+      "native_binding": {
+        "provider_id": "native",
+        "provider_kind": "native",
+        "provider_refs": [
+          "task-pack:development:causal-debugging"
+        ],
+        "evidence_shape": [
+          "causal timeline and invariant divergence",
+          "hypothesis ledger",
+          "mechanism-linked repair boundary",
+          "focused regression and independent runtime re-verification plan"
+        ],
+        "claim_scope": "evidence-backed causal debugging packet for the supplied scope",
+        "limitations": [
+          "If runtime or semantic tooling is absent, unobserved behavior remains a named evidence gap.",
+          "Does not claim recurrence is impossible or the repaired candidate is verified before observation."
+        ]
+      },
+      "optional_bindings": [
+        {
+          "provider_id": "omo",
+          "provider_kind": "optional",
+          "provider_refs": [
+            "omo:debugging"
+          ],
+          "evidence_shape": [
+            "hypothesis ledger",
+            "runtime falsification evidence",
+            "first-divergence explanation",
+            "bounded repair and verification handoff"
+          ],
+          "claim_scope": "evidence-backed causal debugging packet for the supplied scope",
+          "limitations": [
+            "Cannot replace the Agent Company causal-debugging task pack or own the final cause and verification claim."
+          ]
+        }
+      ]
+    },
+    {
+      "capability_id": "visual-runtime-qa",
+      "owner_roles": ["design", "qa-release"],
+      "requirement_owner": "agent-company-task-pack",
+      "purpose": "Compare named runtime surfaces and critical states with an approved design reference and classify deviations.",
+      "evidence_required": [
+        "approved design reference",
+        "named target viewports, devices, and states",
+        "fresh runtime observations",
+        "deviation severity and unobserved-surface limits"
+      ],
+      "native_binding": {
+        "provider_id": "native",
+        "provider_kind": "native",
+        "provider_refs": [
+          "task-pack:design:implementation-design-qa",
+          "task-pack:qa-release:test-strategy"
+        ],
+        "evidence_shape": [
+          "manual or host-native runtime captures for named surfaces",
+          "reference-to-runtime comparison",
+          "state and viewport observation ledger",
+          "deviation classification and blocked surfaces"
+        ],
+        "claim_scope": "manual matching-surface observations for the explicitly named states and sizes",
+        "limitations": [
+          "Does not imply automated pixel-diff coverage or completeness for unobserved surfaces.",
+          "Surfaces without fresh runtime capture remain explicitly unverified."
+        ]
+      },
+      "optional_bindings": [
+        {
+          "provider_id": "omo",
+          "provider_kind": "optional",
+          "provider_refs": [
+            "omo:visual-qa"
+          ],
+          "evidence_shape": [
+            "target viewport screenshots",
+            "approved-reference comparison",
+            "critical-state coverage",
+            "deviation severity"
+          ],
+          "claim_scope": "visual comparison for the explicitly captured states and sizes",
+          "limitations": [
+            "Cannot approve release or expand the required surface inventory beyond the Agent Company QA contract."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/company-charter.v0.1.json",
+  "title": "Agent Company Charter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "company_id",
+    "ceo",
+    "mission",
+    "initiation",
+    "operating_model",
+    "commercial_evidence",
+    "authority_boundaries"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.charter/v0.1"},
+    "company_id": {"const": "agent-company"},
+    "ceo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "owns"],
+      "properties": {
+        "role": {"const": "ceo"},
+        "owns": {"$ref": "#/$defs/nonEmptyStrings"}
+      }
+    },
+    "mission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_outcome", "work_families"],
+      "properties": {
+        "primary_outcome": {"const": "profitable-app-portfolio"},
+        "work_families": {
+          "type": "array",
+          "minItems": 7,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "market-existing-app",
+              "redesign-existing-app",
+              "add-features",
+              "maintain-or-repair",
+              "discover-new-need",
+              "develop-new-app",
+              "review-portfolio"
+            ]
+          }
+        }
+      }
+    },
+    "initiation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modes", "company_initiated_trigger", "empty_queue_action"],
+      "properties": {
+        "modes": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "ceo-directed"},
+            {"const": "company-initiated"}
+          ],
+          "items": false
+        },
+        "company_initiated_trigger": {"const": "resumable-tick"},
+        "empty_queue_action": {"const": "portfolio-discovery"}
+      }
+    },
+    "operating_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session", "execution_model", "state_root", "max_active_cycles", "cycle_budget", "staffing"],
+      "properties": {
+        "session": {"const": "continuous-until-ceo-exit"},
+        "execution_model": {"const": "single-run-resumable-tick"},
+        "state_root": {"const": "${SEJONG_HOME}/runs/agent-company/company"},
+        "max_active_cycles": {"const": 1},
+        "cycle_budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_total_workers", "max_concurrency", "max_rounds"],
+          "properties": {
+            "max_total_workers": {"type": "integer", "minimum": 1},
+            "max_concurrency": {"type": "integer", "minimum": 1},
+            "max_rounds": {"type": "integer", "minimum": 1}
+          }
+        },
+        "staffing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role_ids_are_capability_lanes",
+            "multiple_assignments_per_role",
+            "parallelism_requires_disjoint_write_scopes"
+          ],
+          "properties": {
+            "role_ids_are_capability_lanes": {"const": true},
+            "multiple_assignments_per_role": {"const": true},
+            "parallelism_requires_disjoint_write_scopes": {"const": true}
+          }
+        }
+      }
+    },
+    "commercial_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unknown_is_explicit", "observation_states", "currency", "required_metric_ids"],
+      "properties": {
+        "unknown_is_explicit": {"const": true},
+        "observation_states": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "unknown"},
+            {"const": "pending"},
+            {"const": "observed"}
+          ],
+          "items": false
+        },
+        "currency": {"type": "string", "minLength": 3},
+        "required_metric_ids": {"$ref": "#/$defs/nonEmptyStrings"}
+      }
+    },
+    "authority_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_reversible",
+        "external_read_only",
+        "external_mutation",
+        "public_or_irreversible",
+        "financial_or_secret",
+        "execution_owner",
+        "final_verification_owner"
+      ],
+      "properties": {
+        "local_reversible": {"const": "company-within-approved-job"},
+        "external_read_only": {"const": "existing-user-authorization"},
+        "external_mutation": {"const": "explicit-ceo-approval"},
+        "public_or_irreversible": {"const": "explicit-ceo-approval"},
+        "financial_or_secret": {"const": "explicit-ceo-approval"},
+        "execution_owner": {"const": "king-sejong-core"},
+        "final_verification_owner": {"const": "seungjeongwon"}
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

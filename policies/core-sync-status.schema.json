@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/core-sync-status.v0.1.json",
+  "title": "Agent Company Core Synchronization Status",
+  "description": "Read-only compatibility evidence across the tracked Company lock, Core source candidate, installed Core runtime, and active Company snapshot. It grants no routing, approval, execution, or verification authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "generated_at",
+    "state",
+    "mutation",
+    "authority",
+    "layers",
+    "activation"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.core-sync-status/v0.1"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "state": {
+      "enum": [
+        "healthy",
+        "source_runtime_diverged",
+        "missing_core_identity",
+        "incompatible",
+        "candidate_available"
+      ]
+    },
+    "mutation": {"const": "none"},
+    "authority": {"const": "compatibility_evidence_only"},
+    "layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tracked_baseline_lock",
+        "core_source_candidate",
+        "installed_core_runtime",
+        "active_company_snapshot"
+      ],
+      "properties": {
+        "tracked_baseline_lock": {"$ref": "#/$defs/lockLayer"},
+        "core_source_candidate": {"$ref": "#/$defs/sourceLayer"},
+        "installed_core_runtime": {"$ref": "#/$defs/installedLayer"},
+        "active_company_snapshot": {"$ref": "#/$defs/activeLayer"}
+      }
+    },
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "automatic_action", "manual_action", "reason"],
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "automatic_action": {"enum": ["proceed", "defer"]},
+        "manual_action": {"enum": ["proceed", "block"]},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"allowed": {"const": true}}},
+          "then": {
+            "properties": {
+              "automatic_action": {"const": "proceed"},
+              "manual_action": {"const": "proceed"}
+            }
+          },
+          "else": {
+            "properties": {
+              "automatic_action": {"const": "defer"},
+              "manual_action": {"const": "block"}
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256OrNull": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "commitOrNull": {
+      "type": ["string", "null"],
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "errors": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "lockLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "ref", "commit", "content_sha256", "origin", "errors"],
+      "properties": {
+        "status": {"enum": ["available", "missing", "malformed"]},
+        "ref": {"type": "string", "minLength": 1},
+        "commit": {"$ref": "#/$defs/commitOrNull"},
+        "content_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "origin": {"type": ["string", "null"]},
+        "errors": {"$ref": "#/$defs/errors"}
+      }
+    },
+    "sourceLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "selected_source",
+        "ref",
+        "commit",
+        "content_sha256",
+        "helper_sha256",
+        "schema_sha256",
+        "baseline_binding",
+        "contract_probe",
+        "errors"
+      ],
+      "properties": {
+        "status": {"enum": ["clean", "dirty", "missing", "uninspectable"]},
+        "selected_source": {"type": ["string", "null"]},
+        "ref": {"type": ["string", "null"]},
+        "commit": {"$ref": "#/$defs/commitOrNull"},
+        "content_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "helper_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "schema_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "baseline_binding": {"enum": ["verified", "blocked", "not_run"]},
+        "contract_probe": {"enum": ["ok", "blocked", "not_run"]},
+        "errors": {"$ref": "#/$defs/errors"}
+      }
+    },
+    "installedLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ref",
+        "contract_version",
+        "identity_sha256",
+        "source_commit",
+        "source_managed_content_sha256",
+        "installed_managed_content_sha256",
+        "errors"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "compatible",
+            "missing",
+            "malformed",
+            "source_drift",
+            "installed_tampered",
+            "unavailable"
+          ]
+        },
+        "ref": {"type": "string", "minLength": 1},
+        "contract_version": {"type": ["string", "null"]},
+        "identity_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "source_commit": {"$ref": "#/$defs/commitOrNull"},
+        "source_managed_content_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "installed_managed_content_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "errors": {"$ref": "#/$defs/errors"}
+      }
+    },
+    "activeLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ref",
+        "snapshot_id",
+        "agent_company_ref",
+        "embedded_core_commit",
+        "embedded_core_content_sha256",
+        "errors"
+      ],
+      "properties": {
+        "status": {"enum": ["available", "missing", "malformed", "tampered"]},
+        "ref": {"type": "string", "minLength": 1},
+        "snapshot_id": {"type": ["string", "null"]},
+        "agent_company_ref": {"$ref": "#/$defs/commitOrNull"},
+        "embedded_core_commit": {"$ref": "#/$defs/commitOrNull"},
+        "embedded_core_content_sha256": {"$ref": "#/$defs/sha256OrNull"},
+        "errors": {"$ref": "#/$defs/errors"}
+      }
+    }
+  }
+}

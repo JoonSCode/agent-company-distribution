@@ -1,0 +1,211 @@
+{
+  "format": "agent-company.expertise-registry/v0.1",
+  "schema_version": "0.1",
+  "default_specialist_limit": 2,
+  "roles": [
+    {
+      "role_id": "founder",
+      "role_os_skill": "founder-operating-system",
+      "role_kernel_id": "role-kernel:founder",
+      "default_task_type": "portfolio-decision",
+      "default_verifier": "seungjeongwon",
+      "optional_specialists": [
+        {
+          "skill_id": "problem-discovery",
+          "selection_status": "shadow_only",
+          "task_types": ["problem-search"],
+          "decision_questions": ["Which observed problem deserves deeper evidence?"],
+          "distinct_evidence": "Problem frequency, workaround, switching moment, and inaction evidence.",
+          "allowed_use": "evidence_gathering",
+          "loading_cost": "medium",
+          "stop_condition": "Stop after bounded candidate problems and unresolved evidence gaps are explicit."
+        },
+        {
+          "skill_id": "commercial-fit",
+          "selection_status": "demoted",
+          "task_types": ["opportunity-validation", "portfolio-decision"],
+          "decision_questions": ["Is the problem commercially testable with a reachable buyer?"],
+          "distinct_evidence": "Buyer, urgency, willingness to pay, access, and testability.",
+          "allowed_use": "decision_support",
+          "loading_cost": "medium",
+          "stop_condition": "Stop after the commercial decision, disconfirming evidence, and next test are explicit."
+        },
+        {
+          "skill_id": "data-analytics:market-sizing",
+          "selection_status": "shadow_only",
+          "task_types": ["market-sizing", "portfolio-decision"],
+          "decision_questions": ["How large is the reachable opportunity under stated assumptions?"],
+          "distinct_evidence": "Source-backed market estimates, segmentation, and sensitivity ranges.",
+          "allowed_use": "evidence_gathering",
+          "loading_cost": "large",
+          "stop_condition": "Stop after the decision-relevant range and uncertainty are quantified."
+        },
+        {
+          "skill_id": "yc-founder-gtm-review",
+          "selection_status": "shadow_only",
+          "task_types": ["wedge-review", "portfolio-decision"],
+          "decision_questions": ["Does the proposed pain, wedge, and first channel survive a one-week falsification lens?"],
+          "distinct_evidence": "A bounded practitioner-style counterargument and falsification test.",
+          "allowed_use": "decision_support",
+          "loading_cost": "small",
+          "stop_condition": "Stop after the wedge, strongest objection, and falsification action are named."
+        }
+      ]
+    },
+    {
+      "role_id": "planning",
+      "role_os_skill": "planning-operating-system",
+      "role_kernel_id": "role-kernel:planning",
+      "default_task_type": "execution-planning",
+      "default_verifier": "seungjeongwon",
+      "optional_specialists": [
+        {
+          "skill_id": "uigwe",
+          "selection_status": "shadow_only",
+          "task_types": ["intent-clarification", "design-reentry"],
+          "decision_questions": ["Are the goal, non-goals, and verification bar stable enough to decompose?"],
+          "distinct_evidence": "Approved planning packets, gate state, and re-entry contract.",
+          "allowed_use": "decision_support",
+          "loading_cost": "medium",
+          "stop_condition": "Stop when the planning gate is approved, blocked, or returned for clarification."
+        },
+        {
+          "skill_id": "data-analytics:design-kpis",
+          "selection_status": "shadow_only",
+          "task_types": ["metric-planning", "experiment-planning"],
+          "decision_questions": ["Which metric definitions can actually decide success or failure?"],
+          "distinct_evidence": "Metric formulas, windows, units, denominators, and exclusions.",
+          "allowed_use": "decision_support",
+          "loading_cost": "medium",
+          "stop_condition": "Stop when decision-grade KPI definitions and ownership are explicit."
+        },
+        {
+          "skill_id": "data-analytics:gather-business-context",
+          "selection_status": "shadow_only",
+          "task_types": ["business-context", "execution-planning"],
+          "decision_questions": ["Which business constraints can change scope, order, or acceptance?"],
+          "distinct_evidence": "Connected business definitions, owners, and operating constraints.",
+          "allowed_use": "evidence_gathering",
+          "loading_cost": "medium",
+          "stop_condition": "Stop when material planning constraints and unknowns are captured."
+        }
+      ]
+    },
+    {
+      "role_id": "marketing",
+      "role_os_skill": "marketing-operating-system",
+      "role_kernel_id": "role-kernel:marketing",
+      "default_task_type": "demand-positioning",
+      "default_verifier": "seungjeongwon",
+      "optional_specialists": [
+        {
+          "skill_id": "copywriting-operating-system",
+          "selection_status": "demoted",
+          "task_types": ["copy", "app-store", "paywall", "lifecycle-message", "mobile-monetization"],
+          "decision_questions": ["Which evidence-backed message best serves the settled marketing decision?"],
+          "distinct_evidence": "Claim, proof, voice, objection, channel, and localization-aware copy method.",
+          "allowed_use": "implementation",
+          "loading_cost": "medium",
+          "stop_condition": "Stop after the requested copy and its claim or proof constraints are complete."
+        },
+        {
+          "skill_id": "data-analytics:metric-diagnostics",
+          "selection_status": "demoted",
+          "task_types": ["metric-diagnosis", "growth-diagnosis", "experiment-growth"],
+          "decision_questions": ["Why did the named marketing or funnel metric change?"],
+          "distinct_evidence": "Segmented metric movement, denominator checks, and alternative explanations.",
+          "allowed_use": "evidence_gathering",
+          "loading_cost": "large",
+          "stop_condition": "Stop when the decision-relevant cause ranking and evidence gaps are explicit."
+        },
+        {
+          "skill_id": "yc-founder-gtm-review",
+          "selection_status": "demoted",
+          "task_types": ["positioning", "first-channel", "launch", "demand-positioning"],
+          "decision_questions": ["Is the pain, wedge, position, and first channel specific and falsifiable?"],
+          "distinct_evidence": "A narrow founder-GTM counter-lens and one-week falsification plan.",
+          "allowed_use": "decision_support",
+          "loading_cost": "small",
+          "stop_condition": "Stop after one positioning decision and one falsification action."
+        }
+      ]
+    },
+    {
+      "role_id": "design",
+      "role_os_skill": "design-operating-system",
+      "role_kernel_id": "role-kernel:design",
+      "default_task_type": "flow-interaction",
+      "default_verifier": "qa-release",
+      "optional_specialists": [
+        {
+          "skill_id": "product-design:index",
+          "selection_status": "demoted",
+          "task_types": ["flow-design", "interaction-design", "design-audit", "flow-interaction"],
+          "decision_questions": ["Which experience structure best serves the named user task and platform?"],
+          "distinct_evidence": "Product-design patterns, alternative generation, and flow critique.",
+          "allowed_use": "decision_support",
+          "loading_cost": "medium",
+          "stop_condition": "Stop after a selected direction and rejected alternatives are documented."
+        },
+        {
+          "skill_id": "figma:figma-generate-design",
+          "selection_status": "shadow_only",
+          "task_types": ["visual-system", "prototype", "visual-system-accessibility"],
+          "decision_questions": ["How should the approved experience direction become an editable design artifact?"],
+          "distinct_evidence": "Editable Figma artifact and design-system structure.",
+          "allowed_use": "implementation",
+          "loading_cost": "large",
+          "stop_condition": "Stop when the bounded editable artifact and handoff evidence exist."
+        }
+      ]
+    },
+    {
+      "role_id": "development",
+      "role_os_skill": "development-operating-system",
+      "role_kernel_id": "role-kernel:development",
+      "default_task_type": "feature-implementation",
+      "default_verifier": "qa-release",
+      "optional_specialists": [
+        {
+          "skill_id": "codex-security:security-diff-scan",
+          "selection_status": "demoted",
+          "task_types": ["security-review", "high-risk-change", "architecture-risk"],
+          "decision_questions": ["Does this bounded diff introduce a material security regression?"],
+          "distinct_evidence": "Threat-focused diff findings and validation targets.",
+          "allowed_use": "verification",
+          "loading_cost": "large",
+          "stop_condition": "Stop after in-scope findings, evidence, and residual risks are reported."
+        }
+      ]
+    },
+    {
+      "role_id": "qa-release",
+      "role_os_skill": "qa-release-operating-system",
+      "role_kernel_id": "role-kernel:qa-release",
+      "default_task_type": "test-strategy",
+      "default_verifier": "seungjeongwon",
+      "optional_specialists": [
+        {
+          "skill_id": "build-ios-apps:ios-debugger-agent",
+          "selection_status": "demoted",
+          "task_types": ["ios-runtime", "simulator-verification", "device-verification", "ios-matching-surfaces"],
+          "decision_questions": ["Does the exact iOS candidate satisfy the criterion on the named runtime surface?"],
+          "distinct_evidence": "Xcode build, Simulator or device runtime, logs, and interaction evidence.",
+          "allowed_use": "verification",
+          "loading_cost": "large",
+          "stop_condition": "Stop when the criterion is observed, failed, blocked, or remains explicitly unverified."
+        },
+        {
+          "skill_id": "codex-security:security-diff-scan",
+          "selection_status": "shadow_only",
+          "task_types": ["security-regression", "release-verification", "release-readiness"],
+          "decision_questions": ["Does the release candidate contain a material security regression in the changed scope?"],
+          "distinct_evidence": "Diff-scoped security findings and validation evidence.",
+          "allowed_use": "verification",
+          "loading_cost": "large",
+          "stop_condition": "Stop after findings and residual security risks are dispositioned."
+        }
+      ]
+    }
+  ]
+}

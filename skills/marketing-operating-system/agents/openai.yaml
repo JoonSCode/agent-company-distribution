@@ -1,0 +1,4 @@
+interface:
+  display_name: "Marketing Operating System"
+  short_description: "Turn market evidence into focused marketing decisions."
+  default_prompt: "Use $marketing-operating-system to diagnose this marketing decision and design one evidence-backed strategy, experiment, and measurement loop."

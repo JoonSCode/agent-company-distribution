@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "id": "incident",
+  "job_type": "incident",
+  "objective": "Contain and repair a bounded incident with independent diagnosis and reproduction evidence before any risky mutation.",
+  "stages": [
+    {"id": "containment-boundary", "owner_roles": ["development", "qa-release"], "depends_on": [], "execution_hint": "sequential-fan-in", "exit_evidence": ["impact", "affected surface", "safe diagnostic scope"]},
+    {"id": "root-cause-trace", "owner_roles": ["development"], "depends_on": ["containment-boundary"], "execution_hint": "parallel-candidate", "exit_evidence": ["causal path", "repair options"]},
+    {"id": "reproduction-and-impact", "owner_roles": ["qa-release"], "depends_on": ["containment-boundary"], "execution_hint": "parallel-candidate", "exit_evidence": ["reproduction", "impact matrix", "negative control"]},
+    {"id": "repair", "owner_roles": ["development"], "depends_on": ["root-cause-trace", "reproduction-and-impact"], "execution_hint": "sequential-or-approval-gated", "exit_evidence": ["repair artifact", "regression proof"]},
+    {"id": "recovery-verification", "owner_roles": ["qa-release"], "depends_on": ["repair"], "execution_hint": "sequential", "exit_evidence": ["recovery observation", "residual risk"]}
+  ],
+  "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
+  "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}
+}

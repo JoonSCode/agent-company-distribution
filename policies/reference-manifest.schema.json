@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/reference-manifest.v0.1.json",
+  "title": "Agent Company reference manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schema_version", "supported_layers", "references"],
+  "properties": {
+    "format": {"const": "agent-company.reference-manifest/v0.1"},
+    "schema_version": {"const": "0.1"},
+    "supported_layers": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "role_kernel"},
+        {"const": "task_pack"},
+        {"const": "current_source_set"},
+        {"const": "job_evidence"},
+        {"const": "evaluation_set"}
+      ],
+      "items": false,
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "references": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/reference"}
+    }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "nullableId": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "reviewed_at", "recheck_triggers"],
+      "properties": {
+        "mode": {
+          "enum": ["hash_pinned", "revalidate_before_use", "time_bounded", "job_bound", "evaluation_only"]
+        },
+        "reviewed_at": {"type": "string", "format": "date"},
+        "expires_at": {"type": ["string", "null"], "format": "date"},
+        "recheck_triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "layer",
+        "owner_role",
+        "ref",
+        "sha256",
+        "applies_to_tasks",
+        "decision_questions",
+        "authority_class",
+        "allowed_uses",
+        "freshness",
+        "loading_cost",
+        "dependencies",
+        "conflicts",
+        "evaluation_refs",
+        "status",
+        "replaced_by"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "layer": {
+          "enum": ["role_kernel", "task_pack", "current_source_set", "job_evidence", "evaluation_set"]
+        },
+        "owner_role": {
+          "enum": ["founder", "planning", "marketing", "design", "development", "qa-release"]
+        },
+        "ref": {"type": "string", "minLength": 1},
+        "source_url": {"type": ["string", "null"]},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "applies_to_tasks": {"$ref": "#/$defs/strings"},
+        "decision_questions": {"$ref": "#/$defs/strings"},
+        "authority_class": {
+          "enum": ["canonical", "primary", "operational", "vetted_reference", "inspiration_only"]
+        },
+        "allowed_uses": {"$ref": "#/$defs/strings"},
+        "freshness": {"$ref": "#/$defs/freshness"},
+        "loading_cost": {"enum": ["small", "medium", "large"]},
+        "dependencies": {"$ref": "#/$defs/strings"},
+        "conflicts": {"$ref": "#/$defs/strings"},
+        "evaluation_refs": {"$ref": "#/$defs/strings"},
+        "status": {"enum": ["active", "deprecated", "rejected"]},
+        "replaced_by": {"$ref": "#/$defs/nullableId"}
+      }
+    }
+  }
+}

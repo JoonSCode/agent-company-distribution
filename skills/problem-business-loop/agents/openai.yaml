@@ -1,0 +1,4 @@
+interface:
+  display_name: "Problem Business Loop"
+  short_description: "Loop problem search and business validation."
+  default_prompt: "Use problem-business-loop to run problem-discovery, pass candidates to commercial-fit, and turn failures into new discovery constraints."

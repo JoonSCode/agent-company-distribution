@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/company-job.v0.1.json",
+  "title": "Agent Company Job Projection",
+  "description": "Private app-studio policy projection. Generic execution state remains in referenced King Sejong Core artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "job_id",
+    "job_type",
+    "objective",
+    "source_request",
+    "selected_recipe_id",
+    "selected_roles",
+    "workflow_ref",
+    "policy_refs",
+    "default_budget",
+    "kickoff",
+    "material_ambiguities",
+    "uigwe_gate",
+    "core_execution_refs"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.job/v0.1"},
+    "job_id": {"type": "string", "minLength": 1},
+    "job_type": {
+      "enum": ["new-app", "improvement", "planning", "promotion", "release", "incident", "portfolio"]
+    },
+    "objective": {"type": "string", "minLength": 1},
+    "source_request": {"type": "string", "minLength": 1},
+    "selected_recipe_id": {"type": "string", "minLength": 1},
+    "selected_roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["founder", "planning", "design", "development", "marketing", "qa-release"]
+      }
+    },
+    "workflow_ref": {"type": "string", "minLength": 1},
+    "policy_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "company_context": {
+      "description": "Machine-bound profitable-app mission and initiative context emitted for every newly created job; omitted only by historical v0.1 artifacts.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "charter_ref",
+        "charter_sha256",
+        "initiative_origin",
+        "initiative_id",
+        "target_kind",
+        "target_ref",
+        "commercial_hypothesis",
+        "success_metrics",
+        "failure_metrics",
+        "guardrails",
+        "commercial_evidence_state",
+        "external_action_authority",
+        "execution_owner",
+        "final_verification_owner"
+      ],
+      "properties": {
+        "charter_ref": {"const": "policies/company-charter.json"},
+        "charter_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "initiative_origin": {"enum": ["ceo-directed", "company-initiated"]},
+        "initiative_id": {"type": "string", "minLength": 1},
+        "target_kind": {"enum": ["existing-app", "new-app", "portfolio"]},
+        "target_ref": {"type": "string", "minLength": 1},
+        "commercial_hypothesis": {"type": "string", "minLength": 1},
+        "success_metrics": {"$ref": "#/$defs/nonEmptyRefs"},
+        "failure_metrics": {"$ref": "#/$defs/nonEmptyRefs"},
+        "guardrails": {"$ref": "#/$defs/nonEmptyRefs"},
+        "commercial_evidence_state": {"enum": ["unknown", "pending", "observed"]},
+        "external_action_authority": {"const": "explicit-ceo-approval"},
+        "execution_owner": {"const": "king-sejong-core"},
+        "final_verification_owner": {"const": "seungjeongwon"}
+      }
+    },
+    "default_budget": {"$ref": "#/$defs/delegationBudget"},
+    "kickoff": {
+      "description": "Bounded company-meeting evidence recorded after intake and before any Uigwe or execution transition.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "participants", "agenda", "intake_decision", "selected_squad", "budget", "workflow_ref"],
+      "properties": {
+        "status": {"const": "recorded"},
+        "participants": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["ceo", "sejong-lead", "founder", "planning", "design", "development", "marketing", "qa-release"]
+          }
+        },
+        "agenda": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "intake_decision": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["job_type", "material_ambiguity_count", "company_plan_topology"],
+          "properties": {
+            "job_type": {
+              "enum": ["new-app", "improvement", "planning", "promotion", "release", "incident", "portfolio"]
+            },
+            "material_ambiguity_count": {"type": "integer", "minimum": 0},
+            "company_plan_topology": {"type": "boolean"}
+          }
+        },
+        "selected_squad": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["recipe_id", "roles"],
+          "properties": {
+            "recipe_id": {"type": "string", "minLength": 1},
+            "roles": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": ["founder", "planning", "design", "development", "marketing", "qa-release"]
+              }
+            }
+          }
+        },
+        "budget": {"$ref": "#/$defs/delegationBudget"},
+        "workflow_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "material_ambiguities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "decision_impact"],
+        "properties": {
+          "question": {"type": "string", "minLength": 1},
+          "decision_impact": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "uigwe_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "status"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "status": {"enum": ["not-needed", "pending-user", "approved"]},
+        "packet_ref": {"type": "string", "minLength": 1},
+        "packet_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "packet_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "decision_ref": {"type": "string", "minLength": 1},
+        "decision_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "decision_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "oneOf": [
+        {
+          "maxProperties": 2,
+          "properties": {"required": {"const": false}, "status": {"const": "not-needed"}}
+        },
+        {
+          "maxProperties": 2,
+          "properties": {"required": {"const": true}, "status": {"const": "pending-user"}}
+        },
+        {
+          "minProperties": 8,
+          "maxProperties": 8,
+          "required": ["packet_ref", "packet_refs", "packet_sha256", "decision_ref", "decision_hash", "decision_sha256"],
+          "properties": {
+            "required": {"const": true},
+            "status": {"const": "approved"},
+            "packet_refs": {"minItems": 1, "maxItems": 1}
+          }
+        }
+      ]
+    },
+    "core_execution_refs": {
+      "description": "References only; King Sejong Core owns worker lifecycle, waves, receipts, and approval mechanisms.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "route_binding": {
+      "description": "Optional v0.2 Squad binding for migration compatibility. Direct and Role do not create this v0.1 job.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "core_decision_ref", "core_decision_sha256", "ordinary_role_ids", "external_mutation", "approval_required", "route_decision", "route_decision_sha256", "route_binding_sha256"],
+      "properties": {
+        "format": {"const": "agent-company.route-binding/v0.2"},
+        "core_decision_ref": {"type": "string", "minLength": 1},
+        "core_decision_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "ordinary_role_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"enum": ["founder", "planning", "design", "development", "marketing", "qa-release"]}
+        },
+        "external_mutation": {"type": "boolean"},
+        "approval_required": {"type": "boolean"},
+        "route_decision": {
+          "description": "The complete route-decision document; strict semantic equality is revalidated against its Core source at runtime.",
+          "type": "object",
+          "minProperties": 13
+        },
+        "route_decision_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "route_binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "delegationBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_total_workers", "max_concurrency", "max_spawn_depth", "max_rounds"],
+      "properties": {
+        "max_total_workers": {"type": "integer", "minimum": 1},
+        "max_concurrency": {"type": "integer", "minimum": 1},
+        "max_spawn_depth": {"type": "integer", "minimum": 1},
+        "max_rounds": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

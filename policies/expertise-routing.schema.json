@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/expertise-routing.v0.1.json",
+  "title": "Agent Company deterministic expertise routing policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "roles"],
+  "properties": {
+    "format": {"const": "agent-company.expertise-routing/v0.1"},
+    "roles": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/role"}
+    }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "taskRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_type", "reference_id", "triggers"],
+      "properties": {
+        "task_type": {"type": "string", "minLength": 1},
+        "reference_id": {"type": "string", "pattern": "^task-pack:[a-z-]+:[a-z-]+$"},
+        "triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "specialistRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "triggers"],
+      "properties": {
+        "skill_id": {"type": "string", "minLength": 1},
+        "triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role_id",
+        "default_task_type",
+        "task_rules",
+        "specialist_rules"
+      ],
+      "properties": {
+        "role_id": {
+          "enum": [
+            "founder",
+            "planning",
+            "marketing",
+            "design",
+            "development",
+            "qa-release"
+          ]
+        },
+        "default_task_type": {"type": "string", "minLength": 1},
+        "task_rules": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/taskRule"}
+        },
+        "specialist_rules": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/specialistRule"}
+        }
+      }
+    }
+  }
+}

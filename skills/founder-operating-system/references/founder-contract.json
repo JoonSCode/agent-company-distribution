@@ -1,0 +1,59 @@
+{
+  "format": "agent-company.founder-contract/v0.1",
+  "decision_readiness": [
+    {
+      "status": "blocked",
+      "required_evidence": ["known", "inferred", "unknown", "reversal question", "next evidence action"],
+      "allowed_outputs": ["evidence request", "non-committing option frame"],
+      "forbidden_outputs": ["portfolio commitment", "budget allocation", "CEO decision claim"]
+    },
+    {
+      "status": "conditional",
+      "required_evidence": ["credible opportunity", "material assumption", "smallest reversible test", "stop condition"],
+      "allowed_outputs": ["bounded learning commitment"],
+      "forbidden_outputs": ["irreversible commitment", "unsupported certainty"]
+    },
+    {
+      "status": "ready",
+      "required_evidence": ["decision alternatives", "opportunity cost", "success and kill criteria", "owner and horizon"],
+      "allowed_outputs": ["bounded portfolio recommendation", "Planning or Uigwe handoff"],
+      "forbidden_outputs": ["CEO impersonation", "gate approval", "final verification"]
+    }
+  ],
+  "stages": [
+    {"id": "decision_mandate", "required_evidence": ["decision question", "decision owner", "horizon", "reversibility"]},
+    {"id": "problem_evidence", "required_evidence": ["observed pain or progress", "frequency", "workaround", "inaction consequence"]},
+    {"id": "commercial_fit", "required_evidence": ["buyer", "urgency", "payment evidence or unknown", "access", "testability"]},
+    {"id": "strategic_fit", "required_evidence": ["capability advantage", "founder fit", "distribution access", "timing"]},
+    {"id": "portfolio_tradeoff", "required_evidence": ["opportunity cost", "current commitments", "runway or capacity", "not funded"]},
+    {"id": "falsifiable_choice", "required_evidence": ["recommendation", "serious alternative", "disconfirming evidence", "success", "failure", "kill", "revisit"]},
+    {"id": "bounded_handoff", "required_evidence": ["next owner", "next surface", "authority boundary", "unverified claims"]}
+  ],
+  "evidence_authority": ["observed customer behavior", "commercial transaction or credible commitment", "product and business data", "direct interview or field evidence", "sourced market evidence", "explicitly labeled practitioner lens"],
+  "required_decision_fields": ["decision_question", "decision_owner", "decision_readiness", "known", "inferred", "unknown", "recommended_action", "strongest_support", "strongest_disconfirmation", "serious_alternative", "assumptions", "opportunity_cost", "next_reversible_commitment", "success_criteria", "failure_criteria", "kill_criteria", "revisit_trigger", "next_owner", "next_surface"],
+  "portfolio_rules": {
+    "large_market_is_not_demand_proof": true,
+    "sunk_cost_is_not_continuation_evidence": true,
+    "irreversible_commitment_requires_ready_status": true,
+    "conditional_status_prefers_smallest_reversible_test": true
+  },
+  "specialist_routing": {
+    "default_specialist_limit": 2,
+    "request_when": "the specialist can change a named decision with distinct evidence or method and a bounded stop condition",
+    "optional_skills": ["problem-discovery", "commercial-fit", "problem-business-loop", "data-analytics:market-sizing", "data-analytics:product-business-analysis", "why-gate", "yc-founder-gtm-review", "evidence-debate"],
+    "famous_person_policy": "optional lens only; never authority, endorsement, or complete operating system"
+  },
+  "authority_boundary": {
+    "founder_may": ["frame portfolio evidence", "recommend continue, change, pause, or stop", "expose opportunity cost", "define falsification criteria"],
+    "founder_must_not": ["impersonate the CEO", "approve Uigwe gates", "authorize external action", "claim execution success", "claim final verification"],
+    "planning_owner": "uigwe or planning",
+    "final_verification_owner": "seungjeongwon"
+  },
+  "quality_gate": {
+    "comparison": "same decision packet, evidence, tools, and time budget",
+    "blind_review": true,
+    "hard_no_regression": ["evidence honesty", "opportunity cost", "falsifiability", "authority boundary"],
+    "inconclusive_disposition": "do not claim improvement or promote the lane"
+  }
+}
+

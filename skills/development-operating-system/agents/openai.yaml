@@ -1,0 +1,4 @@
+interface:
+  display_name: "Development Operating System"
+  short_description: "Run bounded, evidence-backed engineering work."
+  default_prompt: "Use $development-operating-system to own this approved engineering slice through causal diagnosis, implementation evidence, and an independent verification handoff."

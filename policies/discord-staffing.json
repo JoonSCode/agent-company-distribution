@@ -1,0 +1,48 @@
+{
+  "format": "agent-company.discord-staffing/v0.1-draft",
+  "authority": "staffing_projection_only",
+  "core_decision_format": "sejong.discord-model-route/v0.1-draft",
+  "assignments": {
+    "terra": {
+      "company_role": "founder",
+      "function": "controller_projection",
+      "may_change_core_decision": false,
+      "may_modify_code": false
+    },
+    "luna": {
+      "company_role": "development",
+      "function": "implementation_worker",
+      "authority": "evidence_only"
+    },
+    "sol": {
+      "company_role": "qa-release",
+      "function": "independent_reviewer",
+      "sandbox": "read-only",
+      "authority": "approval_recommendation_only"
+    },
+    "antigravity": {
+      "company_role": null,
+      "function": "shadow_second_opinion",
+      "sandbox": "read-only",
+      "state": "shadow",
+      "canonical_authority": false
+    }
+  },
+  "forbidden_overrides": [
+    "selected_route",
+    "model",
+    "sandbox",
+    "approval_gate",
+    "execution_scope",
+    "lease",
+    "review_verdict",
+    "completion_status"
+  ],
+  "promotion": {
+    "default_state": "shadow",
+    "automatic_promotion": false,
+    "requires_repeated_task_class_evidence": true,
+    "requires_fresh_independent_review": true,
+    "requires_explicit_approval": true
+  }
+}

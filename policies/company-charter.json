@@ -1,0 +1,76 @@
+{
+  "format": "agent-company.charter/v0.1",
+  "company_id": "agent-company",
+  "ceo": {
+    "role": "ceo",
+    "owns": [
+      "company-purpose",
+      "material-strategy",
+      "external-mutations",
+      "public-or-irreversible-actions",
+      "financial-or-secret-actions",
+      "company-session-exit"
+    ]
+  },
+  "mission": {
+    "primary_outcome": "profitable-app-portfolio",
+    "work_families": [
+      "market-existing-app",
+      "redesign-existing-app",
+      "add-features",
+      "maintain-or-repair",
+      "discover-new-need",
+      "develop-new-app",
+      "review-portfolio"
+    ]
+  },
+  "initiation": {
+    "modes": ["ceo-directed", "company-initiated"],
+    "company_initiated_trigger": "resumable-tick",
+    "empty_queue_action": "portfolio-discovery"
+  },
+  "operating_model": {
+    "session": "continuous-until-ceo-exit",
+    "execution_model": "single-run-resumable-tick",
+    "state_root": "${SEJONG_HOME}/runs/agent-company/company",
+    "max_active_cycles": 1,
+    "cycle_budget": {
+      "max_total_workers": 8,
+      "max_concurrency": 3,
+      "max_rounds": 4
+    },
+    "staffing": {
+      "role_ids_are_capability_lanes": true,
+      "multiple_assignments_per_role": true,
+      "parallelism_requires_disjoint_write_scopes": true
+    }
+  },
+  "commercial_evidence": {
+    "unknown_is_explicit": true,
+    "observation_states": ["unknown", "pending", "observed"],
+    "currency": "KRW",
+    "required_metric_ids": [
+      "gross_revenue",
+      "net_revenue",
+      "subscription_revenue",
+      "iap_revenue",
+      "ad_revenue",
+      "refunds",
+      "marketing_spend",
+      "infrastructure_cost",
+      "installs",
+      "active_users",
+      "paying_users",
+      "new_paying_users"
+    ]
+  },
+  "authority_boundaries": {
+    "local_reversible": "company-within-approved-job",
+    "external_read_only": "existing-user-authorization",
+    "external_mutation": "explicit-ceo-approval",
+    "public_or_irreversible": "explicit-ceo-approval",
+    "financial_or_secret": "explicit-ceo-approval",
+    "execution_owner": "king-sejong-core",
+    "final_verification_owner": "seungjeongwon"
+  }
+}
