@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Methods"
+  short_description: "Check saved research, then adapt a method to the deliverable."
+  default_prompt: "Use research-methods before inventing a method for an unfamiliar task. Check the research cache first and name the deliverable change and check."

@@ -58,10 +58,13 @@ __all__ = [
 
 
 def default_paths() -> LaunchdPaths:
+    from agent_company_launchd_install import selected_update_logs
+
+    stdout_log, stderr_log = selected_update_logs()
     return LaunchdPaths(
         Path.home() / "Library" / "LaunchAgents" / f"{LAUNCHD_LABEL}.plist",
-        Path("/private/tmp/agent-company-update.out.log"),
-        Path("/private/tmp/agent-company-update.err.log"),
+        stdout_log,
+        stderr_log,
     )
 
 
@@ -75,12 +78,12 @@ def log_report(path: Path, *, now: float, stale_seconds: float) -> dict[str, Jso
     except FileNotFoundError:
         return {
             "path": str(path), "present": False, "fresh": False, "age_seconds": None,
-            "mtime_epoch": None, "integrity": "missing",
+            "mtime_epoch": None, "size_bytes": None, "integrity": "missing",
         }
     except OSError:
         return {
             "path": str(path), "present": True, "fresh": False, "age_seconds": None,
-            "mtime_epoch": None, "integrity": "unsafe",
+            "mtime_epoch": None, "size_bytes": None, "integrity": "unsafe",
         }
     mode = stat.S_IMODE(metadata.st_mode)
     if (
@@ -89,19 +92,21 @@ def log_report(path: Path, *, now: float, stale_seconds: float) -> dict[str, Jso
     ):
         return {
             "path": str(path), "present": True, "fresh": False, "age_seconds": None,
-            "mtime_epoch": None, "integrity": "unsafe",
+            "mtime_epoch": None, "size_bytes": None, "integrity": "unsafe",
         }
     modified = metadata.st_mtime
     if not math.isfinite(modified) or modified > now + FUTURE_SKEW_SECONDS:
         return {
             "path": str(path), "present": True, "fresh": False, "age_seconds": None,
-            "mtime_epoch": modified if math.isfinite(modified) else None, "integrity": "future",
+            "mtime_epoch": modified if math.isfinite(modified) else None,
+            "size_bytes": metadata.st_size, "integrity": "future",
         }
     age = max(0, int(now - modified))
     fresh = age <= stale_seconds
     return {
         "path": str(path), "present": True, "fresh": fresh, "age_seconds": age,
-        "mtime_epoch": modified, "integrity": "ok" if fresh else "stale",
+        "mtime_epoch": modified, "size_bytes": metadata.st_size,
+        "integrity": "ok" if fresh else "stale",
     }
 
 
@@ -120,11 +125,75 @@ def calendar_contract(content: bytes) -> bool:
     )
 
 
+def snapshot_updater_root(content: bytes) -> Path | None:
+    """Bind a Git-free active snapshot to its exact persistent updater source.
+
+    The plist supplies a candidate, never authority. Existing installation
+    ledgers authenticate the manifest; its content and commit authenticate the
+    source. A normal source checkout keeps the original ROOT comparison.
+    """
+    if ROOT.parent.parent.name != "snapshots" or (ROOT / ".git").exists():
+        return None
+    from agent_company_deps import run_git
+    from agent_company_install_engine import active_payload, verify_prior
+    from agent_company_install_fs import ensure_regular_tree
+    from agent_company_install_io import install_paths, read_json
+    from agent_company_install_source import COPY_ENTRIES, SKIP_DIRS, tree_hash
+    from agent_company_install_state import load_index
+
+    paths = install_paths(ROOT.parents[3])
+    index = load_index(paths)
+    active = active_payload(paths)
+    if index is None or active is None or index.snapshot_id != ROOT.parent.name:
+        raise InstallError("mixed_generation", "observer is not the active managed snapshot")
+    verify_prior(paths, index)
+    manifest = read_json(ROOT.parent / "manifest.json")
+    parsed = plistlib.loads(content)
+    arguments = parsed.get("ProgramArguments") if isinstance(parsed, dict) else None
+    if (
+        not isinstance(arguments, list) or len(arguments) != 3
+        or arguments[0] != "/bin/bash" or arguments[2] != "--auto"
+        or not isinstance(arguments[1], str)
+    ):
+        raise InstallError("unsafe_path", "updater arguments differ from the installed contract")
+    updater = Path(arguments[1])
+    source = updater.parent.parent
+    if (
+        not updater.is_absolute() or ".." in updater.parts
+        or updater != source / "scripts" / "update.sh" or source != source.resolve()
+    ):
+        raise InstallError("unsafe_path", "updater source path is not canonical")
+    before = source.lstat()
+    if not stat.S_ISDIR(before.st_mode) or before.st_uid != os.geteuid() or before.st_mode & 0o022:
+        raise InstallError("unsafe_path", "updater source must be an owned private-write directory")
+    for entry in COPY_ENTRIES:
+        required = source / entry
+        ensure_regular_tree(required)
+        for item in (required, *required.rglob("*")):
+            if any(part in SKIP_DIRS for part in item.relative_to(source).parts):
+                continue
+            metadata = item.lstat()
+            if (
+                metadata.st_uid != os.geteuid() or metadata.st_mode & 0o022
+                or not (stat.S_ISREG(metadata.st_mode) or stat.S_ISDIR(metadata.st_mode))
+            ):
+                raise InstallError("unsafe_path", "updater source contains unsafe owner, mode, or file type")
+    expected_hash = manifest.get("source_content_sha256")
+    if tree_hash(source) != expected_hash:
+        raise InstallError("hash_mismatch", "updater source differs from the active manifest")
+    identity = run_git(["rev-parse", "--show-toplevel", "HEAD"], cwd=source)
+    after = source.lstat()
+    if (
+        not identity.ok or identity.stdout.splitlines() != [str(source), manifest.get("agent_company_commit")]
+        or tree_hash(source) != expected_hash
+        or (before.st_dev, before.st_ino, before.st_mode, before.st_uid)
+        != (after.st_dev, after.st_ino, after.st_mode, after.st_uid)
+    ):
+        raise InstallError("source_unavailable", "updater source identity changed or differs from the active commit")
+    return source
+
+
 def plist_report(path: Path) -> tuple[bool, str, bool]:
-    try:
-        expected = rendered_plist()
-    except InstallError:
-        return True, "unsafe", False
     try:
         descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
     except FileNotFoundError:
@@ -141,8 +210,14 @@ def plist_report(path: Path) -> tuple[bool, str, bool]:
     safe = (
         stat.S_ISREG(metadata.st_mode) and not stat.S_ISLNK(metadata.st_mode)
         and metadata.st_uid == os.geteuid() and metadata.st_nlink == 1 and mode in {0o600, 0o644}
-        and content == expected
     )
+    if not safe:
+        return True, "unsafe", False
+    try:
+        expected = rendered_plist(updater_root=snapshot_updater_root(content))
+    except (InstallError, OSError, ValueError, plistlib.InvalidFileException):
+        return True, "unsafe", False
+    safe = content == expected
     return True, "ok" if safe else "unsafe", safe and calendar_contract(content)
 
 
@@ -219,11 +294,13 @@ def launchd_report(
     else:
         stdout_log = {
             "path": str(observed_paths.stdout_log), "present": False, "fresh": False,
-            "age_seconds": None, "mtime_epoch": None, "integrity": "unobserved",
+            "age_seconds": None, "mtime_epoch": None, "size_bytes": None,
+            "integrity": "unobserved",
         }
         stderr_log = {
             "path": str(observed_paths.stderr_log), "present": False, "fresh": False,
-            "age_seconds": None, "mtime_epoch": None, "integrity": "unobserved",
+            "age_seconds": None, "mtime_epoch": None, "size_bytes": None,
+            "integrity": "unobserved",
         }
     logs_fresh = bool(stdout_log["fresh"]) and bool(stderr_log["fresh"])
     return {

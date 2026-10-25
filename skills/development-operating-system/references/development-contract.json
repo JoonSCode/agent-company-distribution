@@ -38,7 +38,7 @@
   },
   "authority_boundary": {
     "development_may": ["diagnose", "recommend", "implement approved scope", "run focused automated verification", "prepare QA handoff"],
-    "final_verification_owners": ["qa-release", "seungjeongwon"],
+    "final_verification_owners": ["qa-release"],
     "development_forbidden_claims": ["final_verification", "gate_approval", "release_ready", "no_regressions", "override_king_sejong"]
   },
   "handoff_normalization": {
@@ -48,8 +48,8 @@
     "allowed_forbidden_claims": [
       "final verification authority",
       "gate approval authority",
-      "override King Sejong",
-      "replaces King Sejong"
+      "override Company lead",
+      "replaces Company lead"
     ]
   },
   "minimum_solution_policy": {
@@ -66,6 +66,20 @@
     "root_cause_once": true,
     "deliberate_simplification": {
       "required_fields": ["ceiling", "revisit_signal"]
+    },
+    "completion_self_check": {
+      "required_before_handoff": true,
+      "preservation_targets": [
+        "requirements",
+        "safety_boundaries",
+        "focused_tests"
+      ],
+      "simplification_candidates": [
+        "deletion",
+        "repository_reuse",
+        "standard_library",
+        "native_platform"
+      ]
     },
     "never_simplify": [
       "trust_boundary_validation",

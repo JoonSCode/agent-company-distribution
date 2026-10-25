@@ -16,7 +16,7 @@
     {
       "status": "ready",
       "required_evidence": ["decision alternatives", "opportunity cost", "success and kill criteria", "owner and horizon"],
-      "allowed_outputs": ["bounded portfolio recommendation", "Planning or Uigwe handoff"],
+      "allowed_outputs": ["bounded portfolio recommendation", "Planning or Planning handoff"],
       "forbidden_outputs": ["CEO impersonation", "gate approval", "final verification"]
     }
   ],
@@ -45,9 +45,9 @@
   },
   "authority_boundary": {
     "founder_may": ["frame portfolio evidence", "recommend continue, change, pause, or stop", "expose opportunity cost", "define falsification criteria"],
-    "founder_must_not": ["impersonate the CEO", "approve Uigwe gates", "authorize external action", "claim execution success", "claim final verification"],
-    "planning_owner": "uigwe or planning",
-    "final_verification_owner": "seungjeongwon"
+    "founder_must_not": ["impersonate the CEO", "approve Planning gates", "authorize external action", "claim execution success", "claim final verification"],
+    "planning_owner": "planning or planning",
+    "final_verification_owner": "qa-release"
   },
   "quality_gate": {
     "comparison": "same decision packet, evidence, tools, and time budget",

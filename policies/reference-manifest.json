@@ -16,7 +16,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/founder-contract.json",
       "source_url": null,
-      "sha256": "b0aa74ed14ad41072adf01e700028ba185b052fd29e7c9a613b5ba265f7fffc7",
+      "sha256": "709ba90fea7ad79a7c0a5a459caf6bd1b22cad21268cc0335dc3c7b41d6cf2ee",
       "applies_to_tasks": [
         "*"
       ],
@@ -53,7 +53,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/task-packs/portfolio-decision.md",
       "source_url": null,
-      "sha256": "20488dfa0c3bc61596b4644fa5316450ec21c3e9d90d4f70dca1672aab23e08c",
+      "sha256": "fa7c0794ae9340fea0add779ee1ebaab5a8430fabc22233eb7987e74ad58901f",
       "applies_to_tasks": [
         "portfolio-decision"
       ],
@@ -92,7 +92,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/task-packs/opportunity-validation.md",
       "source_url": null,
-      "sha256": "987b8e390f446939b37383a071f1817eb84fb77d0365b8fdb8320ef6afca7ce7",
+      "sha256": "784a1b149285c057a709b93e3a838b79a6579ced9e3e16943455370b2b02eb3c",
       "applies_to_tasks": [
         "opportunity-validation"
       ],
@@ -131,7 +131,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/task-packs/continue-change-stop.md",
       "source_url": null,
-      "sha256": "8f8957c73eb6e070a950e2a6ed86246a3dc0d8349d98384d62e8bdb3eed522f3",
+      "sha256": "b127ed4a77bd8178fc2c8677fc019a11d747cf119861c646067782131155b20e",
       "applies_to_tasks": [
         "continue-change-stop"
       ],
@@ -170,7 +170,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/planning-contract.json",
       "source_url": null,
-      "sha256": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451",
+      "sha256": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716",
       "applies_to_tasks": [
         "*"
       ],
@@ -207,7 +207,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
       "source_url": null,
-      "sha256": "734e9f26afebb468892b98046b0f8d6f2fbef9568ed9a34b285648ac9f40639a",
+      "sha256": "0c018252cb0634fd898afce6f56e0d88fb10a5b1f61fded999eaf67c3070ff79",
       "applies_to_tasks": [
         "execution-planning"
       ],
@@ -246,7 +246,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/dependency-risk.md",
       "source_url": null,
-      "sha256": "5e35e0b7263e12b12cd35b8cdcce80d5a3e61147b6835ce2a999baefb5f051fb",
+      "sha256": "1da069a4a9a0035765e7cd0f7e762018a6a83d0b10e6da12b8b3e0525f3e5d74",
       "applies_to_tasks": [
         "dependency-risk"
       ],
@@ -269,7 +269,7 @@
           "evaluation regression"
         ]
       },
-      "loading_cost": "small",
+      "loading_cost": "medium",
       "dependencies": [
         "role-kernel:planning"
       ],
@@ -285,7 +285,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/acceptance-verification.md",
       "source_url": null,
-      "sha256": "ef31afb45e17294f239fa0e6d477d0083f00e660d7f2913e6fdc128635d27647",
+      "sha256": "73bd94bd3d1748356a8b3b85fd1c29f4c03fb69a150313e38990fc0874c61847",
       "applies_to_tasks": [
         "acceptance-verification"
       ],
@@ -308,7 +308,7 @@
           "evaluation regression"
         ]
       },
-      "loading_cost": "small",
+      "loading_cost": "medium",
       "dependencies": [
         "role-kernel:planning"
       ],
@@ -324,7 +324,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/marketing-contract.json",
       "source_url": null,
-      "sha256": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683",
+      "sha256": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73",
       "applies_to_tasks": [
         "*"
       ],
@@ -361,7 +361,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/task-packs/demand-positioning.md",
       "source_url": null,
-      "sha256": "c4b4747213a124b82cf4edd803ad346d4410fc6e847b89bf77b51de70441c2ac",
+      "sha256": "ed348c600ab6230fa2c3ed84639cbde708ffb8a7afdeb2f49e8449375fb40935",
       "applies_to_tasks": [
         "demand-positioning"
       ],
@@ -384,7 +384,7 @@
           "evaluation regression"
         ]
       },
-      "loading_cost": "small",
+      "loading_cost": "medium",
       "dependencies": [
         "role-kernel:marketing"
       ],
@@ -400,7 +400,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/task-packs/experiment-growth.md",
       "source_url": null,
-      "sha256": "0430fdd77fb3e0a789193a89074fc8d21ef36f4a8e56f823e827595f5c437357",
+      "sha256": "99467f34a219187b78970359022edf63486018643c01f0097089109f155ad0db",
       "applies_to_tasks": [
         "experiment-growth"
       ],
@@ -423,7 +423,7 @@
           "evaluation regression"
         ]
       },
-      "loading_cost": "small",
+      "loading_cost": "medium",
       "dependencies": [
         "role-kernel:marketing"
       ],
@@ -439,7 +439,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/task-packs/mobile-monetization.md",
       "source_url": null,
-      "sha256": "11ccabf7ea43e6c09b05f820ba942ef987e352bf8f079ca91ec836b72261a9c7",
+      "sha256": "97056766cf4bfbc322bdee98cd03f9a69f18be0584c58f874e11b98d694f2e60",
       "applies_to_tasks": [
         "mobile-monetization"
       ],
@@ -478,7 +478,7 @@
       "owner_role": "design",
       "ref": "skills/design-operating-system/references/design-contract.json",
       "source_url": null,
-      "sha256": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702",
+      "sha256": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027",
       "applies_to_tasks": [
         "*"
       ],
@@ -515,7 +515,7 @@
       "owner_role": "design",
       "ref": "skills/design-operating-system/references/task-packs/flow-interaction.md",
       "source_url": null,
-      "sha256": "ee384955d6c07d29e8085196027b89d184c2b5abeaddc128f44e391bff1870ae",
+      "sha256": "7bb9094775142dd3f2e17df29b68770a1ca0570996389b059748f4b2cc738b02",
       "applies_to_tasks": [
         "flow-interaction"
       ],
@@ -554,7 +554,7 @@
       "owner_role": "design",
       "ref": "skills/design-operating-system/references/task-packs/visual-system-accessibility.md",
       "source_url": null,
-      "sha256": "4eae5a7eede1da0c6962aff2d7fdac79b4a22b669155b0c310e73934117e9a0d",
+      "sha256": "ea6ba7231a4fa38e16c7a081c84b5941cb53d624d418840f5513f3f903731229",
       "applies_to_tasks": [
         "visual-system-accessibility"
       ],
@@ -593,7 +593,7 @@
       "owner_role": "design",
       "ref": "skills/design-operating-system/references/task-packs/implementation-design-qa.md",
       "source_url": null,
-      "sha256": "f445fd5f848c14e02ef8cc1b95da05bd16ee4dc6473be1186c0174adb6457b0a",
+      "sha256": "eb482be2ea10703ee3acd94d88c20509d6f196f66acaa31488f382b98802c4df",
       "applies_to_tasks": [
         "implementation-design-qa"
       ],
@@ -632,7 +632,7 @@
       "owner_role": "development",
       "ref": "skills/development-operating-system/references/development-contract.json",
       "source_url": null,
-      "sha256": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff",
+      "sha256": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb",
       "applies_to_tasks": [
         "*"
       ],
@@ -669,7 +669,7 @@
       "owner_role": "development",
       "ref": "skills/development-operating-system/references/task-packs/feature-implementation.md",
       "source_url": null,
-      "sha256": "f89576e51b93c5be8bdda380decf343ce7d4f5e45915379f3ae14ea3b454c331",
+      "sha256": "f34b4f2641455922ac2db72cd3763c8d43eece27389429d0e0d5812a60e29874",
       "applies_to_tasks": [
         "feature-implementation"
       ],
@@ -786,7 +786,7 @@
       "owner_role": "qa-release",
       "ref": "skills/qa-release-operating-system/references/qa-release-contract.json",
       "source_url": null,
-      "sha256": "1d28cb70df55b058244d3995997fbea37a262775539e4bfcacc66a21b7743f23",
+      "sha256": "ebd7858c8e16c4f2386e4a5cb6bc6a249cea05dd2843611909d7ddd1cc7e8b91",
       "applies_to_tasks": [
         "*"
       ],
@@ -823,7 +823,7 @@
       "owner_role": "qa-release",
       "ref": "skills/qa-release-operating-system/references/task-packs/test-strategy.md",
       "source_url": null,
-      "sha256": "0c0841d1f3b56436167fa9ff9c99f269feac963ee5b624f81c6f1e9adb085ed6",
+      "sha256": "bced16b6159177cb1c9d23096d8c4ab93f7c1f598884edca15c28de8c17cb5e1",
       "applies_to_tasks": [
         "test-strategy"
       ],
@@ -862,7 +862,7 @@
       "owner_role": "qa-release",
       "ref": "skills/qa-release-operating-system/references/task-packs/ios-matching-surfaces.md",
       "source_url": null,
-      "sha256": "8cdedfa15ddc13aa24f121038a3ced43bee8a3ba566184f78f7210d063218e80",
+      "sha256": "4ee1ad394ca296951c674d01946ff74224082f0da15c2b5c4321955d7c584cd5",
       "applies_to_tasks": [
         "ios-matching-surfaces"
       ],
@@ -901,7 +901,7 @@
       "owner_role": "qa-release",
       "ref": "skills/qa-release-operating-system/references/task-packs/release-readiness.md",
       "source_url": null,
-      "sha256": "307e5cfbb148df56856dd2f8d171067dbcb02aba2eacdc00fcd51b6ed114eef9",
+      "sha256": "fc2017fb4130cf543bf0a581f6ca3e53316eabda611ad2ab984bee6e9ab49ef3",
       "applies_to_tasks": [
         "release-readiness"
       ],
@@ -927,6 +927,48 @@
       "loading_cost": "medium",
       "dependencies": [
         "role-kernel:qa-release"
+      ],
+      "conflicts": [],
+      "evaluation_refs": [],
+      "status": "active",
+      "replaced_by": null
+    },
+    {
+      "id": "current-source:design:ios-platform-knowledge",
+      "version": "0.1.0",
+      "layer": "current_source_set",
+      "owner_role": "design",
+      "ref": "skills/design-operating-system/references/ios-platform-knowledge.json",
+      "source_url": null,
+      "sha256": "97376f58050a1ab3e23452f6b3420e2236c547ee0e0b2e0b5803e7adc1533348",
+      "applies_to_tasks": [
+        "flow-interaction",
+        "visual-system-accessibility",
+        "implementation-design-qa"
+      ],
+      "decision_questions": [
+        "Which current iOS guidance applies in this exact product and component context?",
+        "What app-local decision, exception, and matching-surface evidence are still required?"
+      ],
+      "authority_class": "primary",
+      "allowed_uses": [
+        "decision_support",
+        "design_evidence",
+        "bounded_handoff"
+      ],
+      "freshness": {
+        "mode": "revalidate_before_use",
+        "reviewed_at": "2026-08-11",
+        "expires_at": null,
+        "recheck_triggers": [
+          "official Apple source or change log advances",
+          "target OS, SDK, component, input, or presentation context changes",
+          "a cited source conflicts with exact product observation"
+        ]
+      },
+      "loading_cost": "large",
+      "dependencies": [
+        "role-kernel:design"
       ],
       "conflicts": [],
       "evaluation_refs": [],

@@ -3,12 +3,12 @@
   "$id": "https://agent-company.local/schemas/bounded-handoff.v0.1.json",
   "schema_version": "0.1",
   "id": "agent_company_bounded_handoff.v0.1",
-  "purpose": "Bound role-agent output so it can be consumed by King Sejong without granting private profiles route, gate, or final verification authority.",
+  "purpose": "Bound role-agent evidence for the assigning Company lead without granting self-approval or user decision authority.",
   "authority_boundary": {
-    "king_sejong": "King Sejong remains the lead router and synthesis authority.",
-    "uigwe": "Uigwe remains the planning and gate-readiness authority.",
-    "seungjeongwon": "Seungjeongwon remains the execution and final verification path.",
-    "agent_company_profiles": "Profiles produce bounded evidence, recommendations, and implementation slices; they do not override King Sejong."
+    "user": "The user owns material goals, approvals and consequential choices.",
+    "company_lead": "The accepted assigning Company lead coordinates scope and acceptance under Orca permissions.",
+    "independent_qa": "QA observes the exact candidate independently of implementation; its own evidence needs independent lead acceptance.",
+    "agent_company_profiles": "Profiles produce bounded evidence and role-local recommendations; they cannot self-approve overall completion."
   },
   "type": "object",
   "required": [
@@ -104,7 +104,11 @@
         "uigwe",
         "seungjeongwon",
         "sillok",
-        "danjong"
+        "danjong",
+        "company-lead",
+        "planning",
+        "qa-release",
+        "user"
       ]
     },
     "forbidden_claims": {
@@ -115,7 +119,9 @@
           "final verification authority",
           "gate approval authority",
           "override King Sejong",
-          "replaces King Sejong"
+          "replaces King Sejong",
+          "override user authority",
+          "self-approve final verification"
         ]
       }
     },
@@ -184,7 +190,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/marketing-operating-system/references/marketing-contract.json"},
-          "sha256": {"const": "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683"}
+          "sha256": {"const": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73"}
         }}}
       }
     },
@@ -194,7 +200,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/design-operating-system/references/design-contract.json"},
-          "sha256": {"const": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702"}
+          "sha256": {"const": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027"}
         }}}
       }
     },
@@ -204,7 +210,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/development-operating-system/references/development-contract.json"},
-          "sha256": {"const": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff"}
+          "sha256": {"const": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb"}
         }}}
       }
     },
@@ -214,7 +220,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/qa-release-operating-system/references/qa-release-contract.json"},
-          "sha256": {"const": "1d28cb70df55b058244d3995997fbea37a262775539e4bfcacc66a21b7743f23"}
+          "sha256": {"const": "ebd7858c8e16c4f2386e4a5cb6bc6a249cea05dd2843611909d7ddd1cc7e8b91"}
         }}}
       }
     },
@@ -246,7 +252,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/founder-operating-system/references/founder-contract.json"},
-          "sha256": {"const": "b0aa74ed14ad41072adf01e700028ba185b052fd29e7c9a613b5ba265f7fffc7"}
+          "sha256": {"const": "709ba90fea7ad79a7c0a5a459caf6bd1b22cad21268cc0335dc3c7b41d6cf2ee"}
         }}}
       }
     },
@@ -256,7 +262,7 @@
         "required": ["operating_contract_binding"],
         "properties": {"operating_contract_binding": {"properties": {
           "ref": {"const": "skills/planning-operating-system/references/planning-contract.json"},
-          "sha256": {"const": "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451"}
+          "sha256": {"const": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716"}
         }}}
       }
     },

@@ -1,12 +1,12 @@
 ---
 name: problem-business-loop
-description: Orchestrate the internal loop from problem discovery to commercial-fit validation. Use when Agent Company needs to repeatedly find candidate problems, test commercial fit, convert failures into new search constraints, and stop when a Uigwe-ready experiment or real blocker exists.
+description: Iterate problem discovery and commercial fit toward an experiment or a blocker.
 ---
 
 # Problem Business Loop
 
 Use this as a thin orchestrator. It does not replace `problem-discovery`,
-`commercial-fit`, `evidence-debate`, King Sejong, Uigwe, or Seungjeongwon.
+`commercial-fit`, `evidence-debate`, user material authority or independent QA.
 
 ## Loop
 
@@ -18,11 +18,11 @@ Use this as a thin orchestrator. It does not replace `problem-discovery`,
 2. Run `problem-discovery`.
 3. If no credible candidate appears, tighten or change the search constraints.
 4. Run `commercial-fit` on the best candidate or on a small ranked batch.
-5. If `commercial-fit` returns `advance`, prepare an Uigwe input summary.
+5. If `commercial-fit` returns `advance`, prepare a planning input summary.
 6. If it returns `conditional`, run only the missing evidence check.
 7. If it returns `reject` or `return_to_discovery`, convert `failure_reasons`
    into the next `problem-discovery` constraints.
-8. Stop when an experiment is Uigwe-ready, the iteration budget is exhausted,
+8. Stop when an experiment is planning-ready, the iteration budget is exhausted,
    or a missing source/user decision blocks progress.
 
 ## Failure-To-Search Conversion
@@ -57,10 +57,14 @@ Return:
 - `blockers`
 - `recommended_next_surface`
 
+`uigwe_input_summary` is a historical payload key for the planning summary;
+it does not route work to an external system.
+
 ## Guardrails
 
 - Do not hide failed candidates; their failure reasons are loop fuel.
 - Do not keep looping after three weak iterations without changing source set
   or audience.
 - Do not treat the loop as proof of demand.
-- Do not proceed to execution directly; route an experiment through Uigwe.
+- Do not proceed to execution directly; route an experiment through Planning or
+  the assigning Company lead. Return material unresolved choices to the user.

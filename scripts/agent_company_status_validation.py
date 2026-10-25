@@ -32,15 +32,23 @@ def validate_log_status(log: LogStatus, field: str) -> None:
         or not math.isfinite(log.mtime_epoch)
     ):
         raise StatusContractError("invalid_status_payload", field)
+    if log.size_bytes is not None and (type(log.size_bytes) is not int or log.size_bytes < 0):
+        raise StatusContractError("invalid_status_payload", field)
     if log.integrity not in {"ok", "missing", "stale", "unsafe", "future", "unobserved"}:
         raise StatusContractError("invalid_status_payload", field)
     if log.integrity == "ok" and not (log.present and log.fresh and log.age_seconds is not None and log.mtime_epoch is not None):
         raise StatusContractError("invalid_status_payload", field)
     if log.integrity == "stale" and not (log.present and not log.fresh and log.age_seconds is not None and log.mtime_epoch is not None):
         raise StatusContractError("invalid_status_payload", field)
-    if log.integrity == "missing" and (log.present or log.fresh or log.age_seconds is not None or log.mtime_epoch is not None):
+    if log.integrity == "missing" and (
+        log.present or log.fresh or log.age_seconds is not None or log.mtime_epoch is not None
+        or log.size_bytes is not None
+    ):
         raise StatusContractError("invalid_status_payload", field)
-    if log.integrity == "unobserved" and (log.present or log.fresh or log.age_seconds is not None or log.mtime_epoch is not None):
+    if log.integrity == "unobserved" and (
+        log.present or log.fresh or log.age_seconds is not None or log.mtime_epoch is not None
+        or log.size_bytes is not None
+    ):
         raise StatusContractError("invalid_status_payload", field)
     if log.integrity in {"unsafe", "future"} and (not log.present or log.fresh):
         raise StatusContractError("invalid_status_payload", field)
@@ -87,7 +95,11 @@ def validate_launchd_status(value: LaunchdStatus) -> LaunchdStatus:
     return value
 
 
-def project_launchd_status(value: LaunchdStatus) -> list[JsonValue]:
+def project_launchd_status(
+    value: LaunchdStatus,
+    *,
+    allow_stale_empty_stderr: bool = False,
+) -> list[JsonValue]:
     try:
         launchd = validate_launchd_status(value)
     except StatusContractError:
@@ -109,9 +121,11 @@ def project_launchd_status(value: LaunchdStatus) -> list[JsonValue]:
         or (launchd.state != "running" and not healthy_idle)
     ):
         issues.append(issue("launchd_observation_drift", "launchd state or last-exit observation is incomplete"))
-    for log in (launchd.stdout_log, launchd.stderr_log):
+    for log_name, log in (("stdout", launchd.stdout_log), ("stderr", launchd.stderr_log)):
         if log.integrity in {"unsafe", "future"}:
             issues.append(issue("launchd_corrupt", "launchd log metadata is unsafe"))
         elif log.integrity in {"missing", "stale"}:
+            if log_name == "stderr" and log.integrity == "stale" and allow_stale_empty_stderr:
+                continue
             issues.append(issue("launchd_log_drift", "launchd logs are missing or stale"))
     return issues

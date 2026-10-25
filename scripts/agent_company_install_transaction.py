@@ -26,6 +26,8 @@ COMPLETED_RECOVERY: Final[re.Pattern[str]] = re.compile(r"^recovery-[0-9a-f]{32}
 
 def restore_transaction(paths: InstallPaths, transaction_id: str) -> None:
     directory, entries = verified_entries(paths, transaction_id)
+    from agent_company_claude_entry import preflight_restore
+    preflight_restore(paths, directory, entries)
     transaction = transaction_dir(paths, transaction_id)
     if directory != transaction:
         copy_managed(
@@ -155,6 +157,8 @@ def rollback(paths: InstallPaths) -> dict[str, JsonValue]:
             raise InstallError("rollback_unavailable", "no prior generation") from exc
         raise
     preflight_rollback(paths, desired)
+    from agent_company_claude_entry import preflight_restore
+    preflight_restore(paths, source, desired)
     transaction_id = uuid.uuid4().hex
     begin(paths, TransactionSpec(transaction_id, "rollback", "rollback"))
     try:
@@ -164,7 +168,7 @@ def rollback(paths: InstallPaths) -> dict[str, JsonValue]:
             ("apply_snapshot", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("agent-company/snapshots/")))),
             ("apply_skills", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("skills/")))),
             ("apply_agents", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("agents/")))),
-            ("write_indexes", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative == "agent-company/managed-index.json"))),
+            ("write_indexes", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative in {"agent-company/managed-index.json", "agent-company/completion-hook.json", "agent-company/claude-entry.json", "agent-company/claude-entry"}))),
         )
         for name, operation in groups:
             before_phase(name)

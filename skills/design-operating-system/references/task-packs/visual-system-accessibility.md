@@ -29,6 +29,9 @@ because dimensions are available.
 
 Use this pack when:
 
+- a supplied Marketing direction needs bounded promotion expression options
+  or concrete scene concepts under
+  `design-contract.json#/promotion_expression_guidance`;
 - an approved screen or flow needs visual hierarchy, layout rhythm,
   typography, semantic color, surface, icon, or motion direction;
 - duplicated or hard-coded values need a semantic token model and component
@@ -48,7 +51,7 @@ Do not use it when:
 
 - the target task, information hierarchy, state model, control semantics, or
   recovery behavior can still reverse the visual artifact; use
-  `task-pack:design:flow-interaction` or return to Uigwe;
+  `task-pack:design:flow-interaction` or return to the authorized decision owner;
 - the question is whether an exact implementation matches an approved visual
   direction; use `task-pack:design:implementation-design-qa`;
 - only wording, voice, or localization copy craft remains; request
@@ -60,6 +63,14 @@ Do not use it when:
 - a current contrast threshold, platform material behavior, typography API,
   accessibility requirement, or design-resource capability is material but no
   applicable Current Source Set is available.
+
+For the bounded promotion case, apply the promotion guidance to the inputs,
+deliverables and scenarios below. Return linked expression briefs and scene
+concepts through existing deliverable refs. Do not require app tokens, control
+states or native runtime captures for a static creative unless the artifact
+actually depends on them. This exception does not authorize an unbounded
+campaign or let Design choose the Marketing direction. Full reference sequence,
+asset provenance, legibility and truthful app-screen use remain relevant.
 
 ## Required Inputs
 
@@ -226,10 +237,10 @@ remote Figma mutation or published design-system mappings.
     deviations, accessibility targets, unresolved values, and exact runtime
     observations needed. Screenshots illustrate intent but do not replace
     constraints.
-14. **Route without approving.** Return structural product choices to Uigwe,
-    missing current facts to JangYeongsil, contested directions to
-    Jiphyeonjeon, and approved implementation plus independent verification to
-    Seungjeongwon.
+14. **Route without approving.** Return structural product choices to the authorized decision owner,
+    missing current facts to bounded research, contested directions to
+    bounded evidence debate, and approved implementation plus independent verification to
+    the assigning lead.
 
 ## Options And Tradeoffs
 
@@ -331,10 +342,10 @@ not observed quality.
 Stop with one evidence request when an unsettled flow, missing matching surface,
 unknown asset right, or unavailable visual evidence can reverse the artifact.
 Return product, scope, brand-authority, risk, privacy, or verification-bar
-choices to Uigwe. Route missing current platform or accessibility facts to
-JangYeongsil, copy craft to `copywriting-operating-system`, contested visual
-directions to Jiphyeonjeon, and approved implementation plus independent
-runtime verification to Seungjeongwon. Stop before production edits, dependency
+choices to the authorized decision owner. Route missing current platform or accessibility facts to
+bounded research, copy craft to `copywriting-operating-system`, contested visual
+directions to bounded evidence debate, and approved implementation plus independent
+runtime verification to the assigning lead. Stop before production edits, dependency
 adoption, unapproved Figma mutation, asset publication, accessibility
 certification, QA disposition, gate approval, or final verification.
 

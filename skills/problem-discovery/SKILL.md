@@ -1,6 +1,6 @@
 ---
 name: problem-discovery
-description: Discover candidate problems for Agent Company without judging commercial fit. Use when internal agents need to find problems people forget, understate, work around, or fail to articulate from notes, reviews, communities, interviews, support logs, app feedback, or observed workflows.
+description: Find candidate user problems from research without judging commercial fit.
 ---
 
 # Problem Discovery
@@ -58,13 +58,13 @@ If no credible candidate appears, return:
 - `sources_checked`
 - `weak_signals`
 - `next_search_constraints`
-- `recommended_next_surface`: usually `jangyeongsil` for more evidence or
+- `recommended_next_surface`: usually `company-lead` for more evidence or
   `danjong` for a retired search direction
 
 ## Guardrails
 
 - Do not judge willingness to pay, channel access, or founder fit here.
-- Do not promote a candidate to Uigwe directly unless the user explicitly skips
+- Do not promote a candidate to the authorized decision owner directly unless the user explicitly skips
   commercial validation.
 - Do not overfit to loud complaints; prefer repeated behavior and workarounds.
 - Do not turn one personal annoyance into a market claim without external or

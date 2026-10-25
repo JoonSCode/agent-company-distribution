@@ -175,6 +175,7 @@ def run(args: argparse.Namespace) -> dict[str, JsonValue]:
             company_plan_path=args.company_plan,
             role_plan_paths=tuple(args.role_plan or []),
             env=os.environ,
+            model_routing_inputs=load_assignment_routing_inputs(args.model_routing_inputs) if args.model_routing_inputs else None,
         )
         write_object(args.output, projection)
         return {"status": "ok", "job_id": projection["job_id"], "path": str(args.output)}
@@ -230,15 +231,49 @@ def run(args: argparse.Namespace) -> dict[str, JsonValue]:
     raise PolicyError(f"unsupported command: {args.command}")
 
 
+def load_assignment_routing_inputs(path: Path) -> dict[str, AssignmentModelRoutingInputs]:
+    """JSON dataclass inputs plus the existing authoritative registry loaders."""
+    from agent_company_plan_delegation_binding import AssignmentModelRoutingInputs
+    from agent_company_model_profile_registry import load_model_profile_registry, load_model_routing_policy
+    from agent_company_model_rate_card import load_model_rate_card
+    from agent_company_model_routing import (AuthoritySignals, DynamicRiskSignals,
+        ModelRoutingRequest, PriorAttempt, ProfileCapacity, RuntimeProfileCapacity)
+    raw = read_object(path)
+    registry = load_model_profile_registry(rate_card=load_model_rate_card())
+    policy = load_model_routing_policy()
+    result = {}
+    try:
+        for assignment_id, entry in raw.items():
+            if set(entry) != {'request', 'capacity'}:
+                raise ValueError('routing entry requires request and capacity')
+            request = dict(entry['request'])
+            request['specialist_tools'] = tuple(request['specialist_tools'])
+            request['prior_attempts'] = tuple(PriorAttempt(**a) for a in request['prior_attempts'])
+            request['authority_signals'] = AuthoritySignals(**request['authority_signals'])
+            risks = dict(request['dynamic_risk_signals'])
+            risks['risks'] = tuple(risks.get('risks', ()))
+            request['dynamic_risk_signals'] = DynamicRiskSignals(**risks)
+            capacity = dict(entry['capacity'])
+            capacity['profiles'] = {key: RuntimeProfileCapacity(**{**p, 'supported_tools': tuple(p['supported_tools'])}) for key, p in capacity['profiles'].items()}
+            result[assignment_id] = AssignmentModelRoutingInputs(ModelRoutingRequest(**request), registry, policy, ProfileCapacity(**capacity))
+    except (KeyError, TypeError, ValueError, AttributeError) as exc:
+        raise PolicyError(f'malformed assignment routing inputs: {exc}') from exc
+    return result
+
 def main() -> int:
     args = build_parser().parse_args()
+    from agent_company_knowledge_context import KnowledgeContextError
+    from agent_company_expertise_models import ExpertiseCatalogError
+    from agent_company_role_contract import NativeAgentError
+    from agent_company_model_routing_models import ModelRoutingError
+    from agent_company_model_profile_registry import ModelProfileRegistryError
     try:
         result = run(args)
-    except (PolicyError, FrontDoorError, RoutingError) as exc:
+    except (PolicyError, FrontDoorError, RoutingError, KnowledgeContextError, ExpertiseCatalogError, NativeAgentError, ModelRoutingError, ModelProfileRegistryError, ValueError, OSError, KeyError, TypeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0
+    return 1 if result.get("status") in {"blocked", "failed"} else 0
 
 
 if __name__ == "__main__":

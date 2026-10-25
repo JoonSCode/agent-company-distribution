@@ -1,0 +1,494 @@
+#!/usr/bin/env python3
+"""Company-owned Run lifecycle: declared retention, accepted completion, cleanup.
+
+No historical sweep, inferred filenames or recursive deletion. The lead or a
+registered Stop callback can complete only an accepted Run. Stdlib Python 3.13+.
+"""
+import argparse
+from contextlib import contextmanager
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+import sys
+import uuid
+
+sys.dont_write_bytecode = True
+from record_check import check_record, unique_object, invalid_constant
+
+FORMAT = 'company-run-retention/v1'
+MANIFEST = 'retention-manifest.json'
+RECEIPT = 'completion-receipt.json'
+LOCK = '.completion.lock'
+REJECTION = 'completion-rejection.json'
+HOOK_RECEIPT = 'completion-hook-receipt.json'
+RESERVED = {MANIFEST, RECEIPT, LOCK, REJECTION, HOOK_RECEIPT}
+
+
+def default_home():
+    if explicit := os.environ.get('SEJONG_HOME'):
+        return Path(explicit).expanduser()
+    codex = Path(os.environ.get('CODEX_HOME') or Path.home() / '.codex').expanduser()
+    # Orca can expose the canonical package through a shared skills link while
+    # keeping its own CODEX_HOME. Producer and Stop must use the same Run store.
+    package = Path(__file__).resolve().parents[1]
+    installed = package.parent.parent
+    caller_package = codex / 'skills/company-orchestration'
+    standard_orca = Path.home() / 'Library/Application Support/orca/codex-runtime-home/home'
+    canonical_callback = (installed == Path.home() / '.codex' and codex == standard_orca and
+                          not caller_package.exists())
+    if (package.parent.name == 'skills' and
+            (installed / 'agent-company/active.json').is_file() and
+            (caller_package.resolve() == package or canonical_callback)):
+        codex = installed
+    return codex / 'sejong'
+
+
+def require(value, message):
+    if not value:
+        raise ValueError(message)
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def validate_manifest(manifest):
+    require(manifest.get('format') == FORMAT, 'unknown manifest format')
+    if 'routing_accounting' in manifest:
+        require(manifest.get('routing_accounting') == 'required', 'unsupported manifest routing accounting')
+    for name in ('run_id', 'owner', 'root'):
+        require(isinstance(manifest.get(name), str) and manifest[name], 'missing manifest ' + name)
+    consumers = manifest.get('consumers')
+    require(isinstance(consumers, list) and all(isinstance(x, str) and x for x in consumers)
+            and len(set(consumers)) == len(consumers), 'invalid consumer inventory')
+    refs = set()
+    for key in ('disposable', 'preserve'):
+        require(isinstance(manifest.get(key), list), 'missing declaration: ' + key)
+        for binding in manifest[key]:
+            require(isinstance(binding, dict), 'invalid file binding')
+            parts(binding.get('path'))
+            require(binding['path'] not in refs, 'duplicate/conflicting file binding')
+            refs.add(binding['path'])
+            digest = binding.get('sha256')
+            require(isinstance(digest, str) and len(digest) == 64 and all(x in '0123456789abcdef' for x in digest),
+                    'invalid file hash')
+            identity = binding.get('identity')
+            require(isinstance(identity, list) and len(identity) == 5 and
+                    all(type(x) is int and x >= 0 for x in identity), 'invalid file identity')
+
+
+def decode(data):
+    value = json.loads(data, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+    require(isinstance(value, dict), 'metadata must be an object')
+    return value
+
+
+def parts(ref):
+    require(isinstance(ref, str) and ref and '\x00' not in ref, 'invalid relative path')
+    p = Path(ref)
+    require(not p.is_absolute() and all(x not in ('', '.', '..') for x in ref.split('/')),
+            'path escape/noncanonical path: ' + ref)
+    require(not (set(p.parts) & RESERVED), 'reserved path: ' + ref)
+    return p.parts
+
+
+@contextmanager
+def parent_fd(root_fd, ref):
+    components = parts(ref)
+    fd = os.dup(root_fd)
+    try:
+        for part in components[:-1]:
+            new = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = new
+        yield fd, components[-1]
+    finally:
+        os.close(fd)
+
+
+def read_file(root_fd, ref, metadata=False, content=True):
+    if metadata:
+        require(ref in RESERVED, 'unknown metadata path')
+        fd = os.open(ref, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=root_fd)
+    else:
+        with parent_fd(root_fd, ref) as (parent, name):
+            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+    with os.fdopen(fd, 'rb') as stream:
+        before = os.fstat(stream.fileno())
+        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+                'only singly linked regular files supported: ' + ref)
+        digest = hashlib.sha256()
+        data = b''
+        if content:
+            require(before.st_size <= 16 * 1024 * 1024, 'compact metadata exceeds 16 MiB: ' + ref)
+            data = stream.read(16 * 1024 * 1024 + 1)
+            require(len(data) <= 16 * 1024 * 1024, 'metadata grew beyond limit: ' + ref)
+            digest.update(data)
+        else:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(chunk)
+        after = os.fstat(stream.fileno())
+        require(signature(before) == signature(after), 'changed while reading: ' + ref)
+    return data, {'path': ref, 'sha256': digest.hexdigest(), 'identity': signature(after)}
+
+
+def snapshot_file(fd, ref):
+    return read_file(fd, ref, content=False)[1]
+
+
+def signature(st):
+    return [st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns, st.st_ctime_ns]
+
+
+def write_metadata(fd, name, value):
+    tmp = '.completion-write-' + uuid.uuid4().hex
+    handle = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=fd)
+    try:
+        with os.fdopen(handle, 'w') as stream:
+            json.dump(value, stream, ensure_ascii=False, indent=2)
+            stream.write('\n')
+            stream.flush()
+            os.fsync(stream.fileno())
+        # Never follow a metadata link, including on replacement.
+        try:
+            require(stat.S_ISREG(os.stat(name, dir_fd=fd, follow_symlinks=False).st_mode),
+                    'metadata replacement is not a regular file')
+        except FileNotFoundError:
+            pass
+        os.replace(tmp, name, src_dir_fd=fd, dst_dir_fd=fd)
+        os.fsync(fd)
+    finally:
+        try:
+            os.unlink(tmp, dir_fd=fd)
+        except FileNotFoundError:
+            pass
+
+
+def open_run(home, run):
+    # Reject every link in the declared namespace, rather than resolving it away.
+    base = Path(os.path.abspath(home)) / 'runs'
+    root = Path(os.path.abspath(run))
+    relative = root.relative_to(base)
+    require(relative.parts, 'runs root is not a Run')
+    fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in root.parts[1:]:
+            new = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = new
+        return root, fd
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def verify_run_path(root, fd):
+    cursor = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in root.parts[1:]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=cursor)
+            os.close(cursor)
+            cursor = child
+        actual, expected = os.fstat(cursor), os.fstat(fd)
+        require((actual.st_dev, actual.st_ino) == (expected.st_dev, expected.st_ino),
+                'Run directory moved/replaced')
+    finally:
+        os.close(cursor)
+
+
+def pins(fd, ref=None):
+    # Path-local pins/activity markers. No historical/home scan.
+    def inspect(handle):
+        for name in os.listdir(handle):
+            if name in {'.pin', '.keep', '.active', 'PIN', 'KEEP'} or (
+                name != LOCK and (name.endswith('.lock') or name.endswith('.pid'))
+            ):
+                raise ValueError('pin/activity marker: ' + name)
+    inspect(fd)
+    if ref:
+        cursor = os.dup(fd)
+        try:
+            for part in parts(ref)[:-1]:
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=cursor)
+                os.close(cursor)
+                cursor = child
+                inspect(cursor)
+        finally:
+            os.close(cursor)
+
+
+def probe_activity(root, exact=None):
+    scope = [str(exact)] if exact is not None else ['+D', str(root)]
+    result = subprocess.run(['/usr/sbin/lsof', '-nP', '-Fpn', *scope],
+                            capture_output=True, text=True, timeout=30)
+    require(result.returncode in (0, 1) and not result.stderr.strip(),
+            'open-file observation failed: ' + result.stderr.strip())
+    # This process holds only the Run/ancestor directories and own lock.
+    current = None
+    for line in result.stdout.splitlines():
+        if line.startswith('p'):
+            current = line[1:]
+        elif line.startswith('n'):
+            name = line[1:]
+            own_directory = False
+            try:
+                Path(name).relative_to(root)
+                own_directory = stat.S_ISDIR(Path(name).lstat().st_mode)
+            except (OSError, ValueError):
+                pass
+            require(current == str(os.getpid()) and (name == str(root / LOCK) or own_directory),
+                    'open activity: ' + line)
+    return {'tool': 'lsof exact file' if exact is not None else 'lsof scoped +D',
+            'status': 'no external open paths'}
+
+
+def validate_acceptance(record, record_path, manifest, manifest_hash, require_routing=False):
+    checked = check_record(record, record_path.parent, require_routing=require_routing)
+    require(checked['ok'], 'record contradictions: ' + json.dumps(checked['errors']))
+    require(record.get('label') == 'real' and record.get('resource_accounting') == 'required',
+            'real resource-accounted record required')
+    goal = record['goal']
+    require(goal['status'] == 'succeeded' and goal['id'] == manifest['run_id']
+            and goal['current_owner'] == manifest['owner'], 'exact completed Run/owner required')
+    assessment = goal.get('assessment') or {}
+    require(assessment.get('verdict') == 'succeeded' and assessment.get('basis') in ('human', 'independent'),
+            'overall accepted success required')
+    evidence = record['evidence'].get(assessment.get('evidence'), {})
+    require(evidence.get('file') and evidence.get('sha256'), 'actual acceptance evidence bytes required')
+    for task in record['tasks']:
+        require(task['execution']['state'] == 'settled' and
+                task['execution']['result']['outcome'] == 'succeeded' and
+                (task.get('technical') or {}).get('verdict') == 'passed' and
+                (task.get('parent_integration') or {}).get('verdict') == 'passed',
+                'all current tasks must be accepted and integrated')
+    contract = record.get('artifact_retention', {})
+    require(contract.get('run_id') == manifest['run_id'] and
+            contract.get('manifest_sha256') == manifest_hash and contract.get('quiescent') is True,
+            'stale/missing retention acceptance binding')
+    require(contract.get('consumers') == [{'id': c, 'state': 'settled'} for c in manifest['consumers']],
+            'consumer settlement mismatch')
+    return checked
+
+
+def validate_receipt(previous, manifest, manifest_hash, record_binding):
+    require(set(previous) <= {'format', 'run_id', 'manifest_sha256', 'status', 'removed',
+                              'errors', 'record', 'activity', 'pending'} and
+            previous.get('format') == 'company-run-completion/v1' and
+            previous.get('run_id') == manifest['run_id'] and
+            previous.get('status') in ('blocked', 'completed') and
+            previous.get('errors') == [] and isinstance(previous.get('activity'), dict),
+            'invalid previous completion receipt')
+    require(previous.get('manifest_sha256') == manifest_hash and previous.get('record') == record_binding,
+            'previous completion binding mismatch')
+    removed = previous.get('removed')
+    require(isinstance(removed, list) and len(removed) <= len(manifest['disposable']) and
+            removed == manifest['disposable'][:len(removed)], 'invalid previous removed bindings')
+    require('pending' not in previous, 'interrupted unlink; preserve quarantine for owner recovery')
+    require(previous['status'] != 'completed' or removed == manifest['disposable'],
+            'incomplete successful receipt')
+    return removed
+
+
+def complete(root, fd, manifest, manifest_hash, record_ref, probe=probe_activity):
+    result = {'format': 'company-run-completion/v1', 'run_id': manifest['run_id'],
+              'manifest_sha256': manifest_hash, 'status': 'blocked', 'removed': [], 'errors': []}
+    try:
+        validate_manifest(manifest)
+        verify_run_path(root, fd)
+        require(manifest.get('format') == FORMAT and manifest.get('root') == str(root) and
+                manifest.get('root_identity') == [os.fstat(fd).st_dev, os.fstat(fd).st_ino],
+                'Run/layout identity mismatch')
+        record_data, record_binding = read_file(fd, record_ref)
+        record = decode(record_data)
+        validate_acceptance(record, root / record_ref, manifest, manifest_hash,
+                            require_routing=manifest.get('routing_accounting') == 'required')
+        result['record'] = record_binding
+        require(manifest['preserve'], 'compact evidence declaration required')
+        protected = {x['path'] for x in manifest['preserve']} | {record_ref}
+        # Every local evidence file is protected, whether or not explicitly registered.
+        for item in record['evidence'].values():
+            if item.get('file'):
+                path = Path(item['file'])
+                path = path if path.is_absolute() else root / Path(record_ref).parent / path
+                try:
+                    protected.add(str(path.resolve(strict=True).relative_to(root)))
+                except ValueError:
+                    pass
+        targets = [x['path'] for x in manifest['disposable']]
+        require(len(set(targets)) == len(targets) and not (set(targets) & protected), 'protected/duplicate deletion path')
+        pins(fd)
+        for binding in manifest['preserve']:
+            require(snapshot_file(fd, binding['path']) == binding, 'preserved evidence changed')
+        previous = None
+        try:
+            previous = decode(read_file(fd, RECEIPT, True)[0])
+        except FileNotFoundError:
+            pass
+        if previous is not None:
+            result['removed'] = validate_receipt(previous, manifest, manifest_hash, record_binding)
+        done = {x['path'] for x in result['removed']}
+        for binding in manifest['disposable']:
+            pins(fd, binding['path'])
+            for preserved in manifest['preserve']:
+                require(snapshot_file(fd, preserved['path']) == preserved, 'preserved evidence changed during completion')
+            if binding['path'] in done:
+                with parent_fd(fd, binding['path']) as (parent, name):
+                    try:
+                        os.stat(name, dir_fd=parent, follow_symlinks=False)
+                    except FileNotFoundError:
+                        continue
+                raise ValueError('deleted path reappeared; refusing retry')
+            require(snapshot_file(fd, binding['path']) == binding, 'stale disposable identity/content')
+        result['activity'] = probe(root)
+        for binding in manifest['disposable']:
+            if binding['path'] in done:
+                continue
+            pins(fd, binding['path'])
+            result['activity'] = probe_activity(root, root / binding['path']) if probe is probe_activity else probe(root)
+            for preserved in manifest['preserve']:
+                require(snapshot_file(fd, preserved['path']) == preserved, 'preserved evidence changed during completion')
+            require(sha(read_file(fd, MANIFEST, True)[0]) == manifest_hash,
+                    'manifest changed during completion')
+            require(read_file(fd, record_ref)[1] == record_binding, 'acceptance changed during completion')
+            verify_run_path(root, fd)
+            with parent_fd(fd, binding['path']) as (parent, name):
+                require(snapshot_file(fd, binding['path']) == binding, 'target changed before deletion')
+                quarantine = '.completion-quarantine-' + uuid.uuid4().hex
+                os.rename(name, quarantine, src_dir_fd=parent, dst_dir_fd=parent)
+                try:
+                    # Rename changes ctime. All other identity fields must match.
+                    st = os.stat(quarantine, dir_fd=parent, follow_symlinks=False)
+                    require(signature(st)[:4] == binding['identity'][:4] and stat.S_ISREG(st.st_mode)
+                            and st.st_nlink == 1, 'target swapped during rename')
+                    verify_run_path(root, fd)
+                    with parent_fd(fd, binding['path']) as (fresh, _):
+                        require(os.fstat(fresh).st_ino == os.fstat(parent).st_ino, 'parent moved during rename')
+                    # Write-ahead receipt: crash between unlink and receipt is fail-closed.
+                    result['pending'] = {'path': binding['path'], 'quarantine': quarantine}
+                    write_metadata(fd, RECEIPT, result)
+                    result['activity'] = probe_activity(root, root / Path(binding['path']).parent / quarantine) if probe is probe_activity else probe(root)
+                    require(read_file(fd, record_ref)[1] == record_binding and
+                            sha(read_file(fd, MANIFEST, True)[0]) == manifest_hash,
+                            'acceptance/manifest changed during quarantine')
+                    for preserved in manifest['preserve']:
+                        require(snapshot_file(fd, preserved['path']) == preserved,
+                                'preserved evidence changed during quarantine')
+                    pins(fd, binding['path'])
+                    final = snapshot_file(parent, quarantine)
+                    require(final['sha256'] == binding['sha256'] and
+                            final['identity'] == signature(st), 'quarantine changed before unlink')
+                    last = os.stat(quarantine, dir_fd=parent, follow_symlinks=False)
+                    require(signature(last) == final['identity'] and stat.S_ISREG(last.st_mode) and
+                            last.st_nlink == 1, 'quarantine replaced before unlink')
+                    os.unlink(quarantine, dir_fd=parent)
+                    os.fsync(parent)
+                except BaseException:
+                    try:
+                        os.stat(name, dir_fd=parent, follow_symlinks=False)
+                    except FileNotFoundError:
+                        os.rename(quarantine, name, src_dir_fd=parent, dst_dir_fd=parent)
+                    raise
+                result.pop('pending', None)
+                result['removed'].append(binding)
+                write_metadata(fd, RECEIPT, result)
+        result['status'] = 'completed'
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
+        result['errors'].append(str(exc))
+    write_metadata(fd, RECEIPT if result['status'] == 'completed' else REJECTION, result)
+    return result
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('command', choices=['init', 'register', 'complete'])
+    parser.add_argument('--run', required=True, type=Path)
+    parser.add_argument('--sejong-home', type=Path, default=default_home())
+    parser.add_argument('--run-id')
+    parser.add_argument('--owner')
+    parser.add_argument('--consumer', action='append', default=[])
+    parser.add_argument('--disposable', action='append', default=[])
+    parser.add_argument('--preserve', action='append', default=[])
+    parser.add_argument('--record')
+    parser.add_argument('--expect-manifest-sha256')
+    parser.add_argument('--session-id', help='Bind this exact host session to a future Stop callback')
+    parser.add_argument('--repo-root', type=Path, help='Exact hook cwd; no ancestor fallback')
+    parser.add_argument('--expect-session-binding-sha256', help='CAS rebind after prior accepted completion')
+    args = parser.parse_args(argv)
+    fd = lock = None
+    try:
+        root, fd = open_run(args.sejong_home, args.run)
+        lock = os.open(LOCK, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600, dir_fd=fd)
+        require(stat.S_ISREG(os.fstat(lock).st_mode) and os.fstat(lock).st_nlink == 1, 'unsafe lock')
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if args.command == 'init':
+            require(args.run_id and args.owner and len(set(args.consumer)) == len(args.consumer), 'Run/owner/unique consumers required')
+            manifest = {'format': FORMAT, 'run_id': args.run_id, 'owner': args.owner,
+                        'root': str(root), 'root_identity': [os.fstat(fd).st_dev, os.fstat(fd).st_ino],
+                        'consumers': args.consumer, 'disposable': [], 'preserve': [],
+                        'routing_accounting': 'required'}
+            try:
+                prior = decode(read_file(fd, MANIFEST, True)[0])
+            except FileNotFoundError:
+                write_metadata(fd, MANIFEST, manifest)
+            else:
+                require(prior == manifest, 'already registered; never overwrite a changed Run')
+            if args.session_id:
+                require(args.repo_root, 'session registration requires exact repo-root')
+                from completion_hook import register_session
+                register_session(args.sejong_home, args.session_id, root, args.run_id,
+                                 args.owner, args.repo_root, args.record or 'record.json',
+                                 args.expect_session_binding_sha256)
+            result = {'status': 'registered', 'run_id': args.run_id}
+        else:
+            data, _ = read_file(fd, MANIFEST, True)
+            manifest = decode(data)
+            validate_manifest(manifest)
+            require(manifest.get('format') == FORMAT and manifest.get('root') == str(root) and
+                    manifest.get('root_identity') == [os.fstat(fd).st_dev, os.fstat(fd).st_ino], 'Run/layout identity mismatch')
+            require(sha(data) == args.expect_manifest_sha256, 'manifest compare-and-swap mismatch')
+            if args.command == 'register':
+                try:
+                    read_file(fd, RECEIPT, True)
+                except FileNotFoundError:
+                    pass
+                else:
+                    raise ValueError('completion already attempted; declaration frozen')
+                refs = {x['path'] for key in ('disposable', 'preserve') for x in manifest[key]}
+                for key in ('disposable', 'preserve'):
+                    for ref in getattr(args, key):
+                        require(ref not in refs, 'duplicate retention declaration')
+                        pins(fd, ref)
+                        manifest[key].append(snapshot_file(fd, ref))
+                        refs.add(ref)
+                write_metadata(fd, MANIFEST, manifest)
+                result = {'status': 'declared', 'run_id': manifest['run_id']}
+            else:
+                require(args.record, 'exact accepted completion record required')
+                result = complete(root, fd, manifest, sha(data), args.record)
+        result['manifest_sha256'] = sha(read_file(fd, MANIFEST, True)[0])
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result['status'] != 'blocked' else 1
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        result = {'status': 'blocked', 'errors': [str(exc)], 'removed': []}
+        if fd is not None and lock is not None:
+            # Contended locks must not overwrite another completion's receipt.
+            if not isinstance(exc, BlockingIOError):
+                try:
+                    write_metadata(fd, REJECTION, result)
+                except (OSError, ValueError):
+                    pass
+        print(json.dumps(result, ensure_ascii=False))
+        return 1
+    finally:
+        if lock is not None:
+            os.close(lock)
+        if fd is not None:
+            os.close(fd)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

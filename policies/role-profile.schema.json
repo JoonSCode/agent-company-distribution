@@ -43,7 +43,8 @@
       "minLength": 1
     },
     "uses_king_sejong": {
-      "const": true
+      "const": false,
+      "description": "Historical field retained in v0.1 profiles; standalone Orca Company does not require King Sejong."
     },
     "authority_boundary": {
       "type": "string",

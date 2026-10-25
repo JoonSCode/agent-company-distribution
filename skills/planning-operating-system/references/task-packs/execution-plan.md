@@ -8,7 +8,7 @@
   set of executable leaves without changing its intent?
 
 This pack produces a milestone DAG and handoff-ready leaves. It does not approve
-the Uigwe gate, choose a different product direction, execute the plan, or claim
+the material decision gate, choose a different product direction, execute the plan, or claim
 that any leaf or outcome is verified.
 
 ## Decision Core
@@ -38,7 +38,10 @@ Do not use it when:
 
 - the goal, success criterion, non-goal, must-preserve behavior, or authority
   that can change a tradeoff or irreversible boundary is materially ambiguous;
-  return to Uigwe. Missing final execution authority alone does not block a
+  do not reject the intake or demand a finished brief. Return to the authorized decision owner with
+  inspected context, grounded options and reasons, focused decision questions
+  that allow a free response, and draft completion criteria. Missing final
+  execution authority alone does not block a
   source-backed advisory artifact; it blocks execution startability;
 - the question is which company opportunity deserves resources; route that to
   Founder;
@@ -53,7 +56,7 @@ Do not use it when:
 
 Require:
 
-1. the approved objective, source reference, current Uigwe state, and an
+1. the approved objective, source reference, current approval state, and an
    authorized artifact owner; bind final execution authority only when known;
 2. observable success criteria, explicit non-goals, must-preserve behavior, and
    acceptable tradeoffs;
@@ -86,6 +89,8 @@ Rank planning evidence from strongest to weakest:
 
 Higher-ranked evidence constrains lower-ranked planning assumptions. A stale
 contract, unmatched prior estimate, or worker report is not current-state proof.
+For reused evidence, retain its original source, rationale, counterevidence,
+scope, freshness, and supersession state; a past topology is not a default.
 Keep `known`, `inferred`, and `unknown` separate throughout the plan.
 
 ## Step-By-Step Method
@@ -136,7 +141,8 @@ Keep `known`, `inferred`, and `unknown` separate throughout the plan.
 9. **Choose the smallest complete topology.** Remove leaves that do not cover a
    success criterion, preserve a must-preserve behavior, reduce a named risk,
    produce a required handoff, or prove a material non-goal absent. Scope
-   reduction may simplify delivery but may not redefine success.
+   reduction may simplify delivery but may not redefine success or lower the
+   requested final quality.
 10. **Compile role handoffs.** Only when execution startability is `allowed`,
     give each functional owner role and named assignee the inputs, scopes, done
     criteria, output contract, stop conditions, and proof obligations it needs.
@@ -149,9 +155,9 @@ Keep `known`, `inferred`, and `unknown` separate throughout the plan.
     material non-goal absence proof, assignment fact, and failure stop or
     escalation path. Set execution startability to `blocked` rather than
     converting a plan-completeness result into execution authorization.
-12. **Route without approving.** Return the plan to Uigwe when intent or the
+12. **Route without approving.** Return the plan to the authorized decision owner when intent or the
     verification bar must change; otherwise hand executable leaves to
-    Seungjeongwon while preserving Planning's forbidden claims.
+    the assigning lead while preserving Planning's forbidden claims.
 
 ## Options And Tradeoffs
 
@@ -211,7 +217,7 @@ to make the selected topology startable or falsifiable:
   no-action, abort transitions where applicable, and binary completion observables;
 - absence proof for every material non-goal;
 - the selected topology, serious alternative, and evidence-backed tradeoff;
-- assumption and risk registers, stop criteria, replan triggers, and Uigwe
+- assumption and risk registers, stop criteria, replan triggers, and the authorized decision owner
   re-entry triggers;
 - the contract-defined candidate assignment tuple for each assignment, kept
   separate from runtime invariant fields; independent-verifier split, handoff
@@ -225,8 +231,8 @@ When a role handoff is requested, also preserve every required field of
 
 Stop and return a bounded plan once plan-artifact readiness and execution
 startability are both explicit. Escalate a changed objective, non-goal, must-preserve
-behavior, acceptable risk, or verification bar to Uigwe; missing factual state
-to JangYeongsil or a bounded domain specialist; materially contested topology to
-Jiphyeonjeon; and execution plus independent verification to Seungjeongwon.
+behavior, acceptable risk, or verification bar to the authorized decision owner; missing factual state
+to bounded research or a bounded domain specialist; materially contested topology to
+bounded evidence debate; and execution plus independent verification to the assigning lead.
 Stop before implementation, gate approval, final verification, or any
 unapproved external action.

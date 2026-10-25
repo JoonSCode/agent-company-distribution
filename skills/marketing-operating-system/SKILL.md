@@ -1,9 +1,15 @@
 ---
 name: marketing-operating-system
-description: Diagnose and run evidence-backed marketing work for Agent Company from customer demand and positioning through message, channel, growth system, experiment design, measurement, and learning. Use for marketing strategy, GTM, launch, acquisition, retention, App Store, campaign, content, copy, brand, or channel decisions that need more than an isolated draft.
+description: Plan GTM, acquisition, retention, and channel experiments from demand and funnel evidence.
 ---
 
 # Marketing Operating System
+
+In this Orca Company package, the user retains material authority. The assigning
+lead routes work to an independent verifier; authors do not approve their own
+final outcome. Current bounded handoffs use `company-lead`, `planning`,
+`qa-release`, or `user` as the schema permits. Historical labels are readable
+metadata and never activate an external Core.
 
 ## Overview
 
@@ -11,8 +17,17 @@ Turn market evidence into one focused decision and a learning loop. Use the
 smallest path that resolves the live question; do not recite every marketing
 framework.
 
-King Sejong routes and synthesizes; Uigwe owns planning gates; Seungjeongwon
-owns execution and verification.
+An incomplete marketing thought is valid intake. When the desired customer
+outcome, audience, product promise, or success criterion is a user-owned choice,
+inspect available product and demand evidence, offer materially different
+options with reasons and counterevidence, and ask a focused question that also
+accepts a free response. Do not require a finished strategy brief or silently
+substitute Marketing's intent. Missing market evidence remains an evidence gap;
+it is not a reason to ask the user to decide an answer that research can resolve.
+
+The assigning Company lead routes and synthesizes; the user owns material
+planning gates. The lead coordinates execution, independent QA owns technical
+verification and the accepted overall head owns final integration.
 
 ## Start With The Decision
 
@@ -20,10 +35,31 @@ owns execution and verification.
 2. Separate inputs into `known`, `inferred`, and `unknown`.
 3. Identify the evidence that would change the decision.
 4. Select only the lenses needed for that decision.
+5. Reuse applicable references, decisions, and evaluation cases with source,
+   rationale, counterevidence, scope, freshness, and supersession state; refresh
+   only when drift or conflict can change the decision.
 
 If missing audience, problem, alternative, or behavior evidence could reverse
 the strategy, stop at a bounded evidence plan. Do not hide the gap with polished
-copy or channel tactics.
+copy or channel tactics. Apply this to the decision being made: an explicitly
+approved early experiment tests a hypothesis and does not require its eventual
+revenue contribution to have been proved already.
+
+## Follow Through On Material Discoveries
+
+From the assigned marketing goal and available evidence, identify the important
+unresolved assumption, obstacle, or better alternative worth checking rather
+than waiting for the user to name it. For a material item, perform the smallest
+permitted product-truth, demand, alternative, funnel, or channel-evidence check
+that can change the decision, without unapproved live account or publication
+action. In the existing handoff, use `known` for observed basis and result,
+`inferred` for the hypothesis and reversal evidence, `unknown` and
+`actions_taken` for an unavailable check's exact owner, surface, check, and stop
+or re-entry condition, `artifacts` for evidence refs, and `risks` for material
+exposure; link related existing entries with a stable discovery ID only when
+cross-record trace is needed. Revise the recommendation or next owner from the
+observed result and route one `next_recommended_surface`. Empty arrays are valid
+when no material discovery exists.
 
 ## Apply Decision Gates
 
@@ -54,9 +90,11 @@ Use this exact minimum structure for a blocked decision:
    `references/marketing-contract.json`
 6. `next_decision`, `execution_surface`, and `recommended_reasoning_owner`
 
-For unknown audience or problem, evidence action is interview, observation,
-review-mining, or alternative mapping—not a message, landing-page, store, or
-social test. A blocked allocation uses baseline and channel-quality analysis.
+For an unscoped audience or problem decision, use interview, observation,
+review-mining, or alternative mapping before deployable messaging. When a
+bounded early test explicitly targets audience or interest uncertainty, keep
+the provisional audience and mechanism as hypotheses and honor that approved
+learning scope. A blocked allocation uses baseline and channel-quality analysis.
 
 Emit the `agent-company.marketing-decision/v0.1` record defined by
 `references/marketing-contract.json`: `decision_scope` selects narrow or
@@ -70,6 +108,12 @@ Read [references/marketing-methods.md](references/marketing-methods.md) for a
 material strategic rationale or heuristic. Read
 [references/mobile-app-monetization-priors.md](references/mobile-app-monetization-priors.md)
 before a mobile monetization decision; product cohorts override priors.
+Before using a practitioner, community, social, newsletter, deck, case-study,
+or agency recipe, read
+[references/channel-evidence-intake.md](references/channel-evidence-intake.md)
+and classify each claim before reuse. For Apple Ads search results, Search
+Match, query mining, negative-keyword fencing, or ASO feedback, also read
+[references/apple-ads-search-intent-playbook.md](references/apple-ads-search-intent-playbook.md).
 
 ## Run The Minimum Useful Path
 
@@ -104,10 +148,20 @@ before a mobile monetization decision; product cohorts override priors.
 
 ### 4. Create The Message And Experience
 
+- For promotion exploration, apply
+  `references/marketing-contract.json#/creative_exploration_contract` and
+  `references/task-packs/experiment-growth.md`. Preserve the approved business
+  hypothesis and selected first tactic without treating them as proven facts
+  or reopening them without a material boundary change.
+- Explore distinct audience-interest directions before expression options and
+  concrete concepts. A bounded exploration artifact may contain multiple
+  directions and expressions; the one-experiment rule governs the selected
+  test blueprint, not the number of ideas considered.
 - Build the message hierarchy from customer language, alternatives, desired
   progress, objections, and proof.
-- Use one central idea and preserve recognizable brand cues while adapting the
-  execution to each channel.
+- Use one central idea per concept and preserve recognizable brand cues while
+  adapting the execution to each channel. Product truth constrains accuracy;
+  internal product logic and QA facts are not mandatory advertising copy.
 - When the user asks only for copy and the strategic inputs are settled, create
   the requested artifact without expanding into a full plan.
 - Enter this stage only when `decision_readiness` is `conditional` or `ready`.
@@ -137,6 +191,9 @@ views, and conversion rate alone do not prove incrementality.
 
 - Track the business outcome, a leading behavior, downstream quality such as
   activation or retention, and a longer-horizon signal when relevant.
+- Observe the actual customer, product, or channel path named by the test.
+  Label manually assisted drafts, synthetic runs, publication readback, and
+  operational execution separately from customer response and business outcome.
 - Prefer controlled lift or randomized tests when feasible; otherwise label
   evidence as directional and preserve uncertainty.
 - Record what changed in `known`, `inferred`, and `unknown`, then state the next
@@ -159,8 +216,8 @@ views, and conversion rate alone do not prove incrementality.
 - Use `evidence-debate` when a material claim has strong cases on both sides.
 - Use `yc-founder-gtm-review` for a narrow founder-style pain, wedge,
   positioning, first-channel, and one-week falsification check.
-- Use JangYeongsil for missing external or repository evidence, Jiphyeonjeon for
-  unsettled choices, Uigwe for a durable plan, and Seungjeongwon for execution.
+- Use bounded research for missing external or repository evidence, bounded evidence debate for
+  unsettled choices, the authorized decision owner for a durable plan, and the assigning lead for execution.
 
 Do not absorb or silently reproduce these specialist contracts.
 
@@ -197,14 +254,14 @@ unbounded tactic field.
 
 `execution_surface` is the customer-facing or operational place such as an App
 Store page or interview. `recommended_reasoning_owner` is the next internal
-reasoning or delivery owner: a named specialist skill, JangYeongsil,
-Jiphyeonjeon, Uigwe, or Seungjeongwon. Name exactly one owner and do not put a
+reasoning or delivery owner: a named specialist skill, the assigning Company lead,
+Planning, independent QA, or the user for a material decision. Name exactly one owner and do not put a
 channel, interview, or operational surface in this field. Use `none` with a
 reason when no handoff is warranted. Typical
-  routing is: missing evidence to `problem-discovery` or JangYeongsil,
-  unresolved opposition to `evidence-debate` or Jiphyeonjeon, settled copy
-  craft to `copywriting-operating-system`, a selected bounded plan to Uigwe,
-  and approved execution to Seungjeongwon.
+  routing is: missing evidence to `problem-discovery` or bounded research,
+  unresolved opposition to `evidence-debate`, settled copy
+  craft to `copywriting-operating-system`, a selected bounded plan to the authorized decision owner,
+  and approved execution to the assigning lead.
 
 For a simple settled request, return the requested artifact plus the evidence
 and guardrails that materially affect it. For a strategic request, make every
@@ -223,7 +280,7 @@ of omitting it.
 ## Package A Marketing Profile Handoff
 
 The decision output above is internal working output, not the Agent Company
-handoff. When transferring it from the Marketing profile to King Sejong, wrap
+handoff. When transferring it from the Marketing profile to the assigning Company lead, wrap
 it using
 [references/bounded-handoff.template.json](references/bounded-handoff.template.json)
 and the profile's `agent_company_bounded_handoff.v0.1` contract.
@@ -234,12 +291,13 @@ and the profile's `agent_company_bounded_handoff.v0.1` contract.
   and `stop_condition` from the actual task; never expose credentials, raw
   session state, or private runtime paths.
 - Use `next_recommended_surface`, not `recommended_reasoning_owner`, in the
-  handoff. It must be one of the King Sejong surfaces allowed by
+  handoff. It must be one of the supported Company handoff destinations allowed by
   `policies/bounded-handoff.schema.json`.
-- Map JangYeongsil, Jiphyeonjeon, Uigwe, and Seungjeongwon directly to their
-  lowercase surface names. Map a specialist-skill recommendation or `none` to
-  `sejong`, and record the specialist suggestion as a bounded item in
-  `actions_taken`; never pass a specialist skill ID as a court surface.
+- Use `company-lead`, `planning`, `qa-release`, or `user` for current handoffs.
+  Put a specialist-skill recommendation or `none` under `company-lead`, and
+  record the exact specialist suggestion as a bounded item in `actions_taken`.
+  Historical surface labels are read-compatible metadata; they never activate
+  an external Core or grant a specialist execution authority.
 - Do not include `recommended_reasoning_owner`, deployable copy, or unbounded
   analysis in the handoff. Validate the resulting JSON with
   `scripts/agent_company_handoff.py import <path> --json` before transfer.

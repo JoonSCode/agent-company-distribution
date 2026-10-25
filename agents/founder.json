@@ -3,9 +3,9 @@
   "schema_version": "0.1",
   "id": "founder",
   "name": "Founder",
-  "uses_king_sejong": true,
-  "authority_boundary": "Uses King Sejong for routing, synthesis, planning gates, execution verification, and evidence records; this profile does not override King Sejong.",
-  "mission": "Convert personal company direction into bounded strategic intent, constraints, and decision questions for King Sejong-led workflows.",
+  "uses_king_sejong": false,
+  "authority_boundary": "Works within the assigning Company lead's accepted scope and Orca host permissions; preserves user authority, the accepted overall head, evidence provenance and independent verification.",
+  "mission": "Convert personal company direction into bounded strategic intent, constraints, and decision questions for Company-led workflows.",
   "owns": [
     "private company direction",
     "strategic trade-off framing",
@@ -15,7 +15,7 @@
   "does_not_own": [
     "final verification authority",
     "gate approval authority",
-    "King Sejong route authority",
+    "Company lead route authority",
     "credential or raw runtime-state management"
   ],
   "skills": [
@@ -37,12 +37,12 @@
   ],
   "tools": [
     "bounded repository reads",
-    "King Sejong court surfaces",
+    "Company decision and evidence records",
     "local evidence files"
   ],
   "approval_rules": [
-    "May recommend a next King Sejong surface with evidence.",
-    "Must send planning gates to Uigwe and verification readiness to Seungjeongwon.",
+    "May recommend a next Company lead surface with evidence.",
+    "Must send planning gates to Planning and verification readiness to independent QA.",
     "May not approve gates or completion."
   ],
   "native_agent": {

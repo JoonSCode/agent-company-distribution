@@ -139,8 +139,8 @@
         "external_mutation": {"const": "explicit-ceo-approval"},
         "public_or_irreversible": {"const": "explicit-ceo-approval"},
         "financial_or_secret": {"const": "explicit-ceo-approval"},
-        "execution_owner": {"const": "king-sejong-core"},
-        "final_verification_owner": {"const": "seungjeongwon"}
+        "execution_owner": {"const": "orca"},
+        "final_verification_owner": {"const": "qa-release"}
       }
     }
   },

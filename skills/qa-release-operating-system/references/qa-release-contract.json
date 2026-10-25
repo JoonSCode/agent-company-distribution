@@ -173,7 +173,7 @@
   },
   "authority_boundary": {
     "qa_may": ["plan proportional checks", "observe matching surfaces", "report partial success", "reject readiness"],
-    "qa_must_not": ["self-verify final completion", "approve Uigwe", "approve external action", "submit or release without approval"],
-    "final_verification_owner": "seungjeongwon"
+    "qa_must_not": ["self-verify final completion", "approve Planning", "approve external action", "submit or release without approval"],
+    "final_verification_owner": "company-lead"
   }
 }

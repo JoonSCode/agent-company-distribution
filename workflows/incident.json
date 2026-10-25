@@ -5,10 +5,10 @@
   "objective": "Contain and repair a bounded incident with independent diagnosis and reproduction evidence before any risky mutation.",
   "stages": [
     {"id": "containment-boundary", "owner_roles": ["development", "qa-release"], "depends_on": [], "execution_hint": "sequential-fan-in", "exit_evidence": ["impact", "affected surface", "safe diagnostic scope"]},
-    {"id": "root-cause-trace", "owner_roles": ["development"], "depends_on": ["containment-boundary"], "execution_hint": "parallel-candidate", "exit_evidence": ["causal path", "repair options"]},
+    {"id": "root-cause-trace", "owner_roles": ["development"], "depends_on": ["containment-boundary"], "execution_hint": "parallel-candidate", "exit_evidence": ["causal path with observed and hypothesized causes distinguished", "contributing conditions and detection gaps, including unknowns", "repair options"]},
     {"id": "reproduction-and-impact", "owner_roles": ["qa-release"], "depends_on": ["containment-boundary"], "execution_hint": "parallel-candidate", "exit_evidence": ["reproduction", "impact matrix", "negative control"]},
-    {"id": "repair", "owner_roles": ["development"], "depends_on": ["root-cause-trace", "reproduction-and-impact"], "execution_hint": "sequential-or-approval-gated", "exit_evidence": ["repair artifact", "regression proof"]},
-    {"id": "recovery-verification", "owner_roles": ["qa-release"], "depends_on": ["repair"], "execution_hint": "sequential", "exit_evidence": ["recovery observation", "residual risk"]}
+    {"id": "repair", "owner_roles": ["development"], "depends_on": ["root-cause-trace", "reproduction-and-impact"], "execution_hint": "sequential-or-approval-gated", "exit_evidence": ["repair artifact", "regression proof", "prevention applied or deferred with reason, owner, targeted failure, and next check within existing authority"]},
+    {"id": "recovery-verification", "owner_roles": ["qa-release"], "depends_on": ["repair"], "execution_hint": "sequential", "exit_evidence": ["recovery observation", "residual risk", "task-owned resource closeout or retention reason, owner, and recheck trigger; necessary evidence preserved", "prevention application and effect observation reported separately; pending effect observation does not block verified recovery"]}
   ],
   "material_ambiguity_route": {"surface": "uigwe", "resume_same_job": true},
   "completion": {"verification_surface": "seungjeongwon", "ceo_report_required": true}

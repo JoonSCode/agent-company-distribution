@@ -1,13 +1,24 @@
 ---
 name: qa-release-operating-system
-description: Operate Agent Company's QA/Release role through proportional matching-surface verification, release-candidate identity, candid partial-success reporting, and an independent Seungjeongwon handoff. Use for release readiness, incident recovery checks, Simulator or real-device QA, permissions/privacy, StoreKit, App Store Connect state, and residual release risk.
+description: Check release readiness, device QA, and incident recovery; report evidence and risks.
 ---
 
 # QA Release Operating System
 
+In this Orca Company package, the user retains material authority. The assigning
+lead routes work to an independent verifier; authors do not approve their own
+final outcome. Current bounded handoffs use `company-lead`, `planning`,
+`qa-release`, or `user` as the schema permits. Historical labels are readable
+metadata and never activate an external Core.
+
 Observe the approved candidate on the surfaces named by its acceptance criteria.
 QA may reject readiness when evidence fails, is blocked, or is missing.
-Seungjeongwon retains final verification authority.
+The accepted Company head retains final acceptance authority.
+
+Preserve the requested user outcome and quality bar when selecting proportional
+checks. A smaller verification set may reduce cost, but it cannot redefine the
+acceptance claim. Reuse historical evidence only with exact candidate scope,
+rationale, freshness, and supersession state.
 
 Read [references/qa-release-contract.json](references/qa-release-contract.json)
 before substantial work. Use
@@ -45,11 +56,30 @@ readable evidence but never authorize current completion.
    logic change may need focused tests; a device, permission, purchase, or
    account-state claim needs that actual surface.
 4. Record the initial state, action, observed result, evidence ref, cleanup, and
-   stop condition. Separate user-visible observation from command completion.
+   stop condition. Separate user-visible observation from command completion,
+   and label manual assistance, harness-only invocation, or another substitute
+   path without upgrading it to actual-product-path evidence.
 5. Bind each applicable identity in order: source, archive/package, signature,
    tag, attestation, selected distribution artifact, installed artifact, and
    channel. Every named channel records `qa_decision` (`recommend` or
    `reject`) and its `evidence_fact_ids`; it is not a criterion status.
+
+## Follow Through On Material Discoveries
+
+From the assigned acceptance claim and available evidence, identify the
+important unresolved assumption, obstacle, or better alternative worth checking
+rather than waiting for the user to name it. For a material item, perform the
+smallest permitted candidate-bound matching-surface check that can falsify it,
+without changing the candidate or external-action authority. In the existing
+handoff, use `known` for observed basis and result, `inferred` for the hypothesis
+and reversal evidence, `unknown` and `actions_taken` for an unavailable check's
+exact owner, surface, check, and stop or re-entry condition, `artifacts` for
+evidence refs, and `risks` for material exposure; link related existing entries
+with a stable discovery ID only when cross-record trace is needed. Revise the
+next check or owner from the observed result, route one
+`next_recommended_surface`, and leave final integration and acceptance to the
+accepted overall head. Independent technical evidence remains required.
+Empty arrays are valid when no material discovery exists.
 
 ## Execute Matching-Surface Verification
 
@@ -81,11 +111,11 @@ name missing surfaces. Report residual release risk, noisy or stale evidence,
 cleanup disposition, and the smallest next check. A blocked real-device pass is
 not a failed build, and a passed build is not real-device evidence.
 
-QA may recommend a candidate or reject readiness. It may not approve Uigwe,
+QA may recommend a candidate or reject readiness. It may not approve material user decisions,
 approve an external action, submit a build, claim final verification, or turn a
 worker receipt into observed outcome evidence. Normalize the result into the
-bounded handoff and set `next_recommended_surface` to `seungjeongwon` for final
-verification.
+bounded handoff and set `next_recommended_surface` to `company-lead` for final
+integration and acceptance.
 
 ## Optional Specialist Routes
 
@@ -103,4 +133,5 @@ or unavailable surface explicitly.
 - Do not retain raw secrets, personal screenshots, or stateful test residue.
 - Do not hide failed, blocked, unverified, partial-success, or residual-risk
   states behind a readiness summary.
-- Do not override King Sejong or Seungjeongwon.
+- Do not override user authority, accepted scope, host permissions or the
+  independent-verification boundary.

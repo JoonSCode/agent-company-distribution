@@ -70,7 +70,7 @@
     "external_mutation": "explicit-ceo-approval",
     "public_or_irreversible": "explicit-ceo-approval",
     "financial_or_secret": "explicit-ceo-approval",
-    "execution_owner": "king-sejong-core",
-    "final_verification_owner": "seungjeongwon"
+    "execution_owner": "orca",
+    "final_verification_owner": "qa-release"
   }
 }

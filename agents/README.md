@@ -16,10 +16,40 @@ required bounded-handoff shape inside `developer_instructions`. Changing any
 of those source fields must change the affected generated agent. They remain
 instructional routes rather than native `skills.config` allowlist entries.
 
+Every generated role receives the same Outcome and Execution contract before
+its Independent Judgment and role-local sections. It preserves the CEO's
+portfolio purpose, intended outcome, requested quality, and deliverable;
+accepts an incomplete thought as valid intake; and makes a finished brief the
+result of grounded clarification rather than an entry requirement. Once
+material user choices are settled, roles own reversible local design, method,
+tool, and resource choices inside their authority.
+
+The common contract also requires prior evidence to retain source, rationale,
+counterevidence, scope, freshness, and supersession state. It distinguishes the
+actual product or customer path from manual assistance, automated checks from
+observed experience, publication from readback, and technical completion from
+business outcome. Roles use the smallest evidence and resource set that
+preserves quality. Company owns bounded allocation and acceptance policy; the
+actual Orca host owns Task/Dispatch execution and permission boundaries. No
+external Core is required by the active role instructions.
+
+Every generated role also receives the same Independent Judgment contract.
+Material CEO or user suggestions are decision inputs rather than predetermined
+conclusions: roles inspect evidence and counterevidence, distinguish inference,
+preference, constraint, and explicit decision, and recommend `adopt`, `modify`,
+`defer`, or `reject`. The contract does not manufacture disagreement or delay
+trivial exact low-risk instructions, and an explicit CEO decision remains
+authoritative within higher-priority safety and permission boundaries. These
+dispositions are advisory and do not replace role-local statuses or authority;
+a settled decision is reopened only when material evidence crosses a named
+safety, permission, approved-scope, or approved-risk boundary.
+
 Sandbox defaults stay role-specific. Evidence-only roles are read-only;
 development and qa-release may use workspace-write for their bounded work.
-None of the six agents can select the Core route, approve Uigwe, award final
-verification, or impersonate the CEO.
+None of the six agents can override user material authority, host permissions
+or an accepted assignment, self-award final verification, or impersonate the
+overall Company head. Current handoffs use Company destinations; historical
+surface labels remain readable metadata and do not invoke an external engine.
 
 Read-only checks:
 

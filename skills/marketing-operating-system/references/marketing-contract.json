@@ -101,12 +101,31 @@
     "long_horizon_when_applicable": true,
     "attribution_is_causal_proof": false
   },
+  "creative_exploration_contract": {
+    "applies_when": "The requested artifact explores promotion directions and their expressions before selecting a bounded test.",
+    "artifact_boundary": "Keep linked direction, expression, production concept, and observed result records in job evidence. These are artifact semantics, not new fields in the marketing-decision or experiment runtime payload.",
+    "ordered_layers": ["direction_hypothesis", "expression_option", "production_concept", "experiment_result"],
+    "direction_hypothesis": ["id", "audience hypothesis", "situation", "emotion or desire", "reason to notice and share", "bridge to problem or app interest", "business hypothesis", "evidence and uncertainty"],
+    "expression_option": ["id", "direction_id", "narrative or visual mechanism", "why it serves this direction", "reference and transfer limits", "Design expression brief"],
+    "production_concept": ["id", "expression_id", "concrete scene sequence", "intended audience action per scene", "selected asset and copy refs", "production constraints"],
+    "experiment_result": ["concept_id and tested version", "publication or exposure evidence", "observation window", "observed metrics and denominators", "attribution and confounding limits", "unobserved downstream outcomes", "next decision"],
+    "rules": {
+      "approved_hypothesis": "Proceed with an approved early test within its authority. Missing revenue proof alone does not block it; preserve the unknown and reopen only for a material safety, permission, scope, or accepted-risk change.",
+      "business_chain": "When selected, viral reach or sharing to problem or app interest to app acquisition to payment contribution is a testable business chain. Evidence for one link does not prove the next.",
+      "alternatives": "Explore materially distinct directions, then multiple expressions within each when exploration is requested. Counts follow the objective and approved scope, not a universal quota. A selected exact edit or expression needs no renewed exploration.",
+      "product_truth": "Use product facts to bound accuracy and relevant proof; do not force internal logic or QA facts into advertising copy.",
+      "renderer": "Choose the marketing reason and expression before fitting a renderer. Existing card roles, page count, or template capacity do not define the direction.",
+      "selected_tactic": "Preserve a CEO-selected first expression as an experiment choice, including a trend's narrative sequence reinterpreted for the app when requested. Do not make it a permanent tactic or permission to repost third-party work or copy assets.",
+      "evidence": "User-provided experiences are indirect evidence until independently observed. Reference resemblance, asset generation, policy checks, and technical QA do not establish marketing effectiveness.",
+      "handoff": "Marketing owns direction and learning; Design owns expression and scene choices; Planning owns dependencies and criterion-to-proof mapping. Execution and independent verification remain with their existing owners."
+    }
+  },
   "decision_output_policy": {
     "lead_fields": ["recommendation_or_deferral", "decision_readiness", "controlling_evidence", "reversal_condition", "next_decision"],
     "materiality_rule": "A missing fact blocks only the decision slice it can reverse; unrelated unknowns remain visible but do not suppress a supported artifact or test.",
     "evidence_trace_rule": "Cite decisive evidence IDs adjacent to each material recommendation or reversal condition. Do not restate source evidence unless needed to explain an inference, and do not require a separate trace table in the user-facing artifact.",
     "expansion_rule": "Expand only evidence, alternatives, metrics, and experiment fields that can change the named marketing decision.",
-    "omission_rule": "Do not restate the full operating system, produce multiple speculative tactics, or fill empty framework sections.",
+    "omission_rule": "Do not restate the full operating system, add unsolicited speculative tactics, or fill empty framework sections. Requested creative exploration may compare multiple hypotheses under creative_exploration_contract.",
     "handoff_rule": "Emit the complete machine contract only for the requested decision artifact or bounded handoff."
   },
   "specialist_routing": {
@@ -117,6 +136,6 @@
   "authority_boundary": {
     "marketing_may": ["diagnose demand", "recommend positioning", "design bounded experiments", "prepare marketing handoffs"],
     "marketing_must_not": ["take unapproved live account action", "fabricate proof", "approve gates", "claim final verification"],
-    "final_verification_owner": "seungjeongwon"
+    "final_verification_owner": "qa-release"
   }
 }

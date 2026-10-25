@@ -54,27 +54,27 @@ ROLE_OPERATING_CONTRACTS: Final[Mapping[str, OperatingContractSpec | None]] = Ma
     {
         "design": OperatingContractSpec(
             "skills/design-operating-system/references/design-contract.json",
-            "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702",
+            "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027",
         ),
         "development": OperatingContractSpec(
             "skills/development-operating-system/references/development-contract.json",
-            "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff",
+            "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb",
         ),
         "founder": OperatingContractSpec(
             "skills/founder-operating-system/references/founder-contract.json",
-            "b0aa74ed14ad41072adf01e700028ba185b052fd29e7c9a613b5ba265f7fffc7",
+            "709ba90fea7ad79a7c0a5a459caf6bd1b22cad21268cc0335dc3c7b41d6cf2ee",
         ),
         "marketing": OperatingContractSpec(
             "skills/marketing-operating-system/references/marketing-contract.json",
-            "df11697e644b07fefaab4d3c22f69f2d1c137c01de31234f206f50b8f3859683",
+            "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73",
         ),
         "planning": OperatingContractSpec(
             "skills/planning-operating-system/references/planning-contract.json",
-            "e04447babbd66e65cd3d75839793ab6a544c618bef7600f66652f9cb0afce451",
+            "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716",
         ),
         "qa-release": OperatingContractSpec(
             "skills/qa-release-operating-system/references/qa-release-contract.json",
-            "1d28cb70df55b058244d3995997fbea37a262775539e4bfcacc66a21b7743f23",
+            "ebd7858c8e16c4f2386e4a5cb6bc6a249cea05dd2843611909d7ddd1cc7e8b91",
         ),
     }
 )

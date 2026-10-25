@@ -10,7 +10,7 @@
 This pack turns approved intent and observed product behavior into a buildable
 experience flow. It does not change product scope, choose unsupported business
 rules, produce a visual style system, implement production code, approve a
-Uigwe gate, or claim that an implemented experience is verified.
+material decision gate, or claim that an implemented experience is verified.
 
 ## Decision Core
 
@@ -44,7 +44,7 @@ Use this pack when:
 Do not use it when:
 
 - the target user, approved task, observable outcome, must-preserve behavior,
-  platform, or authority boundary is materially unsettled; return to Uigwe;
+  platform, or authority boundary is materially unsettled; return to the authorized decision owner;
 - the flow and state semantics are already fixed and the decision is primarily
   tokens, hierarchy styling, typography, color, contrast, Dynamic Type, or
   motion; use `task-pack:design:visual-system-accessibility`;
@@ -202,9 +202,9 @@ current platform rule from memory or treat a Figma kit as normative authority.
     deviations; state fixtures; and runtime checks. Do not prescribe production
     architecture beyond the evidence needed to preserve the experience.
 13. **Route without approving.** Return product or verification-bar changes to
-    Uigwe, missing evidence to JangYeongsil or a bounded specialist, contested
-    directions to Jiphyeonjeon, and approved implementation plus independent
-    verification to Seungjeongwon.
+    the authorized decision owner, missing evidence to bounded research or a bounded specialist, contested
+    directions to bounded evidence debate, and approved implementation plus independent
+    verification to the assigning lead.
 
 ## Options And Tradeoffs
 
@@ -287,13 +287,13 @@ different accountable actors.
 ## Stop Or Escalate
 
 Stop with one evidence request when the target task, matching surface,
-observable outcome, or authority boundary is missing. Return to Uigwe when a
+observable outcome, or authority boundary is missing. Return to the authorized decision owner when a
 product rule, scope, platform, privacy, permission, risk, or verification-bar
 decision can reverse the flow. Route missing observed behavior or current
-platform evidence to JangYeongsil, copy craft to
+platform evidence to bounded research, copy craft to
 `copywriting-operating-system`, materially contested directions to
-Jiphyeonjeon, and approved implementation plus independent verification to
-Seungjeongwon. Stop before production edits, remote artifact mutation, external
+bounded evidence debate, and approved implementation plus independent verification to
+the assigning lead. Stop before production edits, remote artifact mutation, external
 actions, QA disposition, gate approval, release claims, or final verification.
 
 ## Compression Examples

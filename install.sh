@@ -1,26 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repository="https://github.com/JoonSCode/agent-company-distribution.git"
-release_repository="JoonSCode/agent-company-distribution"
-tag="v0.1.0"
-
-if ! command -v gh >/dev/null 2>&1; then
-  printf '%s\n' 'Agent Company requires GitHub CLI (gh) to verify the release attestation.' >&2
-  exit 127
-fi
-
-gh release verify "$tag" --repo "$release_repository"
-
-stage="$(mktemp -d "${TMPDIR:-/tmp}/agent-company-install.XXXXXX")"
-trap 'rm -rf -- "$stage"' EXIT
-
-git clone --quiet --depth 1 --branch "$tag" --single-branch "$repository" "$stage/source"
-head="$(git -C "$stage/source" rev-parse HEAD)"
-tag_commit="$(git -C "$stage/source" rev-parse "refs/tags/$tag^{commit}")"
-if [[ "$head" != "$tag_commit" ]]; then
-  printf '%s\n' "Agent Company checkout does not match $tag." >&2
+# This source entry does not download the historical Core-bound v0.1.0 release.
+if [[ -z "${BASH_SOURCE[0]:-}" || ! -f "${BASH_SOURCE[0]}" ]]; then
+  printf '%s\n' 'Pipe installation of the historical v0.1.0 artifact is unsupported for standalone Orca Company.' 'Use a reviewed, pinned source checkout, then run: bash scripts/setup.sh install' >&2
   exit 1
 fi
-
-bash "$stage/source/scripts/bootstrap.sh" install --user "$@"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -f "$script_dir/scripts/bootstrap.sh" || ! -d "$script_dir/.git" && ! -f "$script_dir/.git" ]]; then
+  printf '%s\n' 'Use a reviewed, pinned Company Git source checkout, then run: bash scripts/setup.sh install' >&2
+  exit 1
+fi
+exec bash "$script_dir/scripts/setup.sh" "$@"

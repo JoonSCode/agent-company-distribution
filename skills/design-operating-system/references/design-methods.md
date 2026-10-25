@@ -93,4 +93,4 @@ candidate, matching surface, and observation authority are bound. Return:
 Without those conformance prerequisites, return the source-backed direction,
 recovery contract, and reversal evidence without a `match` or `deviation`
 claim. Do not decide completion. QA owns matching-surface outcome observation
-and Seungjeongwon owns final execution verification.
+and the assigning lead owns final execution verification.

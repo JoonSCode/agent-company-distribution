@@ -1,13 +1,13 @@
 ---
 name: yc-founder-gtm-review
-description: Use when a marketing, GTM, positioning, launch, or founder-strategy agent needs a YC-style review of customer pain, wedge, positioning, distribution experiments, or market assumptions before recommending a plan.
+description: Review GTM and founder strategy through customer pain, positioning, and distribution.
 ---
 
 # YC Founder GTM Review
 
 Use this as a marketing-planning lens, not as final authority. It helps the
 marketing agent pressure-test a product or launch direction before handing
-evidence to King Sejong, Uigwe, or another bounded planning surface.
+evidence to the assigning Company lead, the authorized decision owner, or another bounded planning surface.
 
 ## Core Checks
 
@@ -31,7 +31,7 @@ Return a bounded handoff with:
 - `positioning`: one concise positioning draft
 - `experiment`: one 1-week channel or message test with success/failure criteria
 - `risks`: the strongest reasons this could be wrong
-- `next_recommended_surface`: usually `jiphyeonjeon` for option judgment or `uigwe` for planning
+- `next_recommended_surface`: usually `company-lead` for option judgment or `planning` for planning
 
 ## Guardrails
 

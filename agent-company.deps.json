@@ -1,26 +1,5 @@
 {
-  "$schema": "https://agent-company.local/schemas/agent-company.deps.v0.1.json",
-  "schema_version": "0.1",
-  "dependencies": {
-    "king_sejong": {
-      "kind": "codex_skill_distribution",
-      "relationship": "external_dependency",
-      "copy_strategy": "none",
-      "resolution_order": [
-        "local_develop_checkout",
-        "github_ref_fallback"
-      ],
-      "local_develop_checkout": {
-        "path": "../king-sejong",
-        "prefer_when_present": true,
-        "requires_git_metadata": true,
-        "requires_readable_head": true
-      },
-      "github_ref_fallback": {
-        "url": "https://github.com/JoonSCode/king-sejong.git",
-        "ref": "main",
-        "requires_resolved_commit": true
-      }
-    }
-  }
+  "schema_version": "0.2",
+  "dependencies": {},
+  "runtime_contract": "orca-company-standalone/v1"
 }

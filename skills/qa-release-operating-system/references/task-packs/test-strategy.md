@@ -35,7 +35,7 @@ Use this pack when:
 Do not use it when:
 
 - product intent or the acceptance oracle is materially ambiguous; return to
-  Uigwe or Planning;
+  the authorized decision owner or Planning;
 - the main question is how to observe Simulator, physical-device, permission,
   StoreKit, deep-link, or external iOS behavior; use
   `task-pack:qa-release:ios-matching-surfaces`;
@@ -61,7 +61,8 @@ Require:
    concurrency and lifecycle conditions, and the matching surface for each
    criterion;
 5. existing tests, recent failures, flaky-test history, production or incident
-   evidence with provenance, and known coverage gaps;
+   evidence with provenance, rationale, freshness, supersession state, and known
+   coverage gaps;
 6. approved read/write scope, destructive-action limits, test-data policy,
    cleanup requirement, time budget, stop condition, and independent verifier;
 7. a resolver-materialized Current Source Set when the oracle depends on
@@ -109,7 +110,8 @@ to choose depth; do not hide judgment behind an unexplained numeric score.
   and atomicity, not only the returned value.
 - **Matching surface/end to end:** the actual user-visible or external surface
   named by the criterion. It proves only the observed path, environment, and
-  state.
+  state. A manually assisted step, harness-only invocation, or direct component
+  call must be labeled and cannot stand in for an unobserved product path.
 - **Regression:** the smallest durable reproduction of the prior failure plus
   controls showing the detector is meaningful and unrelated behavior remains
   stable.
@@ -153,6 +155,7 @@ policy source before it sets the oracle; it never proves candidate behavior.
 9. **Order execution by information value.** Run deterministic focused checks
    first, then boundary and integration checks, then expensive matching
    surfaces. Stop early only when the recorded stop condition is met.
+   The smaller set must preserve the requested quality and acceptance bar.
 10. **Capture observations.** Preserve commands, environment, initial state,
     actual outcomes, candidate binding, sanitized artifacts, cleanup, failures,
     flake repetitions, and skipped surfaces.
@@ -160,7 +163,7 @@ policy source before it sets the oracle; it never proves candidate behavior.
     `blocked`, or `unverified`. One high-severity missing surface is not offset
     by many low-risk passes.
 12. **Handoff independently.** Report partial success, residual risk, smallest
-    next check, and `next_recommended_surface: seungjeongwon`; do not score your
+    next check, and `next_recommended_surface: company-lead`; do not score your
     own work as final verification.
 
 ## Options And Tradeoffs
@@ -203,9 +206,9 @@ is disputed, a material matching surface is unavailable, safe isolation or
 cleanup cannot be guaranteed, required evidence would expose secrets or
 personal data, current-source drift can change the oracle, or continuing would
 require unauthorized implementation, production mutation, submission, release,
-or account action. Route intent and acceptable-risk questions to Uigwe, missing
-facts to JangYeongsil, contested tradeoffs to Jiphyeonjeon, and execution plus
-final verification to Seungjeongwon. A bounded `blocked` or `unverified` result
+or account action. Route intent and acceptable-risk questions to the authorized decision owner, missing
+facts to bounded research, contested tradeoffs to bounded evidence debate, and execution plus
+final verification to the assigning lead. A bounded `blocked` or `unverified` result
 with preserved partial success is valid.
 
 ## Compression Examples
@@ -220,7 +223,7 @@ and identical state after reload. The prior corrupt-archive regression must
 fail on the faithful pre-fix candidate and pass here; a valid-archive negative
 control must still import once. Device UI import remains unverified and cannot
 be inferred from the green local suite. Preserve the passed parser and store
-evidence, then send the candidate-bound gap to Seungjeongwon."
+evidence, then send the candidate-bound gap to the assigning lead."
 
 **Bad:** "Unit tests and the build pass with 92% coverage, so the change is
 fully regression-safe and ready to ship."

@@ -9,14 +9,16 @@
 
 Use this pack for authorized code that adds a stable user, caller, or operator
 outcome. Use causal debugging when the failing seam is unknown, architecture
-risk when a consequential boundary changes, and Uigwe when outcome, risk, or
+risk when a consequential boundary changes, and the authorized decision owner when outcome, risk, or
 authority is unsettled.
 
 ## Decision Method
 
 1. **Bind the slice.** Record outcome, actor, observable transition,
-   must-preserve behavior, non-goals, write scope, stop condition, candidate,
-   and independent verifier. Preserve unrelated work.
+   requested quality, must-preserve behavior, non-goals, write scope, stop
+   condition, candidate, and independent verifier. Preserve unrelated work.
+   Reuse prior evidence only with its source, rationale, counterevidence, scope,
+   freshness, and supersession state.
 2. **Trace the feature seam.** Inspect the entry point, direct callers, state
    owner, side effects, and relevant persistence, API/UI, lifecycle, and
    compatibility boundaries. Mark each changed, preserved, unverified, or not
@@ -36,7 +38,9 @@ authority is unsettled.
 6. **Check seam and boundary.** Run the focused check and an applicable negative control
    (for example denial, invalid input, duplicate, cancellation, or
    dependency failure). Then exercise the smallest available integrated path on
-   the exact candidate; a mock or unit check does not replace this observation.
+   the exact candidate through the actual caller or product path needed by the
+   claim; a mock, harness, direct code invocation, or unit check does not
+   replace this observation. Record manual assistance and substitute paths.
 7. **Hand off.** Return changed files and behavior, selected and rejected option,
    exact checks/results, negative and integrated observations, unverified
    surface, residual risk, reproduction, and owner for independent verification.
@@ -51,7 +55,7 @@ impact-surface statuses, criterion-to-proof mapping, chosen option and
 `revisit_signal`, and either `pre_change_evidence` or the bounded infeasibility
 record. Keep `known`, `inferred`, and `unknown` distinct. Validate the handoff
 with `scripts/agent_company_handoff.py import <handoff.json> --json` when
-available; QA-Release owns matching-surface observation and Seungjeongwon owns
+available; QA-Release owns matching-surface observation and the assigning lead owns
 final execution verification.
 
 ## Stop

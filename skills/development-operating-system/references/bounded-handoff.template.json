@@ -5,14 +5,14 @@
   "forbidden_claims": [
     "final verification authority",
     "gate approval authority",
-    "override King Sejong",
-    "replaces King Sejong"
+    "override user authority",
+    "self-approve final verification"
   ],
   "format": "agent_company_bounded_handoff.v0.1",
   "inferred": [],
   "knowledge_context_binding": {
     "attestation_scope": "resolver_materialized_selection",
-    "context_id": "1acc2cc419a8f7bdf6d3befdbe4bd2c18f93a7ab54f3bc4bfd98b7d709981c6e",
+    "context_id": "85ae8e747858a4a3ef85d1c5d1885faaf7d5b8c074e445fd09d52451d707ddc8",
     "decision_questions": [
       "What is the smallest correct implementation that satisfies the observable outcome?",
       "What evidence-backed feature implementation decision should the development role make, and what evidence would change it?"
@@ -20,23 +20,23 @@
     "format": "agent-company.knowledge-context/v0.2",
     "issued_at": "2026-07-30T00:00:00Z",
     "issued_by": "agent-company-expertise-resolver/v0.2",
-    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
     "materialized_references": [
       {
         "id": "role-kernel:development",
         "ref": "skills/development-operating-system/references/development-contract.json",
-        "sha256": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff",
+        "sha256": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb",
         "version": "0.1.0"
       },
       {
         "id": "task-pack:development:feature-implementation",
         "ref": "skills/development-operating-system/references/task-packs/feature-implementation.md",
-        "sha256": "f89576e51b93c5be8bdda380decf343ce7d4f5e45915379f3ae14ea3b454c331",
+        "sha256": "f34b4f2641455922ac2db72cd3763c8d43eece27389429d0e0d5812a60e29874",
         "version": "0.1.0"
       }
     ],
     "objective_sha256": "48bd9c87e923819dcb8afb7a9d9e0d345768b60db92769f76519cd655ba04c25",
-    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "required_reference_ids": [
       "role-kernel:development",
       "task-pack:development:feature-implementation"
@@ -56,16 +56,16 @@
   },
   "knowledge_usage_receipt": {
     "attestation_scope": "worker_reported_use_independent_verification_required",
-    "context_id": "1acc2cc419a8f7bdf6d3befdbe4bd2c18f93a7ab54f3bc4bfd98b7d709981c6e",
+    "context_id": "85ae8e747858a4a3ef85d1c5d1885faaf7d5b8c074e445fd09d52451d707ddc8",
     "decision_questions": [
       "What is the smallest correct implementation that satisfies the observable outcome?",
       "What evidence-backed feature implementation decision should the development role make, and what evidence would change it?"
     ],
     "format": "agent-company.knowledge-usage-receipt/v0.2",
-    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
     "objective_sha256": "48bd9c87e923819dcb8afb7a9d9e0d345768b60db92769f76519cd655ba04c25",
-    "receipt_id": "af52d8c500dac73cae574f6c8d24710c01b02d72e51e5b88b354f66d7dfaed72",
-    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "receipt_id": "4a753366306576f03d2fb01b49d72bddf13a7da9c9c484bffec2fadf2373a933",
+    "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "reported_at": "2026-07-30T00:01:00Z",
     "reported_by": "role-worker",
     "required_reference_ids": [
@@ -84,7 +84,7 @@
         ],
         "id": "role-kernel:development",
         "ref": "skills/development-operating-system/references/development-contract.json",
-        "sha256": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff",
+        "sha256": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb",
         "version": "0.1.0"
       },
       {
@@ -94,17 +94,17 @@
         ],
         "id": "task-pack:development:feature-implementation",
         "ref": "skills/development-operating-system/references/task-packs/feature-implementation.md",
-        "sha256": "f89576e51b93c5be8bdda380decf343ce7d4f5e45915379f3ae14ea3b454c331",
+        "sha256": "f34b4f2641455922ac2db72cd3763c8d43eece27389429d0e0d5812a60e29874",
         "version": "0.1.0"
       }
     ]
   },
   "known": [],
-  "next_recommended_surface": "seungjeongwon",
+  "next_recommended_surface": "company-lead",
   "objective": "Replace with the approved engineering objective.",
   "operating_contract_binding": {
     "ref": "skills/development-operating-system/references/development-contract.json",
-    "sha256": "1efa017b894f6c5d908d5904adb6a8fe9f824e6839f8a9941894dcbc772ed2ff"
+    "sha256": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb"
   },
   "risks": [],
   "role": "development",

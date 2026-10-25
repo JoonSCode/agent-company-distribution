@@ -117,7 +117,37 @@ def temporal_log_issues(parsed: RuntimeStatusInput, projection: UpdateProjection
     return issues
 
 
-def sanitized_warnings(parsed: RuntimeStatusInput) -> list[JsonValue]:
+def allow_stale_empty_stderr(parsed: RuntimeStatusInput, projection: UpdateProjection) -> bool:
+    if (
+        projection.state != "succeeded"
+        or projection.exit_code != 0
+        or projection.attempted_at is None
+        or parsed.launchd.last_exit != 0
+    ):
+        return False
+    stdout_log = parsed.launchd.stdout_log
+    stderr_log = parsed.launchd.stderr_log
+    if (
+        not stdout_log.present
+        or not stdout_log.fresh
+        or stdout_log.integrity != "ok"
+        or stdout_log.mtime_epoch is None
+        or stdout_log.size_bytes is None
+        or stdout_log.size_bytes == 0
+        or not stderr_log.present
+        or stderr_log.integrity != "stale"
+        or stderr_log.size_bytes != 0
+    ):
+        return False
+    attempted = datetime.fromisoformat(projection.attempted_at.replace("Z", "+00:00")).astimezone(UTC)
+    return datetime.fromtimestamp(stdout_log.mtime_epoch, UTC) >= attempted
+
+
+def sanitized_warnings(
+    parsed: RuntimeStatusInput,
+    *,
+    allow_stale_empty_stderr_log: bool = False,
+) -> list[JsonValue]:
     warning = parsed.updates.telemetry_warning
     result: list[JsonValue] = []
     if warning is not None:
@@ -127,7 +157,11 @@ def sanitized_warnings(parsed: RuntimeStatusInput) -> list[JsonValue]:
             result.append("telemetry warning: sanitized unsafe warning")
         else:
             result.append(warning if isinstance(warning, str) else "telemetry warning: sanitized malformed warning")
-    if parsed.launchd.observed and not parsed.launchd.logs_fresh:
+    if (
+        parsed.launchd.observed
+        and not parsed.launchd.logs_fresh
+        and not allow_stale_empty_stderr_log
+    ):
         result.append("launchd warning: update logs are stale or incomplete")
     return result
 
@@ -206,14 +240,22 @@ def enrich_runtime_status(
         return corrupt_projection(exc, payload)
     except UpdateReceiptError as exc:
         return corrupt_projection(StatusContractError(exc.code, "timestamps"), payload)
+    stale_empty_stderr_allowed = allow_stale_empty_stderr(parsed, projection)
     issues = [
         *base_issues(parsed), *provenance_issues(parsed), *integrity_issues(parsed),
-        *project_launchd_status(parsed.launchd), *update_issues(projection),
+        *project_launchd_status(
+            parsed.launchd,
+            allow_stale_empty_stderr=stale_empty_stderr_allowed,
+        ),
+        *update_issues(projection),
         *temporal_log_issues(parsed, projection, current),
     ]
     severity = severity_for(parsed, issues)
     enriched = dict(payload)
-    safe_warnings = sanitized_warnings(parsed)
+    safe_warnings = sanitized_warnings(
+        parsed,
+        allow_stale_empty_stderr_log=stale_empty_stderr_allowed,
+    )
     state = payload.get("state")
     if isinstance(state, dict):
         safe_state = dict(state)

@@ -233,9 +233,9 @@ def tick(state: JsonObject, request: TickRequest) -> Mutation:
         "next_action": "route-and-create-byte-bound-company-plan",
         "core_boundary": {
             "dispatch_enabled": False,
-            "execution_owner": "king-sejong-core",
-            "worker_lifecycle_owner": "king-sejong-core",
-            "final_verification_owner": "seungjeongwon",
+            "execution_owner": "orca",
+            "worker_lifecycle_owner": "orca",
+            "final_verification_owner": "accepted-company-head",
             "external_action_authority": "explicit-ceo-approval",
         },
         "state_transition": {

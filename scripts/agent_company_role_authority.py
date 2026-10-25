@@ -22,6 +22,8 @@ from agent_company_role_schema import JsonValue, ProfileIssue, issue
 
 
 FORBIDDEN_AUTHORITY_TERMS: Final[tuple[str, ...]] = (
+    "override user authority",
+    "self-approve final verification",
     "final verification authority",
     "gate approval authority",
     "approve uigwe gates",

@@ -16,7 +16,6 @@ from typing import Final
 
 from agent_company_install_io import atomic_write, install_paths
 from agent_company_install_types import InstallError
-from agent_company_deps import DepsError, resolve_dependency
 from agent_company_launchd_contract import LAUNCHD_LABEL
 
 
@@ -37,7 +36,7 @@ def target() -> str:
     return f"gui/{os.getuid()}/{LAUNCHD_LABEL}"
 
 
-def rendered_plist() -> bytes:
+def rendered_plist(*, updater_root: Path | None = None) -> bytes:
     try:
         parsed = plistlib.loads(TEMPLATE.read_bytes())
     except (OSError, plistlib.InvalidFileException) as exc:
@@ -65,19 +64,24 @@ def rendered_plist() -> bytes:
         raise InstallError("launchd_template_invalid", "launchd template differs from the authenticated contract")
     assert isinstance(arguments, list)
     assert isinstance(environment, dict)
-    arguments[1] = str(ROOT / "scripts" / "update.sh")
+    arguments[1] = str((ROOT if updater_root is None else updater_root) / "scripts" / "update.sh")
     environment["CODEX_HOME"] = str(install_paths().codex_home)
-    try:
-        dependency = resolve_dependency()
-    except DepsError as exc:
-        raise InstallError("dependency_resolution_failed", exc.detail) from exc
-    if dependency.selected_source != "local_develop_checkout" or not dependency.git_root:
-        raise InstallError("dependency_resolution_failed", "user updater requires a persistent local Core source")
-    environment["AGENT_COMPANY_DEP_MODE"] = "local"
-    environment["AGENT_COMPANY_KING_SEJONG_LOCAL_PATH"] = dependency.git_root
+    logs = selected_update_logs()
+    parsed["StandardOutPath"], parsed["StandardErrorPath"] = map(str, logs)
     if sejong_home := os.environ.get("SEJONG_HOME"):
         environment["SEJONG_HOME"] = str(Path(sejong_home).expanduser().resolve())
     return plistlib.dumps(parsed, fmt=plistlib.FMT_XML, sort_keys=False)
+
+
+def selected_update_logs() -> tuple[Path, Path]:
+    """Keep production log paths; isolate logs with the existing test launcher."""
+    selected = os.environ.get("AGENT_COMPANY_TEST_UPDATE_LOG_DIR")
+    if selected and os.environ.get("AGENT_COMPANY_TEST_LAUNCHCTL"):
+        root = Path(selected)
+        if not root.is_absolute() or ".." in root.parts:
+            raise InstallError("unsafe_path", "test update log directory must be absolute")
+        return root / UPDATE_LOGS[0].name, root / UPDATE_LOGS[1].name
+    return UPDATE_LOGS
 
 
 def launchctl_executable() -> Path:
@@ -136,7 +140,7 @@ def prepare_update_logs(logs: tuple[Path, Path] = UPDATE_LOGS) -> None:
 def install_user_launchd() -> None:
     plist = user_plist()
     atomic_write(plist, rendered_plist(), 0o600)
-    prepare_update_logs()
+    prepare_update_logs(selected_update_logs())
     _ = launchctl(("bootout", target()))
     bootstrap = launchctl(("bootstrap", target().rsplit("/", 1)[0], str(plist)))
     if bootstrap.returncode != 0:

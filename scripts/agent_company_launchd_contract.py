@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, final, override
 
+from agent_company_install_types import InstallError
+
 
 MAX_STALE_SECONDS = 31 * 24 * 60 * 60
 LAUNCHD_LABEL = "local.agent-company.update"
@@ -135,10 +137,14 @@ class LaunchdConfig:
 class SystemProcess:
     def run(self, argv: tuple[str, ...]) -> CommandResult:
         try:
+            if argv and argv[0] == "launchctl" and "AGENT_COMPANY_TEST_LAUNCHCTL" in os.environ:
+                from agent_company_launchd_install import launchctl_executable
+
+                argv = (str(launchctl_executable()), *argv[1:])
             completed = subprocess.run(argv, text=True, capture_output=True, check=False, timeout=5)
         except UnicodeError:
             return CommandResult(1, "", "launchd process output was not valid UTF-8")
-        except (OSError, subprocess.TimeoutExpired) as exc:
+        except (OSError, subprocess.TimeoutExpired, InstallError) as exc:
             return CommandResult(1, "", str(exc))
         return CommandResult(completed.returncode, completed.stdout, completed.stderr)
 

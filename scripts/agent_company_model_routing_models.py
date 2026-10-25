@@ -7,7 +7,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import override
+from typing import Final, override
+
+
+# Contract support is not proof of availability on the selected host.
+SUPPORTED_MODELS: Final[frozenset[str]] = frozenset({"gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra"})
+SUPPORTED_EFFORTS: Final[frozenset[str]] = frozenset({"low", "medium", "high", "xhigh", "max"})
+SUPPORTED_SERVICE_TIERS: Final[frozenset[str]] = frozenset({"default", "priority"})
 
 
 class RateCardFreshness(StrEnum):

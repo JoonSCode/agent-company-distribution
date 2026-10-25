@@ -1,243 +1,200 @@
 ---
 name: agent-company
-description: Explicit Agent Company whole-studio front door through bounded role workers and King Sejong. Use only when the user explicitly invokes Agent Company, $agent-company, or asks to operate the company as a whole. Do not auto-trigger merely because a request concerns a new app, improvement, planning, marketing, release, incident, or portfolio; those individual methods remain separately discoverable.
+description: Only for explicit Agent Company requests; coordinate goals through the internal Orca operating contract.
 ---
 
 # Agent Company
 
-Treat the user as CEO and King Sejong as the Chief of Staff and lead synthesis
-authority. Create actual temporary role workers for assigned slices; do not
-simulate a company by writing role-labelled prose in one voice.
+## Orca fork entry
+
+Before routing, read [configuration](../company-orchestration/references/configuration.md) and run the installed snapshot `scripts/agent_company_config.py explain`. It reads common rules, the selected preset and private user overrides. Apply an explicit current-task document last. No configuration grants authentication or launch authority. Claude Code direct and Antigravity Claude are distinct routes. A Claude-only Company head needs no Codex/Astra policy pin; the packaged native roles and hook currently target Codex, so verify the actual host adapter before execution.
+
+For this dedicated Orca fork, start or resume the user's Company goal through
+[Company orchestration](../company-orchestration/SKILL.md). That self-contained
+package is the active policy for staffing, model/path/effort, context/tokens,
+records and actual Orca execution. Preserve the explicit-only front door and
+continuous-session attribution below. Read only the package references needed
+for the task; it does not require global orchestration or ultrawork skills.
+
+The Core route/job/TeamExecutor history is retained in the source checkout's
+`docs/legacy-core-baseline.md`; it is not a required installed-skill input. It is not this fork's
+dispatch path and must not run alongside an Orca Dispatch. Supported Company
+invocation, bootstrap/install/update, diagnostics and recovery use Company-owned
+identity and integrity without an external Core. Existing user Core installations
+and historical Company generations remain preserved, not required dependencies.
+
+The user retains material authority. The accountable overall Company head owns
+orchestration and final integration; domain team leads own accepted team outcomes.
+CEO means that overall orchestration head here, not a transfer of the user's
+authority over material goals, cost, public scope or irreversible choices.
+Use the internal policy's required five-stage boundary for multi-team work.
+Create actual temporary workers for assigned slices; do not simulate a company
+by writing role-labelled prose in one voice or reactivate King Sejong execution.
 
 The company's standing purpose is a profitable app portfolio. Work includes
 marketing, redesigning, extending, repairing, and maintaining existing apps as
 well as discovering needs and developing new apps.
 
-Distribution is separate from invocation: root `install.sh` clones the fixed
-public `v0.1.0` runtime projection, installs and verifies the exact pinned King
-Sejong Core, then installs and verifies Agent Company. This pointer does not
-change the explicit front-door trigger below.
+## Response Attribution
 
-## Invocation and Route Binding
+While the Company session is active, begin every ordinary final reply with a
+short attribution line in the user's language, including brief status answers,
+follow-up questions, and design discussions. Identify who is answering and which
+workers' results this answer actually uses, with each worker's responsibility.
+Earlier commentary or a linked participation report does not replace this line.
+For example, a direct answer can begin `답변: Company 리드 · 참여: 없음 (직접 처리)`;
+a synthesis can begin `답변: Company 리드 종합 · 참여: 개발 담당 — 구현, QA 담당 — 검증`
+when those workers really contributed. A role worker's output presented by the
+lead retains that worker's attribution while the lead remains the responder.
+Do not repeat a roster in every progress update; identify a changed speaker or
+assignment when it matters.
 
-Use the full Company front door only when the user explicitly invokes Agent
-Company or asks to operate the company as a whole. Individual methods remain
-implicitly available: role operating systems, problem discovery, commercial
-fit, evidence debate, uigwe, and Seungjeongwon may still route normally without
-creating a Company job.
+Count only actual workers whose outputs were read and used for this answer.
+Use the actual Orca assignment, Task/Dispatch and returned result that the lead
+read and integrated, with original evidence references. Obtain each responsibility
+from its assignment. A completed or running worker alone is not a synthesis contributor;
+report its execution status separately when relevant. When reusing earlier
+results, label them as prior contributions rather than implying a new worker run.
+Do not copy a historical roster into an unrelated answer or spawn workers just
+to populate attribution. A generic helper keeps its actual assignment label;
+do not relabel it as a Company role worker.
 
-After explicit invocation, start or resume a continuous company session and
-remain in it until the CEO explicitly exits. A concrete CEO thesis starts
-`ceo-directed` work. A request such as `continue`, `just do it`, or an
-equivalent no-thesis instruction starts a `company-initiated` tick from
-portfolio evidence; do not invent an improvement target merely because the
-queue is empty.
+Using a role operating system or another skill does not mean that its role
+worker participated. Keep role identity separate from model identity.
+Distinguish requested settings, routing selections, and effective settings
+actually reported by the host or provider. Name them only from matching evidence,
+and omit or mark unknown anything not observed. Before sending each final reply,
+check the responder and contributors against the outputs used, including after
+a handoff or context compaction; retain the active Company session and this
+display obligation in continuity notes until the user exits.
 
-Before staffing, consume one accepted `agent-company.route-decision/v0.2`
-projection from the King Sejong Core decision. Verify its Core authority hash,
-immutable ordinary-role list and staffing hash. Never select or rewrite the Core
-route, backend, hard gates, capability evidence, or reentry target.
+Preserve an exact response contract. Do not inject attribution into required
+JSON, another fixed schema, code-only output, or an exact-format artifact;
+provide it separately only when the surrounding response permits prose. This
+display rule does not change routing, authority, staffing, or session behavior.
 
-- **Direct** creates no v0.1 Company job, company meeting, squad, or company plan. It
-  retains material-ambiguity, external-action, host-permission, and selected-
-  surface verification gates.
-- **Role** creates exactly one ordinary role assignment. The role remains
-  evidence-only and Seungjeongwon or the selected surface owns independent
-  verification; the assigned role never self-verifies.
-- **Squad** binds the immutable staffing projection to the existing v0.1 job
-  lifecycle below. Auxiliary specialists remain separate dependencies and never
-  count as ordinary lane roles.
+## Outcome-First Collaboration
 
-## Resolve Policy
+Start from the user's intended outcome, requested quality, and requested
+deliverable. Preserve the portfolio purpose and product truth while splitting
+large work into bounded roles or leaves; decomposition must not silently lower
+the final quality or redefine completion.
 
-Resolve the active Agent Company snapshot under
-`${CODEX_HOME:-~/.codex}/agent-company/snapshots/<active snapshot>/repo`, or use
-the current Agent Company checkout during development. Read:
+An incomplete thought is valid intake. When the goal, user experience,
+completion criteria, authority, or a consequential tradeoff is materially
+unclear, inspect what is already known and help the user clarify it through
+grounded options, reasons, serious counterevidence, and focused questions that
+also accept a free response. The complete brief is the result of this
+collaboration, not an entry requirement. Once those boundaries are settled,
+roles choose reversible role-local design, implementation, method, tool, and
+resource details independently.
 
-- `policies/job-catalog.json` for classification and company budget defaults;
-- `policies/company-charter.json` for purpose, authority, initiation, staffing,
-  and cycle limits;
-- `policies/company-state.schema.json` for portfolio, initiative, observation,
-  active-cycle, history, revision, and fencing invariants;
-- `policies/squad-recipes.json` for the smallest valid squad and conditional roles;
-- `workflows/<job-type>.json` for company-specific stage order;
-- `policies/specialist-request.schema.json` for executable specialist inputs;
-- `policies/expertise-registry.json`, `policies/reference-manifest.json`, and
-  `policies/expertise-routing.json` for one Role OS, one Task Pack, and
-  zero-to-two decision-changing specialists;
-- `policies/runtime-reference-set.schema.json` and
-  `policies/reference-read-ledger.schema.json` for fresh Current Sources, Job
-  Evidence, hash-cache use, and used or unused read traceability;
-- `policies/uigwe-decision.schema.json` for decision-specific job resumption;
-- `policies/external-action-policy.json` before any non-local action;
-- `policies/ceo-report.schema.json` and `policies/compact-ceo-report.schema.json`
-  when reporting to the CEO.
+Reuse applicable historical evidence, references, decisions, failure patterns,
+and evaluation cases with their source, rationale, counterevidence, scope,
+freshness, and supersession history. Past work is evidence, not a command for
+the current job. Refresh only when drift, changed scope, or conflicting evidence
+can change the decision.
 
-Treat these as company policy inputs. Let King Sejong Core own worker
-registration, concurrency enforcement, execution waves, fan-in, receipts,
-approval mechanics, idempotency, retries, leases, locks, and worktrees.
+Research, review, comparison, and recommendation-only jobs end at the requested
+evidence deliverable. Authorized outcome work continues through diagnosis,
+changed tactics inside settled scope, and required verification handoff until
+the job completes or reaches a real stop condition.
 
-## Company Operating Cycle
+For repeated failure, material impact, unexpected resource growth, or missed
+verification, investigate proportionately and distinguish observed causes from
+hypotheses and detection gaps. Prefer a small authorized preventive change to
+another checklist. Use the existing handoff for its owner, targeted failure,
+next observation, or reason to defer. Close out task-owned temporary resources
+and background work, or retain them with a reason, owner, and recheck trigger;
+preserve needed evidence and unrelated resources. Report recovery, prevention
+application, and observed effect separately; pending observation does not block
+recovery completion. This adds no deletion, scheduling, spending, or routing
+authority, mandatory routine retrospective, or requirement to delay urgent
+recovery. Legitimate backoff and independent reproduction are not waste. Retire
+prevention whose false alarms, waiting, or maintenance outweigh its benefit.
 
-Run one deterministic transition at a time and persist enough state to resume
-after interruption. Permit at most one active cycle. Use expected revision and
-fencing-token checks on every mutation, and treat a repeated tick key as an
-idempotent replay.
+## Independent Judgment
 
-When there is queued CEO work, prioritize it within the charter and current
-guardrails. Otherwise create a bounded portfolio-discovery initiative. Register
-existing apps and new opportunities explicitly, record commercial observations
-only from hash-matched evidence, and preserve missing attribution, stale data,
-or incomplete formulas as unknown.
+The accepted authority boundary determines who makes a material decision; it does
+not turn a suggestion into evidence or a predetermined conclusion. Treat material
+user or Company-head proposals as decision inputs. Distinguish the evidence, hypothesis or
+inference, preference, constraint, and explicit decision parts, and inspect
+available supporting evidence and serious counterevidence before execution.
 
-Bind every executable initiative to the charter digest, origin, target,
-commercial hypothesis, success and failure metrics, guardrails, and CEO
-approval boundary. Load an approved company plan and its role plans before
-plan-backed delegation. Role IDs describe capabilities, not seats: distinct
-assignment IDs may use the same role, and disjoint write scopes may run in the
-same Core wave. Overlapping scopes must be rejected or dependency-serialized.
+Recommend `adopt`, `modify`, `defer`, or `reject`. Explain why, confidence,
+material risks, unknowns, and the evidence or condition that would change the
+recommendation. Proactively surface a better bounded alternative when evidence
+supports one. These are advisory intake dispositions; they do not replace
+role-local schema statuses, approvals, action authority, or verification
+decisions.
 
-The checked-in scheduler wrapper performs one safe tick and exits. Never install
-or activate the launchd template without an explicit CEO request. Never move
-worker lifecycle, worktree, lease, retry, receipt, or final-verification
-authority out of Core and Seungjeongwon.
+Do not manufacture disagreement, relitigate a settled decision without new
+evidence, or add ceremony to trivial, exact, low-risk instructions. Once the
+tradeoffs are visible and the authorized decision owner gives an explicit direction, proceed
+through the selected route within its existing scope and action authority while
+preserving unresolved risks. Do not reopen merely because new evidence exists;
+reopen or stop only when higher-priority instructions require it or new material
+evidence crosses a named safety, permission, approved-scope, or approved-risk
+boundary. Otherwise report the evidence without relitigating the decision.
 
-## Job Lifecycle
+## Material Discovery Follow-Through
 
-1. **Intake.** Capture the source request, objective, constraints, repo or product refs,
-   desired outcome, and allowed external actions.
-2. **Kickoff.** For a Squad route, classify exactly one primary job type: `new-app`, `improvement`, `planning`,
-   `promotion`, `release`, `incident`, or `portfolio`. Split truly independent
-   outcomes into separate jobs instead of widening one job. Record a bounded
-   company-meeting artifact in the job with status `recorded`, participants,
-   agenda, intake decision, selected squad and recipe, budget, and workflow.
-   Select the recipe's required roles. Add a conditional role only when its
-   named condition is present; selected roles must receive an assignment or the
-   projection must reject the job explicitly within the Core budget.
-3. **Uigwe.** Detect material ambiguity before irreversible design or execution. A
-   question is material when its answer can change the target user, core
-   problem, product scope, architecture, release boundary, public claim,
-   spending, or accepted risk. Route it through Uigwe, ask the CEO only for the
-   blocking decision, and resume the same job only from a loaded
-   `agent-company.uigwe-decision/v0.1` artifact whose job, user or CEO authority,
-   referenced Uigwe packet, and exact material-question resolutions match.
-4. **Execution.** Give each role a bounded objective, read and write scope, evidence refs,
-   expected output, stop condition, and forbidden claims. Require the actual
-   host-native worker identifier in the Core execution record. Set every
-   assignment's action authority to `evidence_only`. Resolve the role and task
-   deterministically, materialize only its Role Kernel and selected Task Pack,
-   and record each specialist's decision question and expected marginal value.
-   Never expose Evaluation Sets to the executor.
-5. Use selective parallelism only when the selected squad recipe records the
-   same role slices and predecessor plus a nonempty independence condition.
-   Carry that evidence in the projected wave; adjacency or workflow hints alone
-   do not authorize parallel work. Let Core open the wave and fan in every
-   required terminal receipt.
-6. Accept validated specialist request objects only for a named evidence gap or
-   decision. Bind the job, requester, and Sejong decision owner; charge worker,
-   spawn-depth, and round costs to the job budget; and project the specialist
-   dependency wave before downstream decision work. Reject invalid or
-   over-budget requests. Specialists never gain worker-lifecycle, planning,
-   synthesis, or verification authority.
-7. Execute local reversible work after Uigwe readiness. Stop before any denied
-   or approval-required external action until Core carries a valid explicit CEO
-   approval reference and external-action receipt. Agent Company records only
-   the deterministic action requirement, never the receipt lifecycle.
-8. Send implementation and QA evidence through Seungjeongwon. Role outputs are
-   evidence, not final truth; a completed worker is not a verified outcome.
-   Current handoffs and logical role-session checkpoints must bind the exact
-   knowledge context, usage receipt, reference-read ledger, and local handoff.
-   Role sessions remain serial identity records, never persistent workers.
-9. **Report.** Report to the CEO from referenced job, worker, action, and verification
-   evidence. Keep executed, verified, failed, blocked, and unverified claims
-   separate. Use `mixed` when the report contains more than one material state.
-   Report initiative origin and commercial evidence state; technical
-   verification must not upgrade an unobserved revenue claim.
+From the assigned goal and available evidence, identify the important unresolved
+assumption, obstacle, or better bounded alternative worth checking; do not wait
+for the user to enumerate it. Follow through only when it could materially change
+the requested outcome, quality, risk, or next decision.
+For each such discovery, the responsible Company lead must consume its observed basis and
+the role's explicit hypothesis plus reversal evidence, then record `adopt`,
+`modify`, `defer`, or `reject` with a reason. If evidence falsifies the
+hypothesis, update the decision and next action instead of preserving the old
+direction by default.
 
-## Model Value and Continuation Evidence
+Use existing job records, role payloads, and bounded-handoff fields. When a
+discovery must cross records, reference one stable discovery ID inside those
+records; do not add a parallel discovery schema or lifecycle. Put observations
+in `known`, hypotheses and interpretations in `inferred`, unresolved facts and
+re-entry conditions in `unknown`, performed checks and assignments in
+`actions_taken`, evidence refs in `artifacts`, material exposure in `risks`, and
+route exactly one `next_recommended_surface`.
 
-Treat model labels such as `exploration-high`, `execution-medium`, and
-`verification-high` as semantic requests, never as backend authority. Core
-still selects the route and backend; record the observed effective model. A
-lower-cost execution profile is eligible only after Uigwe has removed material
-ambiguity and the plan has explicit pass criteria. Escalate when execution
-uncovers new judgment, contract drift, or failed verification.
+Already-permitted role-local checks proceed without waiting for lead approval.
+When a check requires handoff, the lead owns its exact assignment and result
+retrieval. Record the owner, surface, smallest check, and stop or re-entry
+condition; every deferred item needs an owner and an observable recheck trigger.
+Continue until the requested terminal outcome is reached or a concrete blocker
+is recorded. For review, research, or advice-only work, that outcome is the
+requested evidence deliverable and does not require product execution or
+verification. For outcome work, a completed worker is not a verified goal. Do
+not invent findings, set discovery quotas, create recursive workers merely to
+continue, add ceremony to trivial work, widen authority, or treat a discovery
+as new authority for an outside side effect.
 
-Keep three mechanisms distinct: provider-reported cached input, deliberate
-session continuation, and local artifact reuse. Record an optional
-`attempt_receipt` inside the private metric event with requested profile,
-effective model, reasoning effort, service tier, provider token/cache
-breakdown, local artifact reuse, rework, verified quality, critical
-regressions, verifier identity, verification time, evidence digest, and opaque
-evidence refs. Bind the prior attempt plus source, decision, capsule, rules,
-plugin set, tool schemas, and stable prefix by SHA-256. `cache_strategy`
-records intent; a numeric cache field records provider evidence, while null
-means unavailable.
+## Explicit invocation and team boundaries
 
-Model routing remains `shadow`: it cannot change a Core route, backend, or
-model. Receipt digests and counters are producer observations, not authenticated
-authority. This contract does not implement a promotion consumer; an approved
-future consumer must rehash referenced evidence before comparing task-class
-repeats on cost, rework, and verified quality. Never optimize cache-hit ratio
-alone. Resume a session only for adjacent work with a reusable stable prefix,
-healthy context, a bound prior attempt identity, no model change, no
-independent-verification boundary, no inherited-context risk, and no
-invalidation reason. Otherwise start a new session and preserve the receipt.
+Use this front door only when the user explicitly invokes Agent Company or
+continues an already active Company session. An ordinary unrelated task does
+not start Company. A session stays active until the user exits; a worker or Run
+completion does not itself end the session or prove the overall goal.
+Individual methods remain implicitly available within their own scope without
+starting Company; this does not reactivate disabled King Sejong routing.
 
-## Work Lifecycle Learning
+For multi-team work, follow the required five stages in
+[Company orchestration](../company-orchestration/SKILL.md#choose-the-organization-for-the-goal):
+head and lead consultation, accepted team outcomes, member feasibility before
+concrete assignments, lead/member execution, and lead-to-lead cross-team requests.
+A small direct or single-team task need not create extra teams. Domain leads
+retain bounded professional judgment and member integration responsibility.
 
-Consume only a validated
-`sejong.lesson-candidate/v0.1-draft` artifact from King Sejong Core. Rehash the
-candidate before use and require the company learning policy's independent-run
-threshold. Never copy raw transcripts, prompts, messages, secrets, connector
-payloads, or private absolute paths into Company policy.
+Use the assigned role operating system and existing handoff when applicable.
+Keep observed facts, AI interpretations and unknowns distinct; role output,
+interface validation and worker settlement do not award independent acceptance.
+User-owned decisions and material cross-team conflicts return to the overall
+head with source-linked evidence. No role approves its own final outcome.
 
-The learning consumer may create only an
-`agent-company.automation-proposal/v0.1` artifact with `status: proposed`,
-`activation_authority: none`, and explicit CEO approval requested. It must not
-install a skill, activate a hook, mutate a capability registry, or infer root
-cause from one event.
-
-Managed capabilities remain Agent Company scoped and budgeted. Reject global
-ownership, duplicate capability IDs, overlapping active triggers, unmanaged
-deletion fields, or anything broader than hash-matched Agent Company-managed
-removal. Promotion remains shadow-first and requires a separate approved
-consumer; these learning artifacts do not widen `memory-record` or staffing
-`lane-promotion` authority.
-
-## Role Boundaries
-
-For mobile-app monetization or paid-acquisition work, Planning and Marketing
-must both read the shared
-[mobile-app monetization experiment priors](../marketing-operating-system/references/mobile-app-monetization-priors.md).
-Marketing owns the demand, channel, funnel experiment, and downstream-quality
-evidence. Planning consumes that evidence for milestones, dependencies,
-acceptance criteria, spend stages, and stop conditions. Neither role may copy
-the numeric priors into fixed company policy or let them override mature
-product-specific cohorts.
-
-- `founder`: frame portfolio direction, founder fit, commercial wedge, and
-  opportunity cost.
-- `planning`: own company-plan coordination, milestones, dependencies, success
-  criteria, sequencing, and Uigwe-ready handoff. Consume problem-discovery and
-  commercial-fit outputs from Founder, Marketing, or bounded specialist
-  dependencies; do not execute those loops directly.
-- `design`: own experience flows, interaction decisions, visual direction, and
-  design QA evidence.
-- `development`: own architecture evidence, implementation, tests, and
-  technical risk.
-- `marketing`: own demand evidence, positioning, channel hypotheses,
-  experiments, and draft communications.
-- `qa-release`: own verification plans, observed results, release risk, and
-  matching-surface manual QA.
-
-Each role must return `known`, `inferred`, `unknown`, actions, artifact refs,
-risks, and the next recommended Sejong surface. No role may approve Uigwe,
-claim final synthesis, self-verify its work, or widen scope.
-
-## Stop Conditions
-
-Stop and return control to the Sejong lead when the assigned slice is complete,
-a material ambiguity needs Uigwe, the Core budget is exhausted, an external
-action lacks approval, required evidence is unavailable, or verification fails.
-Never hide these states behind a positive CEO summary.
+Historical Core dispatch commands and authority are preserved in the source
+checkout's `docs/legacy-core-baseline.md` under "Archived skill invocation contract".
+They do not activate King Sejong, select the Orca model route, or authorize a
+parallel Core attempt. Preserve Company transaction integrity and rollback;
+installation, Doctor, sync and effective loaded context require their own actual
+evidence. A historical generation restored by the new recovery controller remains
+historical; byte restoration does not certify its old runtime as Core-free.

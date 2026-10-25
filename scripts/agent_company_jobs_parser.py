@@ -16,7 +16,7 @@ def parse_ambiguity(value: str) -> tuple[str, str]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Project Agent Company policy into King Sejong inputs and "
+            "Project historical Company records without executing workers; render "
             "evidence-derived CEO reports."
         )
     )
@@ -56,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--failure-metric", action="append")
     create.add_argument("--guardrail", action="append")
     front = commands.add_parser(
-        "front-door", help="Validate and project one Core-backed Company route",
+        "front-door", help="Validate and project one historical Company route evidence",
     )
     front.add_argument("--core-decision", required=True, type=Path)
     front.add_argument("--core-decision-sha256", required=True)
@@ -76,15 +76,16 @@ def build_parser() -> argparse.ArgumentParser:
     approve.add_argument("--job", required=True, type=Path)
     approve.add_argument("--decision-ref", required=True, type=Path)
     project = commands.add_parser(
-        "delegation-input", help="Render company policy as Core delegation input",
+        "delegation-input", help="Render historical Company delegation records",
     )
     project.add_argument("--job", required=True, type=Path)
     project.add_argument("--output", required=True, type=Path)
     project.add_argument("--specialist-request", action="append", type=Path)
     project.add_argument("--company-plan", type=Path)
     project.add_argument("--role-plan", action="append", type=Path)
+    project.add_argument("--model-routing-inputs", type=Path)
     report = commands.add_parser(
-        "report", help="Render a truthful CEO report from Core evidence",
+        "report", help="Render a truthful report from stored byte-bound evidence",
     )
     report.add_argument("--job", required=True, type=Path)
     report.add_argument("--delegation-input", required=True, type=Path)

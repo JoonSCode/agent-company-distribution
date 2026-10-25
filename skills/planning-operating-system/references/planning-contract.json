@@ -3,12 +3,12 @@
   "plan_artifact_readiness": [
     {"status": "blocked", "required_evidence": ["objective, criterion, authority, or irreversible-boundary gap","required decision owner","re-entry target"], "allowed_outputs": ["clarification request","bounded evidence plan","provisional criterion-covered topology"], "forbidden_outputs": ["executable handoff leaves","execution authorization","invented intent","gate approval"]},
     {"status": "conditional", "required_evidence": ["stable intent","one execution unknown","bounded discovery leaf","stop condition"], "allowed_outputs": ["discovery or spike handoff"], "forbidden_outputs": ["full execution claim","changed success criteria"]},
-    {"status": "ready", "required_evidence": ["objective binding", "success criteria", "non-goals", "proposed leaves and failure design", "dependency graph", "closure checks", "verification ownership"], "allowed_outputs": ["bounded role plans", "decision-ready plan artifact"], "forbidden_outputs": ["Uigwe approval", "execution success", "final verification"]}
+    {"status": "ready", "required_evidence": ["objective binding", "success criteria", "non-goals", "proposed leaves and failure design", "dependency graph", "closure checks", "verification ownership"], "allowed_outputs": ["bounded role plans", "decision-ready plan artifact"], "forbidden_outputs": ["Planning approval", "execution success", "final verification"]}
   ],
   "execution_startability": [
     {"status": "blocked", "required_evidence": ["unmet pre-mutation start condition", "decision owner", "re-entry target"], "allowed_plan_artifacts": ["proposed topology", "functional owner roles", "rollback", "containment", "no-action", "abort", "proof design"], "forbidden_actions": ["mutation", "executable handoff", "execution authorization"]},
     {"status": "bounded_discovery", "required_evidence": ["stable approved intent", "one bounded execution unknown", "discovery stop condition"], "allowed_plan_artifacts": ["bounded discovery handoff", "proof design", "re-entry target"], "forbidden_actions": ["production mutation", "full executable handoff", "execution success claim"]},
-    {"status": "allowed", "required_evidence": ["pre-mutation evidence", "satisfied required edges", "cycle review", "functional owner role", "named assignee", "assignee state", "independent verifier"], "allowed_plan_artifacts": ["executable handoff leaves", "handoff order", "proof design"], "forbidden_actions": ["Uigwe approval", "execution success claim", "final verification claim"]}
+    {"status": "allowed", "required_evidence": ["pre-mutation evidence", "satisfied required edges", "cycle review", "functional owner role", "named assignee", "assignee state", "independent verifier"], "allowed_plan_artifacts": ["executable handoff leaves", "handoff order", "proof design"], "forbidden_actions": ["Planning approval", "execution success claim", "final verification claim"]}
   ],
   "stages": [
     {"id": "objective_binding", "required_evidence": ["approved objective", "decision owner", "source packet"]},
@@ -18,7 +18,7 @@
     {"id": "actionable_decomposition", "required_evidence": ["proposed leaves", "first action", "done criteria", "scope", "failure path"]},
     {"id": "closure_review", "required_evidence": ["criterion delivery proof", "dataflow edge", "mutation transition", "non-goal absence proof"]},
     {"id": "verification_design", "required_evidence": ["matching proof surface", "evidence target", "falsification signal", "independent verifier"]},
-    {"id": "handoff_and_reentry", "required_evidence": ["outputs", "stop criteria", "escalation triggers", "Uigwe re-entry triggers"]}
+    {"id": "handoff_and_reentry", "required_evidence": ["outputs", "stop criteria", "escalation triggers", "Planning re-entry triggers"]}
   ],
   "provisional_topology_fields": ["milestones","dependency_edges","criterion_coverage","blocked_or_unknown_edges","topology_limits"],
   "candidate_assignment_fields": ["owner_role","named_assignee","assignee_state"],
@@ -44,14 +44,22 @@
   },
   "scope_rules": {
     "scope_reduction_must_preserve_outcome": true,
-    "goal_change_requires_uigwe_reentry": true,
-    "non_goal_change_requires_uigwe_reentry": true,
-    "verification_bar_change_requires_uigwe_reentry": true,
+    "goal_change_requires_owner_reentry": true,
+    "non_goal_change_requires_owner_reentry": true,
+    "verification_bar_change_requires_owner_reentry": true,
     "conditional_plan_artifact_readiness_is_discovery_only": true,
     "allowed_execution_startability_requires_satisfied_required_edges": true,
     "plan_artifact_readiness_and_execution_startability_are_distinct": true,
     "broad_aspiration_is_not_actionable_leaf": true,
     "blocked_execution_startability_must_not_authorize_execution": true
+  },
+  "promotion_experiment_guidance": {
+    "applies_when": "Planning decomposes an approved promotion exploration or posting experiment.",
+    "intent_rule": "Bind the CEO's business hypothesis, selected first tactic, current learning objective and existing authority. Missing downstream revenue proof alone does not reopen or block an approved early test; a material scope, safety, permission or accepted-risk change still does.",
+    "dependency_rule": "Preserve linked direction hypotheses, expression options, concrete concept versions and experiment results. Marketing supplies interest and sharing rationale; Design supplies expression and scene choices; production consumes the selected concept. Do not start by filling renderer slots and inventing a rationale afterward.",
+    "proof_rule": "Give production correctness, technical or policy checks, publication or exposure, leading response, app acquisition and payment contribution their own matching evidence and independent verification owner. Missing measurement limits the claim it supports; it does not retroactively erase unrelated artifact readiness.",
+    "scope_rule": "Choose quantities from the first experiment's objective and approved scope. Reference counts, forms, page counts and generated-file totals are coverage or production facts, not acceptance substitutes for marketing learning.",
+    "handoff_rule": "Specify the selected concept/version, test variable, fixed context, observation window, instrumentation gaps, stop rule and next decision through existing leaf inputs and proof targets. Preserve the distinction between preparing a posting experiment and authority to publish or spend."
   },
   "decision_output_policy": {
     "lead_fields": ["planning_readiness","execution_startability","controlling_unknowns","selected_topology","next_safe_action"],
@@ -63,14 +71,14 @@
   "specialist_routing": {
     "default_specialist_limit": 2,
     "request_when": "the specialist changes a named planning decision with distinct bounded evidence or method",
-    "optional_skills": ["uigwe","data-analytics:design-kpis","data-analytics:gather-business-context","evidence-debate"],
+    "optional_skills": ["data-analytics:design-kpis", "data-analytics:gather-business-context", "evidence-debate"],
     "missing_specialist_fallback": "record the planning unknown, narrow the leaf, and preserve the re-entry trigger"
   },
   "authority_boundary": {
     "planning_may": ["bind approved intent","decompose milestones and dependencies","define acceptance and verification plans","prepare role handoffs"],
-    "planning_must_not": ["invent or change product intent","approve Uigwe","claim execution success","self-verify completion","authorize external action"],
-    "planning_truth_owner": "uigwe",
-    "execution_truth_owner": "seungjeongwon"
+    "planning_must_not": ["invent or change product intent","approve Planning","claim execution success","self-verify completion","authorize external action"],
+    "planning_truth_owner": "user and accepted Company lead",
+    "execution_truth_owner": "qa-release"
   },
   "quality_gate": {
     "comparison": "same approved objective, evidence, tools, and time budget",

@@ -40,7 +40,7 @@ Use this pack when:
   classified as `match`, `deviation`, or `unknown`;
 - a reported Design defect has a new candidate and requires focused
   re-verification without silently closing residual states;
-- QA-Release or Seungjeongwon needs a bounded Design evidence packet, not a
+- QA-Release or the assigning lead needs a bounded Design evidence packet, not a
   Design-owned verdict.
 
 Do not use it when:
@@ -49,7 +49,7 @@ Do not use it when:
   exists; first request the missing evidence;
 - the task is to invent or change the information architecture, interaction
   model, visual system, product rule, or verification bar; use the corresponding
-  Design pack or Uigwe;
+  Design pack or the authorized decision owner;
 - the request is code review, architecture diagnosis, implementation, test
   authoring, production mutation, release approval, or broad functional QA;
 - only fixture, mock, static code, design-source artboard, worker narrative, or
@@ -156,7 +156,7 @@ external current fact when:
 
 Do not silently update the approved intent because a platform source changed.
 Report the conflict and return any baseline or verification-bar decision to
-Uigwe. Keep remote sources read-only and leave implementation adoption to
+the authorized decision owner. Keep remote sources read-only and leave implementation adoption to
 Development.
 
 ## Step-By-Step Method
@@ -259,9 +259,9 @@ Development.
     message, diff, rebuilt fixture, or old screenshot does not close a finding.
     Record the new result and residual unknowns; do not erase the original
     evidence.
-15. **Route without disposition.** QA-Release and Seungjeongwon own independent
+15. **Route without disposition.** QA-Release and the assigning lead own independent
     verification and final execution status. Return changed intent, accepted
-    deviation, exception, or verification bar to Uigwe.
+    deviation, exception, or verification bar to the authorized decision owner.
 
 ## Severity Guidance
 
@@ -329,7 +329,7 @@ states or candidate identity.
 - treating an automated image-diff percentage as design acceptance;
 - closing a finding from an implementation claim or diff without fresh
   observation of the new exact candidate;
-- changing the baseline to match the implementation without Uigwe or the named
+- changing the baseline to match the implementation without the authorized decision owner or the named
   decision owner;
 - implementing the fix, approving QA, certifying accessibility, or claiming
   release readiness from Design scope.
@@ -340,7 +340,7 @@ Return the Decision Core first. Without an exact candidate, return only bounded
 source-backed semantic direction, its limits, and one evidence request; make no
 `match`, `deviation`, acceptance, rejection, or disposition claim. With an
 exact candidate, expand only observations, defects, and named scenarios needed
-for disposition by QA-Release or Seungjeongwon:
+for disposition by QA-Release or the assigning lead:
 
 - `design_readiness`, selected highest `tier`, target task, matching surface,
   exact candidate identity, environment, selected intent refs, accepted
@@ -380,11 +380,11 @@ direction, return only that request. Missing approved intent or a decisive
 oracle does not block direct observation: retain the evidence and keep its
 conclusion `unknown`. Mark inaccessible images,
 unproduced states, and incomparable captures `unknown`; route fixture,
-build-access, or implementation needs to Development through Seungjeongwon.
+build-access, or implementation needs to Development through the assigning lead.
 Return any changed intent, accepted deviation, exception, risk tolerance, or
-verification bar to Uigwe. Route missing current platform evidence to
-JangYeongsil, contested interpretation to Jiphyeonjeon, and final independent
-verification or QA disposition to QA-Release and Seungjeongwon. Stop before
+verification bar to the authorized decision owner. Route missing current platform evidence to
+bounded research, contested interpretation to bounded evidence debate, and final independent
+verification or QA disposition to QA-Release and the assigning lead. Stop before
 production edits, baseline mutation, gate approval, accessibility
 certification, release readiness, or final verification.
 

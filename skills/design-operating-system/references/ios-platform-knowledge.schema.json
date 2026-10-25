@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-company.local/schemas/ios-platform-knowledge.v0.1.json",
+  "title": "Agent Company iOS platform design knowledge",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "platform",
+    "owner_role",
+    "reviewed_at",
+    "runtime_contract",
+    "application_flow",
+    "layers",
+    "source_policy",
+    "sources",
+    "guidance",
+    "conflict_resolution",
+    "app_local_contract",
+    "update_policy",
+    "standalone_skill_reentry"
+  ],
+  "properties": {
+    "format": {"const": "agent-company.ios-platform-knowledge/v0.1"},
+    "platform": {"const": "iOS and iPadOS"},
+    "owner_role": {"const": "design"},
+    "reviewed_at": {"type": "string", "format": "date"},
+    "runtime_contract": {"$ref": "#/$defs/runtimeContract"},
+    "application_flow": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "official_source"},
+        {"const": "application_context"},
+        {"const": "product_decision"},
+        {"const": "implementation_token_or_pattern"},
+        {"const": "matching_surface_verification"}
+      ],
+      "items": false,
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/layer"}
+    },
+    "source_policy": {"$ref": "#/$defs/sourcePolicy"},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "guidance": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/guidance"}
+    },
+    "conflict_resolution": {"$ref": "#/$defs/conflictResolution"},
+    "app_local_contract": {"$ref": "#/$defs/appLocalContract"},
+    "update_policy": {"$ref": "#/$defs/updatePolicy"},
+    "standalone_skill_reentry": {"$ref": "#/$defs/standaloneSkillReentry"}
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "strings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/nonEmptyString"},
+      "uniqueItems": true
+    },
+    "runtimeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_id", "layer", "materialization", "freshness_mode", "automatic_selection", "activation_claim"],
+      "properties": {
+        "reference_id": {"const": "current-source:design:ios-platform-knowledge"},
+        "layer": {"const": "current_source_set"},
+        "materialization": {"const": "parent_issued_runtime_reference_set"},
+        "freshness_mode": {"const": "revalidate_before_use"},
+        "automatic_selection": {"const": false},
+        "activation_claim": {"const": "source_available_not_managed_active"}
+      }
+    },
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "canonical_owner", "contains", "excludes", "input_to_next_layer", "update_authority"],
+      "properties": {
+        "id": {"enum": ["global_design_os", "ios_platform_knowledge", "app_local_contract"]},
+        "canonical_owner": {"$ref": "#/$defs/nonEmptyString"},
+        "contains": {"$ref": "#/$defs/strings"},
+        "excludes": {"$ref": "#/$defs/strings"},
+        "input_to_next_layer": {"$ref": "#/$defs/strings"},
+        "update_authority": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "sourcePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "claim_policy", "review_interval_days", "recheck_before_material_decision", "freshness_limit"],
+      "properties": {
+        "authority": {"const": "official_apple_primary"},
+        "claim_policy": {"const": "paraphrase_and_separate_source_basis_from_interpretation"},
+        "review_interval_days": {"type": "integer", "minimum": 1},
+        "recheck_before_material_decision": {"const": true},
+        "freshness_limit": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "url", "authority_class", "checked_at", "version_marker", "platform_scope", "source_claims", "allowed_use", "recheck_triggers"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^apple-[a-z0-9-]+$"},
+        "title": {"$ref": "#/$defs/nonEmptyString"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https://developer\\.apple\\.com/"},
+        "authority_class": {"const": "canonical"},
+        "checked_at": {"type": "string", "format": "date"},
+        "version_marker": {"$ref": "#/$defs/nonEmptyString"},
+        "platform_scope": {"$ref": "#/$defs/strings"},
+        "source_claims": {"$ref": "#/$defs/strings"},
+        "allowed_use": {"const": "contextual_design_decision_support"},
+        "recheck_triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["with_source_or_guidance_id", "resolution_question"],
+      "properties": {
+        "with_source_or_guidance_id": {"$ref": "#/$defs/nonEmptyString"},
+        "resolution_question": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "guidance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "strength",
+        "source_ids",
+        "official_basis",
+        "interpretation",
+        "application_conditions",
+        "exceptions",
+        "conflicts",
+        "decision_questions",
+        "implementation_requirements",
+        "app_local_decisions",
+        "matching_surface_verification",
+        "revalidation_triggers"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^ios-[a-z0-9-]+$"},
+        "title": {"$ref": "#/$defs/nonEmptyString"},
+        "strength": {"enum": ["recommended", "conditional", "near_prohibition"]},
+        "source_ids": {"$ref": "#/$defs/strings"},
+        "official_basis": {"$ref": "#/$defs/strings"},
+        "interpretation": {"$ref": "#/$defs/nonEmptyString"},
+        "application_conditions": {"$ref": "#/$defs/strings"},
+        "exceptions": {"$ref": "#/$defs/strings"},
+        "conflicts": {"type": "array", "items": {"$ref": "#/$defs/conflict"}},
+        "decision_questions": {"$ref": "#/$defs/strings"},
+        "implementation_requirements": {"$ref": "#/$defs/strings"},
+        "app_local_decisions": {"$ref": "#/$defs/strings"},
+        "matching_surface_verification": {"$ref": "#/$defs/strings"},
+        "revalidation_triggers": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "conflictResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "rules"],
+      "properties": {
+        "order": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "identify_scope_and_component"},
+            {"const": "separate_visible_size_from_interaction_region"},
+            {"const": "compare_current_primary_sources"},
+            {"const": "record_product_tradeoff_and_exception"},
+            {"const": "verify_the_exact_surface"}
+          ],
+          "items": false,
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "rules": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "appLocalContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_layer", "required_fields", "role_ownership", "verification_completion", "promotion_boundary"],
+      "properties": {
+        "runtime_layer": {"const": "job_evidence"},
+        "required_fields": {"$ref": "#/$defs/strings"},
+        "role_ownership": {"$ref": "#/$defs/strings"},
+        "verification_completion": {"$ref": "#/$defs/strings"},
+        "promotion_boundary": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "updatePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_correction", "contextual_guidance_change", "app_local_change", "upward_promotion", "automatic_promotion"],
+      "properties": {
+        "source_correction": {"$ref": "#/$defs/strings"},
+        "contextual_guidance_change": {"$ref": "#/$defs/strings"},
+        "app_local_change": {"$ref": "#/$defs/strings"},
+        "upward_promotion": {"$ref": "#/$defs/strings"},
+        "automatic_promotion": {"const": false}
+      }
+    },
+    "standaloneSkillReentry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "evidence_required", "reentry_conditions"],
+      "properties": {
+        "default": {"const": "extend_design_os"},
+        "evidence_required": {"$ref": "#/$defs/strings"},
+        "reentry_conditions": {"$ref": "#/$defs/strings"}
+      }
+    }
+  }
+}

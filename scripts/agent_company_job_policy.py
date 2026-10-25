@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import os
+import hashlib
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -43,6 +44,7 @@ from agent_company_projection_policy import (
     string_list,
     text,
 )
+from agent_company_plan_delegation_binding import AssignmentModelRoutingInputs
 
 
 __all__ = [
@@ -51,6 +53,27 @@ __all__ = [
     "write_object", "write_text",
 ]
 
+
+def _sha256_file(path: Path, label: str) -> tuple[str, str]:
+    """Bind an existing local source by bytes without accepting caller digests."""
+    try:
+        resolved = path.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise PolicyError(f"cannot resolve {label}: {exc}") from exc
+    if not resolved.is_file():
+        raise PolicyError(f"{label} must be a regular file")
+    try:
+        digest = hashlib.sha256(resolved.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise PolicyError(f"cannot read {label}: {exc}") from exc
+    return str(resolved), digest
+
+
+def _source_binding(path: Path, label: str, expected: str | None = None) -> dict[str, JsonValue]:
+    reference, digest = _sha256_file(path, label)
+    if expected is not None and digest != expected:
+        raise PolicyError(f"stale {label} binding")
+    return {"ref": reference, "sha256": digest}
 
 
 def approve_uigwe(
@@ -159,9 +182,11 @@ def build_delegation_input(
     specialist_requests: tuple[dict[str, JsonValue], ...] = (),
     company_plan_path: Path | None = None,
     role_plan_paths: tuple[Path, ...] = (),
+    model_routing_inputs: Mapping[str, AssignmentModelRoutingInputs] | None = None,
     env: Mapping[str, str] | None = None,
 ) -> dict[str, JsonValue]:
-    validate_company_context(job)
+    # This command projects stored records; legacy owner labels are data only.
+    validate_company_context(job, historical_read=True)
     job_type = text(job.get("job_type"), "job_type")
     workflow_ref = text(job.get("workflow_ref"), "workflow_ref")
     budget = job.get("default_budget")
@@ -195,6 +220,7 @@ def build_delegation_input(
             company_plan_path,
             role_plan_paths,
             env if env is not None else os.environ,
+            model_routing_inputs,
         ))
         if route_binding is not None:
             projection["route_binding"] = route_binding
@@ -203,6 +229,8 @@ def build_delegation_input(
         return projection
     if role_plan_paths:
         raise PolicyError("role plans require a company plan")
+    if model_routing_inputs is not None:
+        raise PolicyError("model routing inputs require a company plan")
     inputs = ProjectionInputs(
         job=job,
         workflow=read_object(ROOT / workflow_ref),

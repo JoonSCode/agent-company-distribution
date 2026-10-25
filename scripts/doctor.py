@@ -25,6 +25,8 @@ from typing import Final
 from agent_company_status_checks import enrich_runtime_status
 from agent_company_profiles import check_profiles
 from agent_company_runtime import JsonValue, runtime_report
+from agent_company_execution_health import attach_execution_health, installation_home
+from agent_company_runtime_values import runtime_paths
 
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
@@ -38,6 +40,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--check-profiles", action="store_true")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--codex-home", type=Path, help="Installation or shared Orca execution home")
+    parser.add_argument("--runtime-home", action="append", type=Path, default=[],
+                        help="Additional execution home to check without installing into it")
+    parser.add_argument("--probe-hooks", action="store_true", default=None,
+                        help="Observe fresh Codex hooks/list also for isolated/custom homes")
     parser.add_argument(
         "--profiles-dir",
         type=Path,
@@ -60,7 +67,11 @@ def main(argv: list[str]) -> int:
         payload: dict[str, JsonValue] = asdict(check)
         emit(payload, as_json=args.json)
         return 0 if check.status == "ok" else 1
-    payload = enrich_runtime_status(runtime_report(write_doctor_timestamp=True))
+    requested = args.codex_home or runtime_paths().codex_home
+    home = installation_home(requested)
+    extra = [*args.runtime_home, *([requested] if requested.absolute() != home else [])]
+    payload = enrich_runtime_status(runtime_report(home, write_doctor_timestamp=True))
+    payload = attach_execution_health(payload, home, runtime_homes=extra, probe_hooks=args.probe_hooks)
     emit(payload, as_json=args.json)
     return 1 if payload.get("material_failure") is True else 0
 

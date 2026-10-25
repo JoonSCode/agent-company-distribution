@@ -8,9 +8,17 @@
 - Decision: which diagnosed funnel, retention, channel, or growth-system
   assumption should one bounded experiment resolve next?
 
-This pack turns observed performance into a decision-grade learning loop. It
+This pack turns an approved early hypothesis or observed performance into a
+decision-grade learning loop. It
 does not convert attribution into causality, call every funnel a loop, approve
 spend, mutate a live account, or claim that an executor's result is verified.
+When an external post, thread, deck, newsletter, case study, or practitioner
+recipe motivates the work, load
+[../channel-evidence-intake.md](../channel-evidence-intake.md) before treating
+any claim as operational. For Apple Ads search results, Search Match,
+search-term mining, exact promotion, negative-keyword fencing, or ASO feedback,
+also load
+[../apple-ads-search-intent-playbook.md](../apple-ads-search-intent-playbook.md).
 
 ## Decision Core
 
@@ -22,10 +30,54 @@ Change one reversal assumption, keep other decision inputs fixed, and
 precommit win, loss, and inconclusive actions. Do not turn every available
 metric into a dashboard or every possible intervention into an experiment.
 
+For an approved first promotion experiment with no baseline, lead with the
+selected learning question and label the missing baseline. Unknown eventual
+revenue is not evidence that the approved early test is unstartable. Keep
+scale and causal claims conditional on their own evidence and authority.
+
+## Promotion Exploration Before Test Selection
+
+Use `marketing-contract.json#/creative_exploration_contract` when the requested
+deliverable is creative exploration. Keep its linked layers in job evidence;
+do not add fields to the existing runtime experiment blueprint.
+
+First compare distinct hypotheses about who, in what situation, and with what
+emotion or desire would notice, share, and become curious about the problem or
+app. Then propose expression options within each direction, and concrete
+scene sequences beneath the expressions. A template family or an image type
+is an expression choice, not an audience-interest direction. One bounded
+exploration artifact can contain this comparison before one test is selected.
+
+Carry the CEO's chosen first expression into that comparison and execution
+plan. For example, reinterpreting a TikTok trend's narrative sequence can be an
+explicit experiment choice based on user-provided indirect experience. Keep
+that provenance and uncertainty; it is neither an observed result nor a
+standing requirement for every campaign. Reinterpret the mechanism using
+original or authorized assets, without assuming permission to repost a video
+or copy its assets. Label unobserved references instead of inventing them.
+
+Hand Design the direction, relevant product truth, reference mechanism and
+transfer limits. Design specifies image type, app-screen share and appearance
+timing, composition, narrative progression and the intended action per scene.
+Select that expression for its marketing reason before fitting a renderer;
+existing card roles and page counts must not determine the campaign thesis.
+Use only product facts that support the message; keep internal correctness
+checks available to QA without turning them into mandatory copy.
+
+Record actual references collected and selected, including incomplete viewing,
+using the channel intake. Counts describe coverage and must not replace the
+first experiment's objective. Once selected, bind the tested concept/version
+to the canonical experiment contract. Record actual posting or exposure,
+leading reach/sharing, problem or app interest, app acquisition, and payment
+contribution only where observed. Keep denominators, windows and gaps explicit.
+Technical QA, policy checks and generated files prove only their own surfaces.
+
 ## Exact Triggers And Non-Triggers
 
 Use this pack when:
 
+- approved early promotion hypotheses need direction, expression and concept
+  exploration before an actual posting experiment;
 - a funnel, acquisition, activation, retention, referral, or revenue metric
   changed and the next decision is unclear;
 - a channel needs a precise job and a bounded test rather than a generic growth
@@ -34,11 +86,14 @@ Use this pack when:
 - a proposed growth loop needs proof that its output replenishes an input;
 - a campaign, product, or lifecycle intervention needs success, failure,
   downstream-quality, trust, and next-decision rules.
+- Apple Ads discovery terms need a source-bounded `observe`, `promote_exact`,
+  `exclude`, or `continue_observing` decision.
 
 Do not use it when:
 
 - audience, problem, alternatives, or position could reverse the strategy; use
-  `task-pack:marketing:demand-positioning`;
+  `task-pack:marketing:demand-positioning`, unless those uncertainties are the
+  explicitly approved learning target of this bounded early experiment;
 - only copy craft remains after strategy is settled; use
   `copywriting-operating-system`;
 - paywall, price, package, offer, or mobile monetization economics is the
@@ -179,11 +234,13 @@ when a role handoff is requested.
 ## Stop Or Escalate
 
 Stop after one decision-grade experiment or a blocked evidence action is
-defined. Route missing factual state or analytics evidence to JangYeongsil or
+defined, or after the requested direction/expression exploration is handed
+off for selection. An approved outcome request continues through its selected
+execution and verification surface. Route missing factual state or analytics evidence to bounded research or
 `data-analytics:metric-diagnostics`, material causal disagreement to
-Jiphyeonjeon, changed product intent or risk bars to Uigwe, settled copy to
+bounded evidence debate, changed product intent or risk bars to the authorized decision owner, settled copy to
 `copywriting-operating-system`, and approved execution plus independent
-verification to Seungjeongwon. Stop before spend, publication, live account
+verification to the assigning lead. Stop before spend, publication, live account
 changes, gate approval, or final performance claims.
 
 ## Compression Examples

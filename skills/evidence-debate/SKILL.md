@@ -1,13 +1,14 @@
 ---
 name: evidence-debate
-description: Run bounded evidence-based debate for Agent Company internal decisions. Use when founder, planning, marketing, design, development, or QA agents need to compare claims, attack assumptions, inspect opposing arguments, or decide the next King Sejong surface before planning or execution.
+description: Compare evidence and competing claims for an internal Agent Company decision.
 ---
 
 # Evidence Debate
 
 Use this as an internal decision-support skill for Agent Company role agents.
-It is not final authority. King Sejong keeps routing and synthesis authority,
-Uigwe keeps planning gates, and Seungjeongwon keeps final verification.
+It is not final authority. The assigning Company lead owns bounded routing and
+synthesis; the user owns material decision gates. Independent QA owns technical
+verification and the accepted overall head owns final integration.
 
 ## Workflow
 
@@ -27,9 +28,10 @@ pass. This default adds no ordinary role, specialist, or simulated council.
 5. Let each role challenge at least one material claim from another role.
 6. Synthesize the result without voting.
 
-## Jiphyeonjeon escalation criteria
+## Independent review escalation criteria
 
-Escalate to Jiphyeonjeon only when at least one criterion is recorded:
+Request an additional independent review from the assigning lead only when at
+least one criterion is recorded:
 
 - two or more materially different options remain live after the single pass;
 - a high-consequence assumption has credible evidence both for and against it;
@@ -49,7 +51,7 @@ routine review, or a desire for more voices does not justify escalation.
   content.
 - Mark plausible but unproven claims as `inferred`.
 - Mark missing buyer, budget, frequency, urgency, or channel proof as `unknown`.
-- When evidence is thin, recommend JangYeongsil research instead of forcing a
+- When evidence is thin, recommend bounded research instead of forcing a
   decision.
 - Do not treat agreement, majority vote, or lack of objections as approval.
 
@@ -66,13 +68,13 @@ Return:
 - `objections_answered`
 - `rejected_options`
 - `risks`
-- `recommended_next_surface`: one of `jangyeongsil`, `jiphyeonjeon`, `uigwe`,
-  `seungjeongwon`, `sillok`, or `danjong`
+- `recommended_next_surface`: one of `company-lead`, `planning`, `qa-release`,
+  or `user`; this is a handoff recommendation, not execution authority
 - `handoff_note`: concise input for the next surface
 
 ## Guardrails
 
-- Do not approve Uigwe gates.
+- Do not approve material decision gates.
 - Do not claim final verification.
 - Do not decide by consensus or vote count.
 - Do not collapse problem discovery, commercial validation, and execution into

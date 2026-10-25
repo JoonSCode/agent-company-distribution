@@ -172,12 +172,12 @@ def _company_context(request: JobRequest, job_id: str) -> dict[str, JsonValue]:
         "guardrails": _metric_list(request.guardrails, "guardrails"),
         "commercial_evidence_state": "unknown",
         "external_action_authority": "explicit-ceo-approval",
-        "execution_owner": "king-sejong-core",
-        "final_verification_owner": "seungjeongwon",
+        "execution_owner": "orca",
+        "final_verification_owner": "qa-release",
     }
 
 
-def validate_company_context(job: dict[str, JsonValue]) -> None:
+def validate_company_context(job: dict[str, JsonValue], *, historical_read: bool = False) -> None:
     value = job.get("company_context")
     if value is None:
         return
@@ -206,11 +206,14 @@ def validate_company_context(job: dict[str, JsonValue]) -> None:
     expected = {
         "commercial_evidence_state": "unknown",
         "external_action_authority": "explicit-ceo-approval",
-        "execution_owner": "king-sejong-core",
-        "final_verification_owner": "seungjeongwon",
     }
     if any(value.get(field) != expected_value for field, expected_value in expected.items()):
         raise PolicyError("company_context authority or evidence state is invalid")
+    owners = (value.get("execution_owner"), value.get("final_verification_owner"))
+    if owners != ("orca", "qa-release") and not (
+        historical_read and owners == ("king-sejong-core", "seungjeongwon")
+    ):
+        raise PolicyError("company_context owners are invalid")
 
 
 def build_job(request: JobRequest) -> dict[str, JsonValue]:
@@ -260,7 +263,7 @@ def build_job(request: JobRequest) -> dict[str, JsonValue]:
         "company_context": company_context,
         "default_budget": budget,
         "kickoff": {
-            "status": "recorded", "participants": _json_array(("ceo", "sejong-lead", *selected)),
+            "status": "recorded", "participants": _json_array(("ceo", "company-lead", *selected)),
             "agenda": _json_array((objective, "confirm intake classification, squad, budget, workflow, and open decisions")),
             "intake_decision": {
                 "job_type": job_type, "material_ambiguity_count": len(ambiguities),

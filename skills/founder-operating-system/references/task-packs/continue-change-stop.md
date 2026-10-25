@@ -27,7 +27,7 @@ Do not use it when:
   verification;
 - unrelated opportunities need selection; use the portfolio-decision pack;
 - there was no prior hypothesis or criterion and the real need is discovery or
-  Uigwe clarification.
+  the authorized decision owner clarification.
 
 ## Required Inputs And Evidence Hierarchy
 
@@ -80,7 +80,7 @@ verified cause.
    - Stop when a kill or safety criterion is crossed, the core hypothesis is
      disconfirmed, or no cheaper decision-grade test remains.
 7. **Guard target changes.** A new user, problem, promise, business model, or
-   verification bar is a new hypothesis requiring Uigwe re-entry, not a renamed
+   verification bar is a new hypothesis requiring material-decision re-entry, not a renamed
    continuation.
 8. **Bind the next boundary.** For continue, change, or pause, define one owner,
    time box, resource cap, success, failure, kill, and revisit trigger. For stop,
@@ -111,7 +111,7 @@ has a named condition under which it beats the recommendation.
 - changing segment, offer, price, and channel together and calling it iteration;
 - treating early noise as a stop signal before the valid window closes;
 - ignoring safety, runway, contractual, customer, or exit obligations;
-- reporting a new target segment as the same initiative to avoid Uigwe re-entry;
+- reporting a new target segment as the same initiative to avoid material-decision re-entry;
 - equating worker completion with verified outcome.
 
 ## Output Contract
@@ -136,10 +136,10 @@ When a role handoff is requested, also preserve every required field of
 ## Stop Or Escalate
 
 Stop and return to the Sejong lead once the recommendation is bounded. Escalate
-invalid or missing outcome evidence to JangYeongsil or the appropriate analytics
-specialist; contested causal interpretation to Jiphyeonjeon; any goal, target,
-scope, risk, or verification-bar change to Uigwe; and verification readiness to
-Seungjeongwon. Stop immediately at a safety or kill boundary, or before any
+invalid or missing outcome evidence to bounded research or the appropriate analytics
+specialist; contested causal interpretation to bounded evidence debate; any goal, target,
+scope, risk, or verification-bar change to the authorized decision owner; and verification readiness to
+the assigning lead. Stop immediately at a safety or kill boundary, or before any
 unapproved external action. Do not approve closure or completion.
 
 ## Compact Example
@@ -148,7 +148,7 @@ unapproved external action. Do not approve closure or completion.
 one payment after 15 qualified calls and five activated trials; observed results
 were zero after 22 and seven. The comments suggest suite overlap, but causality
 is inferred. Two requests from a new segment justify only a separate one-week
-buyer test through Uigwe, capped at 12 hours. The prior 96 hours are sunk."
+buyer test through the authorized decision owner, capped at 12 hours. The prior 96 hours are sunk."
 
 **Bad:** "We already spent five weeks, and a different customer type sounded
 interested. Continue the same initiative with a new segment, price, and channel

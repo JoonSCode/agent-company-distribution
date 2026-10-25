@@ -35,7 +35,7 @@ Use this pack when:
 Do not use it when:
 
 - acceptance criteria or acceptable release risk are undefined; return to
-  Uigwe or Planning;
+  the authorized decision owner or Planning;
 - the task is only test-layer selection; use
   `task-pack:qa-release:test-strategy`;
 - the task is only Simulator, device, permission, StoreKit, or deep-link
@@ -163,7 +163,7 @@ Apple guidance before it sets a release requirement; it never proves candidate s
     passes visible even when review, device, rollback, or live state blocks.
 12. **Handoff for final verification.** Provide the release-state ledger,
     evidence refs, cleanup, risks, recommendation, explicit forbidden claims,
-    and `next_recommended_surface: seungjeongwon`.
+    and `next_recommended_surface: company-lead`.
 
 ## Options And Tradeoffs
 
@@ -220,8 +220,8 @@ failed or unavailable, external records bind another build, required rollback
 cannot be rehearsed, current platform facts are stale, or continuation requires
 submission, agreement acceptance, metadata/account mutation, release, rollout,
 withdrawal, or live deployment without approval. Route acceptable-risk and
-external-action decisions to the authorized owner through Uigwe or King Sejong;
-route final verification to Seungjeongwon. Do not convert a blocker into
+external-action decisions to the authorized owner through the authorized decision owner or the assigning Company lead;
+route final verification to the assigning lead. Do not convert a blocker into
 approval pressure.
 
 ## Compression Examples
@@ -234,7 +234,7 @@ real-device restore remains blocked. App Store Connect shows build 204 processed
 but not selected; version 3.2.0 is in review with build 203, and the live
 storefront remains 3.1.0 (198). The production rollback flag has not been
 rehearsed. Preserve the local and signing passes, reject readiness for build 204,
-and send the device, selection, and rollback gaps to Seungjeongwon. No
+and send the device, selection, and rollback gaps to the assigning lead. No
 submission or release action was taken."
 
 **Bad:** "Build 204 archived and uploaded successfully, and version 3.2.0 is in

@@ -82,7 +82,17 @@ def backup_targets(paths: InstallPaths, transaction: Path, relatives: tuple[str,
 
 
 def restore_entries(paths: InstallPaths, base: Path, entries: tuple[BackupEntry, ...]) -> None:
+    from agent_company_claude_entry import preflight_restore
+    preflight_restore(paths, base, entries)
     for entry in reversed(entries):
+        if entry.relative == "agent-company/claude-entry.json":
+            from agent_company_claude_entry import restore_link
+            before = None if entry.kind == 'absent' else read_path_bytes(base / safe_relative(entry.backup))
+            restore_link(paths.codex_home, before)
+        if entry.relative == "agent-company/completion-hook.json":
+            from agent_company_completion_hook_install import restore_hook
+            before = None if entry.kind == "absent" else read_path_bytes(base / safe_relative(entry.backup))
+            restore_hook(paths, before)
         if entry.kind == "absent":
             try:
                 remove_managed(paths, entry.relative)

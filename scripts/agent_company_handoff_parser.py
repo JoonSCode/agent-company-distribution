@@ -19,6 +19,7 @@ ROLES: Final[set[str]] = {
     "founder", "planning", "marketing", "design", "development", "qa-release",
 }
 SURFACES: Final[set[str]] = {
+    "company-lead", "planning", "qa-release", "user",
     "sejong", "jangyeongsil", "jiphyeonjeon", "uigwe", "seungjeongwon",
     "sillok", "danjong",
 }
@@ -38,9 +39,10 @@ LIST_FIELDS: Final[tuple[str, ...]] = (
 UNSAFE_TOKENS: Final[tuple[str, ...]] = (
     "~/.codex", "auth.json", ".env", "sqlite", "session_index",
     "credentials", "gateway", "final verification authority",
-    "gate approval authority", "override king sejong", "replaces king sejong",
+    "gate approval authority", "override user authority", "self-approve final verification", "override king sejong", "replaces king sejong",
 )
 ALLOWED_FORBIDDEN_CLAIMS: Final[set[str]] = {
+    "override user authority", "self-approve final verification",
     "final verification authority",
     "gate approval authority",
     "override King Sejong",

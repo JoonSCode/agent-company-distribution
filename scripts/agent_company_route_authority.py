@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Final
 
-from agent_company_core_external_action import validate_external_action_ledger
+from agent_company_external_action_validation import validate_external_action_ledger
 from agent_company_job_policy import PolicyError
 from agent_company_route_contract import (
     ApprovalEvidence,
@@ -171,7 +171,7 @@ def approval_evidence(
     try:
         validate_external_action_ledger(ledger.value)
     except PolicyError as exc:
-        raise RoutingError("invalid_approval_receipt", "Core rejected the external-action receipt") from exc
+        raise RoutingError("invalid_approval_receipt", "Company rejected the external-action receipt") from exc
     receipts = ledger.value.get("receipts")
     if not isinstance(receipts, list):
         raise RoutingError("invalid_approval_receipt", "external-action receipts must be a list")

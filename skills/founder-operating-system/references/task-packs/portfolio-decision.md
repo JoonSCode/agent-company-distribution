@@ -6,7 +6,7 @@
 - Decision: which opportunity deserves the next scarce unit of company attention?
 
 This pack produces portfolio evidence and a recommendation. It does not make the
-CEO's decision, allocate resources, approve Uigwe, or verify execution.
+CEO's decision, allocate resources, approve material user decisions, or verify execution.
 
 ## Exact Triggers
 
@@ -22,9 +22,9 @@ Use this pack when at least one condition is true:
 Do not use it when:
 
 - the direction is already settled and only milestones or decomposition are
-  needed; route to Planning or Uigwe;
+  needed; route to Planning or the authorized decision owner;
 - the candidate problem is still undefined; route evidence gathering to
-  JangYeongsil or `problem-discovery`;
+  bounded research or `problem-discovery`;
 - the choice is only about implementation, release, or observed verification;
 - the request would authorize spending, hiring, publication, submission, or
   another external action.
@@ -79,8 +79,8 @@ or `unknown`; stale or non-comparable evidence remains unknown for the choice.
    revisit criteria, the next evidence horizon, and what is explicitly not
    funded.
 9. **Hand off.** Send a direction needing a plan or material policy decision to
-   Uigwe; send missing evidence to JangYeongsil; send verification readiness to
-   Seungjeongwon.
+   the authorized decision owner; send missing evidence to bounded research; send verification readiness to
+   the assigning lead.
 
 ## Serious Alternatives And Tradeoffs
 
@@ -130,7 +130,7 @@ When a role handoff is requested, also preserve every required field of
 Stop and return to the Sejong lead when the packet is complete. Escalate instead
 when a missing reversal fact keeps readiness blocked, options are not comparable,
 capacity or cash evidence is unavailable, a material target or risk decision
-needs Uigwe, evidence is materially contested and needs Jiphyeonjeon, or any
+needs the authorized decision owner, evidence is materially contested and needs bounded evidence debate, or any
 external action lacks explicit authority. Never claim gate approval or final
 verification.
 
@@ -140,7 +140,7 @@ verification.
 observed paid retention; B has interviews but no buyer commitment. B is the
 serious alternative if two buyers place deposits by 15 August. This leaves B
 unfunded for six weeks; kill A's test if activation does not improve from 31% to
-38% in the defined cohort. Uigwe should bind the test."
+38% in the defined cohort. the authorized decision owner should bind the test."
 
 **Bad:** "A famous founder would focus, so A is obviously the winner. Fund it
 until it works; B can continue in parallel."

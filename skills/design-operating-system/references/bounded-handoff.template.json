@@ -5,14 +5,14 @@
   "forbidden_claims": [
     "final verification authority",
     "gate approval authority",
-    "override King Sejong",
-    "replaces King Sejong"
+    "override user authority",
+    "self-approve final verification"
   ],
   "format": "agent_company_bounded_handoff.v0.1",
   "inferred": [],
   "knowledge_context_binding": {
     "attestation_scope": "resolver_materialized_selection",
-    "context_id": "02331c6b2678c6c7b99e448e128471f367bf5d00f37c64b89862a300c25b866d",
+    "context_id": "804ed48f8f06ba0d66c697a82a018305c256657a7d7d96c7a26af1484b6bdfbf",
     "decision_questions": [
       "Which proportional experience direction best serves the named user task?",
       "What evidence-backed flow interaction decision should the design role make, and what evidence would change it?"
@@ -20,23 +20,23 @@
     "format": "agent-company.knowledge-context/v0.2",
     "issued_at": "2026-07-30T00:00:00Z",
     "issued_by": "agent-company-expertise-resolver/v0.2",
-    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
     "materialized_references": [
       {
         "id": "role-kernel:design",
         "ref": "skills/design-operating-system/references/design-contract.json",
-        "sha256": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702",
+        "sha256": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027",
         "version": "0.1.0"
       },
       {
         "id": "task-pack:design:flow-interaction",
         "ref": "skills/design-operating-system/references/task-packs/flow-interaction.md",
-        "sha256": "ee384955d6c07d29e8085196027b89d184c2b5abeaddc128f44e391bff1870ae",
+        "sha256": "7bb9094775142dd3f2e17df29b68770a1ca0570996389b059748f4b2cc738b02",
         "version": "0.1.0"
       }
     ],
     "objective_sha256": "0bdb22b2ca0336da52c70e3dc7106b297a310e01a5a82ce17e15ae7bd20ad51a",
-    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "required_reference_ids": [
       "role-kernel:design",
       "task-pack:design:flow-interaction"
@@ -56,16 +56,16 @@
   },
   "knowledge_usage_receipt": {
     "attestation_scope": "worker_reported_use_independent_verification_required",
-    "context_id": "02331c6b2678c6c7b99e448e128471f367bf5d00f37c64b89862a300c25b866d",
+    "context_id": "804ed48f8f06ba0d66c697a82a018305c256657a7d7d96c7a26af1484b6bdfbf",
     "decision_questions": [
       "Which proportional experience direction best serves the named user task?",
       "What evidence-backed flow interaction decision should the design role make, and what evidence would change it?"
     ],
     "format": "agent-company.knowledge-usage-receipt/v0.2",
-    "manifest_sha256": "2e5b22eb790814febd010abd1c6f6d743075ec07e65b874febcdb1ff82158157",
+    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
     "objective_sha256": "0bdb22b2ca0336da52c70e3dc7106b297a310e01a5a82ce17e15ae7bd20ad51a",
-    "receipt_id": "49e64767d421887d5c277ec8d097cc3f7d384fc821735a335edc63d4363906f1",
-    "registry_sha256": "c8c5231da1fd5c89c570963080bc16db890082f0fc494b46c28640c164fa424f",
+    "receipt_id": "792e56c32cc83eca8cfa1d5daee0c3f913cf9977021c93dcf147f870dc26e146",
+    "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "reported_at": "2026-07-30T00:01:00Z",
     "reported_by": "role-worker",
     "required_reference_ids": [
@@ -84,7 +84,7 @@
         ],
         "id": "role-kernel:design",
         "ref": "skills/design-operating-system/references/design-contract.json",
-        "sha256": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702",
+        "sha256": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027",
         "version": "0.1.0"
       },
       {
@@ -94,17 +94,17 @@
         ],
         "id": "task-pack:design:flow-interaction",
         "ref": "skills/design-operating-system/references/task-packs/flow-interaction.md",
-        "sha256": "ee384955d6c07d29e8085196027b89d184c2b5abeaddc128f44e391bff1870ae",
+        "sha256": "7bb9094775142dd3f2e17df29b68770a1ca0570996389b059748f4b2cc738b02",
         "version": "0.1.0"
       }
     ]
   },
   "known": [],
-  "next_recommended_surface": "seungjeongwon",
+  "next_recommended_surface": "company-lead",
   "objective": "Replace with the approved Design evidence objective.",
   "operating_contract_binding": {
     "ref": "skills/design-operating-system/references/design-contract.json",
-    "sha256": "3aa171624548925032ed22628f77a7720ca4a2bb89f38c5a9babcf32b24c0702"
+    "sha256": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027"
   },
   "risks": [],
   "role": "design",

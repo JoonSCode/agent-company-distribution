@@ -229,10 +229,10 @@ leave gate scoring to an independent evaluator.
 Block the affected slice for missing payer or demand evidence, a broken
 purchase path, incompatible or immature cohorts, absent Current Source Set,
 unknown policy applicability, or missing scale economics. Route evidence
-refresh to JangYeongsil, commercial fit to `commercial-fit`, contested
-interpretation to Jiphyeonjeon, copy craft to
-`copywriting-operating-system`, material plan or risk-bar changes to Uigwe, and
-approved implementation plus independent verification to Seungjeongwon. Stop
+refresh to bounded research, commercial fit to `commercial-fit`, contested
+interpretation to bounded evidence debate, copy craft to
+`copywriting-operating-system`, material plan or risk-bar changes to the authorized decision owner, and
+approved implementation plus independent verification to the assigning lead. Stop
 before live price, product, store, campaign, spend, gate, or release action.
 
 ## Compression Examples

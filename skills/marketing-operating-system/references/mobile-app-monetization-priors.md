@@ -254,7 +254,10 @@ Replace the smoke-test cap with product economics and platform requirements:
   requires it.
 
 Use Apple Ads' account- and app-specific recommendations rather than inventing
-a universal Apple Search Ads daily budget.
+a universal daily budget, bid, keyword count, promotion threshold, or review
+window. For search-results discovery, exact promotion, negative-keyword
+fencing, scale, or App Store language feedback, apply
+[Apple Ads Search-Intent Learning Playbook](apple-ads-search-intent-playbook.md).
 
 ### Stage 3: Scale
 

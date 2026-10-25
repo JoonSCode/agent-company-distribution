@@ -1,0 +1,303 @@
+{
+  "format": "agent-company.ios-platform-knowledge/v0.1",
+  "platform": "iOS and iPadOS",
+  "owner_role": "design",
+  "reviewed_at": "2026-08-11",
+  "runtime_contract": {
+    "reference_id": "current-source:design:ios-platform-knowledge",
+    "layer": "current_source_set",
+    "materialization": "parent_issued_runtime_reference_set",
+    "freshness_mode": "revalidate_before_use",
+    "automatic_selection": false,
+    "activation_claim": "source_available_not_managed_active"
+  },
+  "application_flow": [
+    "official_source",
+    "application_context",
+    "product_decision",
+    "implementation_token_or_pattern",
+    "matching_surface_verification"
+  ],
+  "layers": [
+    {
+      "id": "global_design_os",
+      "canonical_owner": "Agent Company Design Role Kernel",
+      "contains": ["stable design philosophy", "judgment questions", "role authority", "verification invariants"],
+      "excludes": ["volatile OS facts", "app tokens and numeric values", "selected app exceptions"],
+      "input_to_next_layer": ["decision frame", "authority boundary", "evidence bar"],
+      "update_authority": ["Design proposes", "Development changes tracked source", "QA or Seungjeongwon independently verifies", "authorized decision governs activation"]
+    },
+    {
+      "id": "ios_platform_knowledge",
+      "canonical_owner": "Agent Company Design role curates Apple-owned platform facts",
+      "contains": ["current official sources", "contextual interpretations", "applicability", "exceptions", "strength", "conflicts", "revalidation triggers"],
+      "excludes": ["app intent", "exact app token values", "dependency approval", "context-free universal rules"],
+      "input_to_next_layer": ["applicable guidance IDs", "decision questions", "required local decisions", "matching-surface checks"],
+      "update_authority": ["Design and JangYeongsil recheck primary evidence", "Sejong admits the source for a job", "schema and regression checks gate source changes"]
+    },
+    {
+      "id": "app_local_contract",
+      "canonical_owner": "Named app and product decision owners in the target repository",
+      "contains": ["exact tokens and values", "chosen exceptions", "implementation references", "candidate and oracle", "visual QA completion evidence"],
+      "excludes": ["silent global overrides", "unsanitized cross-app generalization", "claims that redefine Apple guidance"],
+      "input_to_next_layer": ["bounded Development handoff", "exact candidate verification oracle", "release-risk evidence"],
+      "update_authority": ["Named product or Design owner approves intent and exceptions", "Development owns implementation", "QA owns disposition"]
+    }
+  ],
+  "source_policy": {
+    "authority": "official_apple_primary",
+    "claim_policy": "paraphrase_and_separate_source_basis_from_interpretation",
+    "review_interval_days": 90,
+    "recheck_before_material_decision": true,
+    "freshness_limit": "A recorded check proves only the local snapshot; it does not prove that the live page remains unchanged."
+  },
+  "sources": [
+    {
+      "id": "apple-design-principles-hig",
+      "title": "Design principles",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/design-principles",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: June 8, 2026, design principles reintroduced",
+      "platform_scope": ["Apple platforms"],
+      "source_claims": ["Principles are tools for weighing competing priorities rather than one mechanically correct recipe."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["HIG change log advances", "a platform-specific source conflicts", "the product context changes materially"]
+    },
+    {
+      "id": "apple-buttons-hig",
+      "title": "Buttons",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/buttons",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: December 16, 2025; style and content guidance updated June 9, 2025",
+      "platform_scope": ["iOS", "iPadOS", "Apple platforms"],
+      "source_claims": ["A general button hit region is at least 44 by 44 points on touch platforms.", "Buttons that form one choice set should use consistent size and style-based prominence rather than size-based priority."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Buttons change log advances", "target platform is not iOS or iPadOS", "a system component defines different behavior"]
+    },
+    {
+      "id": "apple-accessibility-hig",
+      "title": "Accessibility",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: June 9, 2025",
+      "platform_scope": ["iOS", "iPadOS", "Apple platforms"],
+      "source_claims": ["iOS and iPadOS list 44 by 44 points as the default control size and 28 by 28 points as a minimum control size.", "Control spacing and alternate input or accessibility behavior are part of usability."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Accessibility change log advances", "the control or input method changes", "an exception below the default is proposed"]
+    },
+    {
+      "id": "apple-layout-hig",
+      "title": "Layout",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: September 9, 2025",
+      "platform_scope": ["iOS", "iPadOS", "Apple platforms"],
+      "source_claims": ["Adaptive layouts use system safe areas, margins, and guides.", "iOS generally avoids edge-to-edge buttons unless their geometry deliberately harmonizes with the device and adjacent safe areas."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Layout change log advances", "target device geometry changes", "full-bleed or immersive presentation is proposed"]
+    },
+    {
+      "id": "apple-sheets-hig",
+      "title": "Sheets",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/sheets",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: March 24, 2026, button placement guidance updated",
+      "platform_scope": ["iOS", "iPadOS", "Apple platforms"],
+      "source_claims": ["A sheet supports a scoped task closely related to the current context.", "Resizable sheets can use a top-edge grabber and detents."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Sheets change log advances", "the task becomes navigation rather than a scoped interruption", "presentation style or detents change"]
+    },
+    {
+      "id": "apple-swiftui-presentation",
+      "title": "SwiftUI presentation modifiers",
+      "url": "https://developer.apple.com/documentation/swiftui/view-presentation",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "Live API documentation checked 2026-08-11",
+      "platform_scope": ["SwiftUI", "iOS", "iPadOS"],
+      "source_claims": ["SwiftUI exposes presentation detents and drag-indicator visibility for sheets.", "The API documentation does not prescribe one numeric content inset below the drag indicator."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Target SDK changes", "presentation APIs change", "a numeric top-spacing claim is proposed"]
+    },
+    {
+      "id": "apple-typography-hig",
+      "title": "Typography",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/typography",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "HIG change log: December 16, 2025; Dynamic Type guidance expanded March 7, 2025",
+      "platform_scope": ["iOS", "iPadOS", "Apple platforms"],
+      "source_claims": ["System text styles support Dynamic Type and larger accessibility sizes.", "Layouts should adapt across text sizes, minimize truncation, and preserve hierarchy."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Typography change log advances", "custom fonts or fixed frames are introduced", "content or locale length changes"]
+    },
+    {
+      "id": "apple-swiftui-dynamic-type-size",
+      "title": "SwiftUI dynamicTypeSize",
+      "url": "https://developer.apple.com/documentation/swiftui/environmentvalues/dynamictypesize",
+      "authority_class": "canonical",
+      "checked_at": "2026-08-11",
+      "version_marker": "Live API documentation checked 2026-08-11",
+      "platform_scope": ["SwiftUI", "iOS", "iPadOS"],
+      "source_claims": ["SwiftUI exposes the current Dynamic Type size through the environment."],
+      "allowed_use": "contextual_design_decision_support",
+      "recheck_triggers": ["Target SDK changes", "Dynamic Type APIs change", "a custom text-scaling mechanism is proposed"]
+    }
+  ],
+  "guidance": [
+    {
+      "id": "ios-touch-interaction-region",
+      "title": "Prefer a 44 by 44 point interaction region for ordinary buttons",
+      "strength": "recommended",
+      "source_ids": ["apple-buttons-hig", "apple-accessibility-hig"],
+      "official_basis": ["Buttons gives a 44 by 44 point general hit-region baseline.", "Accessibility distinguishes the 44 by 44 default control size from a 28 by 28 minimum."],
+      "interpretation": "Treat 44 by 44 points as the ordinary interaction-region baseline, not as an unconditional visible-frame size for every system control.",
+      "application_conditions": ["A person activates an ordinary iOS or iPadOS control by touch or another pointing input."],
+      "exceptions": ["A standard system component supplies a smaller visible control while preserving usable interaction behavior.", "A smaller exception has explicit spacing, input-method, accessibility, and matching-surface evidence."],
+      "conflicts": [{"with_source_or_guidance_id": "apple-accessibility-hig", "resolution_question": "Is the decision about visible control geometry, effective interaction region, or the exceptional minimum?"}],
+      "decision_questions": ["What is the effective interaction region?", "Does a smaller exception preserve separation from adjacent actions?"],
+      "implementation_requirements": ["Expose an inspectable interaction region or system control role.", "Do not assume visible artwork bounds equal the hit region."],
+      "app_local_decisions": ["Exact frame or content-shape token", "Spacing token", "Named exception and owner when below the ordinary baseline"],
+      "matching_surface_verification": ["Inspect geometry on the exact candidate.", "Exercise activation near edges and between adjacent controls.", "Check applicable VoiceOver, Switch Control, pointer, and Dynamic Type states."],
+      "revalidation_triggers": ["Component family changes", "Input mode changes", "Target OS or SDK changes", "A below-baseline exception is proposed"]
+    },
+    {
+      "id": "ios-coherent-button-set-hierarchy",
+      "title": "Use consistent size and style-based priority within a coherent choice set",
+      "strength": "recommended",
+      "source_ids": ["apple-buttons-hig", "apple-design-principles-hig"],
+      "official_basis": ["Buttons describes same-size options as a coherent set and warns that nearby different sizes can look inconsistent.", "Buttons recommends prominent style for the likely action while limiting prominent choices."],
+      "interpretation": "When adjacent actions are peers in one decision, keep their geometry coherent and express preferred priority through role, fill, color, or another accessible style rather than larger dimensions.",
+      "application_conditions": ["Two or more nearby buttons represent one coherent set of available choices."],
+      "exceptions": ["The controls do not form one choice set.", "Content growth requires an adaptive stack while preserving a shared dimensional rule in that state.", "A platform-native component owns a different layout."],
+      "conflicts": [{"with_source_or_guidance_id": "ios-dynamic-type-reflow", "resolution_question": "Can equal geometry survive content growth, or should the whole set reflow to another coherent layout?"}],
+      "decision_questions": ["Do the actions form one choice set?", "Which action is preferred and how is that priority conveyed without relying on size alone?"],
+      "implementation_requirements": ["Use one local dimensional token or adaptive layout rule for the set.", "Bind primary, secondary, and destructive semantics separately from geometry."],
+      "app_local_decisions": ["Exact height and width behavior", "Primary and secondary styles", "Long-label and accessibility-size reflow"],
+      "matching_surface_verification": ["Compare all buttons in the exact state and locale.", "Verify hierarchy without color alone.", "Verify press, disabled, loading, and accessibility-size states that apply."],
+      "revalidation_triggers": ["Choice grouping changes", "Button labels or locale change", "Dynamic Type or width class changes", "Button HIG changes"]
+    },
+    {
+      "id": "ios-safe-area-and-system-margins",
+      "title": "Respect safe areas and system margins for interactive content",
+      "strength": "recommended",
+      "source_ids": ["apple-layout-hig"],
+      "official_basis": ["Layout describes system safe areas, margins, and guides as the basis for adaptable placement.", "Layout generally discourages full-width iOS buttons unless they harmonize with device and safe-area geometry."],
+      "interpretation": "Keep primary interactive content inside the applicable safe area and margin system; let backgrounds or deliberately immersive content extend only with a named reason.",
+      "application_conditions": ["The surface includes edge-adjacent content, controls, bars, sheets, or device-feature occlusion risk."],
+      "exceptions": ["A background or noninteractive visual treatment is intentionally full bleed.", "A game or immersive media surface has a platform-appropriate full-bleed model.", "A full-width control has explicit hardware and adjacent-safe-area alignment."],
+      "conflicts": [{"with_source_or_guidance_id": "ios-sheet-drag-indicator-clearance", "resolution_question": "Which inset belongs to the system presentation and which belongs to app content?"}],
+      "decision_questions": ["Which system guide protects this content?", "Is any edge-to-edge treatment visual, interactive, or both?"],
+      "implementation_requirements": ["Use safe-area and margin APIs before fixed offsets.", "Separate full-bleed background geometry from interactive content geometry."],
+      "app_local_decisions": ["Horizontal content margin token", "Intentional safe-area exception", "Device and orientation coverage"],
+      "matching_surface_verification": ["Inspect supported device geometries and orientations.", "Verify controls remain clear of system features and presentation chrome."],
+      "revalidation_triggers": ["Device family changes", "Orientation or window resizing changes", "Presentation style changes", "Layout HIG changes"]
+    },
+    {
+      "id": "ios-sheet-scoped-contextual-task",
+      "title": "Use a sheet for a scoped task tied to the current context",
+      "strength": "conditional",
+      "source_ids": ["apple-sheets-hig", "apple-design-principles-hig"],
+      "official_basis": ["Sheets describes a scoped task closely related to the current context.", "Sheets preserves the relationship to the parent view and can be modal or nonmodal on iOS and iPadOS."],
+      "interpretation": "Choose a sheet when the temporary task depends on the parent context and can return cleanly; do not use it as a generic navigation container.",
+      "application_conditions": ["A temporary focused task needs current-view context and a clear return path."],
+      "exceptions": ["The task is primary navigation or needs sustained deep exploration.", "An alert, action sheet, popover, navigation destination, or full-screen flow better matches the task and device."],
+      "conflicts": [{"with_source_or_guidance_id": "apple-sheets-hig", "resolution_question": "Is the proposed interaction still a scoped task, or has it become navigation or a multi-stage workflow?"}],
+      "decision_questions": ["What parent context must remain legible?", "What completes, cancels, or dismisses the scoped task?"],
+      "implementation_requirements": ["Bind dismissal and recovery behavior.", "Choose detents and modality from task and device context rather than visual preference alone."],
+      "app_local_decisions": ["Presentation style and detents", "Dismissal behavior", "Completion and cancellation controls", "State persistence across dismissal"],
+      "matching_surface_verification": ["Run present, resize, complete, cancel, and interrupt paths.", "Verify parent context and task focus at each supported detent."],
+      "revalidation_triggers": ["Task scope changes", "Additional stages are added", "Detents or modality change", "Sheets HIG changes"]
+    },
+    {
+      "id": "ios-sheet-drag-indicator-clearance",
+      "title": "Define and verify content clearance below sheet presentation chrome",
+      "strength": "conditional",
+      "source_ids": ["apple-sheets-hig", "apple-swiftui-presentation"],
+      "official_basis": ["Sheets places a grabber at the top edge of a resizable sheet.", "SwiftUI exposes detents and drag-indicator visibility but the cited API does not specify one app-content top inset."],
+      "interpretation": "Treat clearance below the drag indicator as an app-local layout decision: use system behavior first, then add a token only when exact-surface evidence shows crowding or ambiguity.",
+      "application_conditions": ["A sheet displays a visible drag indicator or other top presentation chrome above app content."],
+      "exceptions": ["System-provided container spacing already produces clear separation in every required state.", "The presentation has no drag indicator and uses a different verified top-chrome pattern."],
+      "conflicts": [{"with_source_or_guidance_id": "ios-safe-area-and-system-margins", "resolution_question": "Is the observed gap owned by system presentation geometry, safe-area handling, or the app content stack?"}],
+      "decision_questions": ["Is content visually or interactively crowded under the indicator?", "Does the same local token work across detents and Dynamic Type states?"],
+      "implementation_requirements": ["Do not encode an Apple-mandated numeric top inset that the source does not provide.", "Prefer a named local spacing token over an unexplained literal when extra clearance is needed."],
+      "app_local_decisions": ["Whether extra clearance is required", "Exact local spacing token", "Applicable detents, devices, and text sizes"],
+      "matching_surface_verification": ["Capture the exact sheet at each supported detent.", "Inspect drag, scroll, long-content, accessibility-size, and compact-height states.", "Record match, deviation, or unknown against the app-local oracle."],
+      "revalidation_triggers": ["Drag-indicator visibility changes", "Detents change", "System presentation spacing changes", "Target OS or SDK changes"]
+    },
+    {
+      "id": "ios-dynamic-type-reflow",
+      "title": "Preserve hierarchy and useful content across Dynamic Type sizes",
+      "strength": "recommended",
+      "source_ids": ["apple-typography-hig", "apple-accessibility-hig", "apple-swiftui-dynamic-type-size"],
+      "official_basis": ["Typography recommends system text styles, adaptive layouts, minimal truncation, and stable hierarchy across sizes.", "Accessibility treats larger text as part of an adaptable interface.", "SwiftUI exposes Dynamic Type size through the environment."],
+      "interpretation": "Design content and control layouts to reflow when fixed horizontal geometry would truncate, overlap, or reverse information priority.",
+      "application_conditions": ["The surface contains text, text-labeled controls, meaningful icons, or horizontal groups that can crowd as type grows."],
+      "exceptions": ["A bounded data format has a verified alternate full-content path.", "A system component owns truncation and expansion behavior that remains usable in the exact context."],
+      "conflicts": [{"with_source_or_guidance_id": "ios-coherent-button-set-hierarchy", "resolution_question": "Which adaptive layout preserves both coherent grouping and readable content at the current size?"}],
+      "decision_questions": ["What information priority must survive every supported size?", "When should a row become a stack or reduce columns?"],
+      "implementation_requirements": ["Use text styles or scalable metrics.", "Name the reflow threshold or structural rule instead of relying on clipping.", "Keep meaningful icons legible as text size grows."],
+      "app_local_decisions": ["Supported content-size range", "Reflow rules", "Line limits and full-content access", "Long-localization fixtures"],
+      "matching_surface_verification": ["Inspect standard and accessibility sizes with realistic long content.", "Verify hierarchy, reading order, focus order, and control activation after reflow."],
+      "revalidation_triggers": ["Typography or content changes", "Locale changes", "Custom font changes", "Target OS or SDK changes"]
+    }
+  ],
+  "conflict_resolution": {
+    "order": [
+      "identify_scope_and_component",
+      "separate_visible_size_from_interaction_region",
+      "compare_current_primary_sources",
+      "record_product_tradeoff_and_exception",
+      "verify_the_exact_surface"
+    ],
+    "rules": [
+      "Do not resolve conflicts by copying the shortest sentence or the largest number.",
+      "Prefer the guidance whose platform, component, input method, and current product context match the decision.",
+      "Keep unresolved source conflicts explicit and return a reversible product decision or Uigwe re-entry instead of inventing certainty."
+    ]
+  },
+  "app_local_contract": {
+    "runtime_layer": "job_evidence",
+    "required_fields": [
+      "app and repository identity",
+      "named product and Design decision owners",
+      "target OS, SDK, device, locale, text size, and presentation context",
+      "applicable platform guidance IDs and source check receipt",
+      "selected product decision and rationale",
+      "exact token or pattern IDs, values, units, and implementation references",
+      "chosen exceptions, applicability, owner, and reversal evidence",
+      "candidate identity, approved intent, oracle, scenarios, and observation provenance",
+      "visual, interaction, and accessibility completion criteria",
+      "revalidation triggers"
+    ],
+    "role_ownership": [
+      "Product or Design owner approves intent and exceptions.",
+      "Development owns implementation tokens and patterns in production source.",
+      "QA or Seungjeongwon independently owns verification disposition."
+    ],
+    "verification_completion": [
+      "Contract semantics pass.",
+      "Rendered geometry is observed on the exact candidate and matching surface.",
+      "Live interaction and accessibility behavior are observed where applicable.",
+      "Every required condition is match, deviation, or unknown with evidence."
+    ],
+    "promotion_boundary": "App-local values stay local until sanitized evidence from at least three independent runs supports a cross-app heuristic, paired evaluation shows no regression, and explicit approval authorizes promotion."
+  },
+  "update_policy": {
+    "source_correction": ["Recheck the official page directly.", "Update source metadata and affected guidance.", "Run schema, semantic, manifest, and regression checks.", "Do not wait for three app runs to correct a demonstrably wrong source record."],
+    "contextual_guidance_change": ["Record the changed interpretation, affected contexts, conflicts, and reversal evidence.", "Run paired Design evaluation when behavior or authority changes materially."],
+    "app_local_change": ["Keep the change in the target repository or job evidence.", "Require the named app owner and exact-surface verification."],
+    "upward_promotion": ["Use sanitized evidence from at least three independent runs.", "Create a proposal with no activation authority.", "Run paired no-regression evaluation and shadow use before explicit approval."],
+    "automatic_promotion": false
+  },
+  "standalone_skill_reentry": {
+    "default": "extend_design_os",
+    "evidence_required": ["observed routing ambiguity", "measured context or loading cost", "a distinct intake, workflow, output, and stop condition", "evaluation showing the split improves quality without authority drift"],
+    "reentry_conditions": ["The platform work can no longer be expressed as source-backed Design judgment plus optional implementation or QA specialists.", "Repeated jobs require an independent executable workflow rather than a different evidence set."]
+  }
+}

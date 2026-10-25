@@ -25,9 +25,9 @@ Do not use it for:
 - open-ended problem search with no bounded candidate; use `problem-discovery`;
 - market sizing alone;
 - copy, channel execution, solution implementation, or release verification;
-- planning an already accepted wedge; route that to Uigwe or Planning;
+- planning an already accepted wedge; route that to the authorized decision owner or Planning;
 - rescuing a failed commercial test by changing the problem without
-  `problem-business-loop` or Uigwe re-entry.
+  `problem-business-loop` or material-decision re-entry.
 
 ## Required Inputs And Evidence Hierarchy
 
@@ -84,7 +84,7 @@ actually tested. Market size is not product demand. Label claims `known`,
    segment, offer, sample, time box, success, failure, kill, and data-quality
    rule. Do not change segment, offer, channel, and price together.
 10. **Recommend and route.** State what the test funds, what remains unfunded,
-    and the next King Sejong surface.
+    and the next supported Company handoff destination.
 
 ## Serious Alternatives And Tradeoffs
 
@@ -134,11 +134,11 @@ When a role handoff is requested, also preserve every required field of
 ## Stop Or Escalate
 
 Stop with an evidence request when the buyer, problem, or source provenance is
-missing. Route new problem discovery to JangYeongsil or `problem-discovery`;
+missing. Route new problem discovery to bounded research or `problem-discovery`;
 route a commercial failure that changes the problem to `problem-business-loop`;
-route material target, risk, or scope changes to Uigwe; route contested
-interpretation to Jiphyeonjeon; and route verification readiness to
-Seungjeongwon. Stop before outreach, spend, contracting, data collection, or
+route material target, risk, or scope changes to the authorized decision owner; route contested
+interpretation to bounded evidence debate; and route verification readiness to
+the assigning lead. Stop before outreach, spend, contracting, data collection, or
 another external action without explicit authority.
 
 ## Compact Example
@@ -147,7 +147,7 @@ another external action without explicit authority.
 weekly workaround, but no budget owner was interviewed and both pilot promises
 are unpaid. Test one redacted paid concierge offer with five owners for 10 days;
 success is two non-refundable deposits, failure is zero after five completed
-owner conversations. Uigwe must bind any product or regulated-data work."
+owner conversations. the authorized decision owner must bind any product or regulated-data work."
 
 **Bad:** "The market report says this is a billion-dollar category and managers
 loved the demo, so build the platform now."

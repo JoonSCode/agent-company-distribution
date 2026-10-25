@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from agent_company_deps import DepsError, JsonValue, record_json, resolve_dependency
+from agent_company_deps import JsonValue
 from agent_company_install_io import read_json, write_json
 from agent_company_install_types import InstallError
 from agent_company_launchd import LaunchdConfig, LaunchdContractError, launchd_config, launchd_report
@@ -125,13 +125,6 @@ def state_timestamps(paths: RuntimePaths) -> tuple[dict[str, JsonValue], list[Js
         return {}, [issue("unsafe_runtime_state", "runtime status is malformed or unsafe", status_path)]
 
 
-def dependency_report() -> tuple[dict[str, JsonValue], list[JsonValue]]:
-    try:
-        record = resolve_dependency()
-    except (DepsError, ValueError, OSError) as exc:
-        return {}, [issue("dependency_resolution_failed", str(exc))]
-    return record_json(record), []
-
 
 def rollback_report(paths: RuntimePaths) -> dict[str, JsonValue]:
     current = paths.rollback / "current"
@@ -145,6 +138,7 @@ def unavailable_launchd_report() -> dict[str, JsonValue]:
         "fresh": False,
         "age_seconds": None,
         "mtime_epoch": None,
+        "size_bytes": None,
         "integrity": "unobserved",
     }
     return {
@@ -171,7 +165,6 @@ def runtime_report(
 ) -> dict[str, JsonValue]:
     paths = runtime_paths(codex_home)
     repo, source_issues = source_report()
-    dependency, dependency_issues = dependency_report()
     installed, installed_issues = installed_report(paths)
     lock, lock_issues = lock_report(paths)
     timestamps, timestamp_issues = state_timestamps(paths)
@@ -179,7 +172,6 @@ def runtime_report(
     recovery_issues = [issue("recovery_required", "unfinished install transaction requires recovery", journal)] if journal.exists() else []
     issues = [
         *source_issues,
-        *dependency_issues,
         *installed_issues,
         *lock_issues,
         *timestamp_issues,
@@ -207,8 +199,6 @@ def runtime_report(
     }
     agent_ref = text_field(repo, "commit")
     installed_ref = text_field(installed, "installed_ref")
-    dependency_mode = text_field(dependency, "selected_source") or text_field(installed, "king_sejong_dependency_mode")
-    resolved_ref = text_field(dependency, "commit") or text_field(installed, "resolved_king_sejong_ref")
     return {
         "schema_version": "0.2",
         "check": "runtime",
@@ -216,8 +206,8 @@ def runtime_report(
         "agent_company_ref": agent_ref,
         "source_head": agent_ref,
         "source_content_sha256": text_field(repo, "content_sha256"),
-        "king_sejong_dependency_mode": dependency_mode,
-        "resolved_king_sejong_ref": resolved_ref,
+        "runtime_contract": text_field(installed, "runtime_contract"),
+        "runtime_certification": text_field(installed, "runtime_certification"),
         "installed_ref": installed_ref,
         "installed_manifest_commit": installed_ref,
         "installed_content_sha256": text_field(installed, "installed_content_sha256"),
@@ -225,7 +215,7 @@ def runtime_report(
         "last_successful_update": text_field(timestamps, "last_successful_update")
         or text_field(timestamps, "last_update_at"),
         "repo": repo,
-        "dependency": dependency,
+        "external_dependencies": [],
         "install": installed,
         "launchd": launchd,
         "state": state,

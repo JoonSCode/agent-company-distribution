@@ -8,7 +8,7 @@
       "role_os_skill": "founder-operating-system",
       "role_kernel_id": "role-kernel:founder",
       "default_task_type": "portfolio-decision",
-      "default_verifier": "seungjeongwon",
+      "default_verifier": "qa-release",
       "optional_specialists": [
         {
           "skill_id": "problem-discovery",
@@ -57,7 +57,7 @@
       "role_os_skill": "planning-operating-system",
       "role_kernel_id": "role-kernel:planning",
       "default_task_type": "execution-planning",
-      "default_verifier": "seungjeongwon",
+      "default_verifier": "qa-release",
       "optional_specialists": [
         {
           "skill_id": "uigwe",
@@ -96,7 +96,7 @@
       "role_os_skill": "marketing-operating-system",
       "role_kernel_id": "role-kernel:marketing",
       "default_task_type": "demand-positioning",
-      "default_verifier": "seungjeongwon",
+      "default_verifier": "qa-release",
       "optional_specialists": [
         {
           "skill_id": "copywriting-operating-system",
@@ -183,7 +183,7 @@
       "role_os_skill": "qa-release-operating-system",
       "role_kernel_id": "role-kernel:qa-release",
       "default_task_type": "test-strategy",
-      "default_verifier": "seungjeongwon",
+      "default_verifier": "company-lead",
       "optional_specialists": [
         {
           "skill_id": "build-ios-apps:ios-debugger-agent",

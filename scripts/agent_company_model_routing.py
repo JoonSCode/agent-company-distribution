@@ -14,6 +14,9 @@ from types import MappingProxyType
 from typing import Final
 
 from agent_company_model_routing_models import (
+    SUPPORTED_MODELS,
+    SUPPORTED_EFFORTS,
+    SUPPORTED_SERVICE_TIERS,
     ModelProfile,
     ModelProfileAuthority,
     ModelProfileRegistry,
@@ -30,8 +33,6 @@ EXECUTORS: Final[frozenset[str]] = frozenset({"mechanical", "standard-implementa
 ROLES: Final[frozenset[str]] = frozenset({"founder", "planning", "marketing", "design", "development", "qa-release"})
 RISKS: Final[frozenset[str]] = frozenset({"security", "data-loss", "data-integrity", "migration", "lineage", "rollback", "concurrency", "performance"})
 ADAPTERS: Final[frozenset[str]] = frozenset({"codex-native-worker", "host-model-override", "none"})
-MODELS: Final[frozenset[str]] = frozenset({"gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"})
-EFFORTS: Final[frozenset[str]] = frozenset({"medium", "high", "xhigh", "max"})
 RANKS: Final[dict[str, int]] = {"mechanical": 1, "standard-implementation": 2, "bounded-deep": 3, "integration": 4, "specialist-reasoning": 5, "role-lead-judgment": 6, "company-judgment": 7}
 CAPS: Final[dict[str, int]] = {"mechanical": 8, "standard-implementation": 6, "bounded-deep": 4, "integration": 2, "specialist-reasoning": 2, "role-lead-judgment": 1, "company-judgment": 1}
 REQUIRED: Final[frozenset[str]] = frozenset({"role", "task_type", "ambiguity", "expected_change_scope", "failure_impact", "reversibility", "automated_verifiability", "critical_path", "speed_or_credit_priority", "specialist_tools", "prior_attempts_and_failure_causes", "authority_signals", "dynamic_risk_signals", "capacity_snapshot"})
@@ -167,7 +168,7 @@ def _registry_valid(registry: ModelProfileRegistry) -> bool:
         if not profile.allowed_task_types or any(type(item) is not str for item in profile.allowed_task_types): return False
         executor = name in EXECUTORS
         expected_authority = ModelProfileAuthority.EXECUTOR if executor else ModelProfileAuthority.ROLE_LEAD if name == "role-lead-judgment" else ModelProfileAuthority.COMPANY_ROOT
-        if profile.semantic_profile != name or profile.model_id not in MODELS or profile.reasoning_effort not in EFFORTS or profile.rate_card_model_id != profile.model_id or profile.capability_rank != RANKS[name] or profile.capability_floor != RANKS[name] or not 1 <= profile.concurrency_cap <= CAPS[name] or profile.dispatchable != executor or profile.authority != expected_authority or profile.administrative_status not in {"enabled", "disabled"} or profile.runtime_availability_required is not True or profile.service_tier_default != "priority" or profile.speed_trait not in {"fast", "balanced", "deep"} or profile.credit_trait not in {"lowest", "moderate", "highest"} or len(profile.allowed_task_types) != len(set(profile.allowed_task_types)) or any(not _slug(item) for item in profile.allowed_task_types) or (not executor and profile.fallback_profile is not None): return False
+        if profile.semantic_profile != name or profile.model_id not in SUPPORTED_MODELS or profile.reasoning_effort not in SUPPORTED_EFFORTS or profile.rate_card_model_id != profile.model_id or profile.capability_rank != RANKS[name] or profile.capability_floor != RANKS[name] or not 1 <= profile.concurrency_cap <= CAPS[name] or profile.dispatchable != executor or profile.authority != expected_authority or profile.administrative_status not in {"enabled", "disabled"} or profile.runtime_availability_required is not True or profile.service_tier_default not in SUPPORTED_SERVICE_TIERS or profile.speed_trait not in {"fast", "balanced", "deep"} or profile.credit_trait not in {"lowest", "moderate", "highest"} or len(profile.allowed_task_types) != len(set(profile.allowed_task_types)) or any(not _slug(item) for item in profile.allowed_task_types) or (not executor and profile.fallback_profile is not None): return False
     for start in EXECUTORS:
         seen: set[str] = set(); current: str | None = start
         for _ in range(7):

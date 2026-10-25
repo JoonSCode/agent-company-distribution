@@ -28,13 +28,12 @@ type JsonValue = str | int | float | bool | None | list["JsonValue"] | dict[str,
 SHA: Final[re.Pattern[str]] = re.compile(r"^[0-9a-f]{40}$")
 MARKER: Final[str] = "agent-company-managed-source.json"
 CONTAINER_MARKER: Final[str] = ".agent-company-managed-sources"
-KINDS: Final[frozenset[str]] = frozenset({"agent-company", "king-sejong"})
+KINDS: Final[frozenset[str]] = frozenset({"agent-company"})
 EXPECTED_ORIGINS: Final[dict[str, frozenset[str]]] = {
     "agent-company": frozenset({
         "https://github.com/JoonSCode/agent-company.git",
         "https://github.com/JoonSCode/agent-company-distribution.git",
     }),
-    "king-sejong": frozenset({"https://github.com/JoonSCode/king-sejong.git"}),
 }
 
 
@@ -169,31 +168,6 @@ def source_identity(root: Path) -> SourceSpec:
     valid_spec(spec)
     return spec
 
-
-def core_spec(root: Path) -> SourceSpec:
-    try:
-        parsed: JsonValue = json.loads((root / "agent-company.lock.json").read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise BootstrapError("invalid_lock", "King Sejong fallback pin is unavailable") from exc
-    lock = object_value(parsed, "lock")
-    resolved = object_value(lock.get("resolved_dependencies"), "resolved_dependencies")
-    king = object_value(resolved.get("king_sejong"), "king_sejong")
-    fallback = object_value(king.get("github_ref_fallback"), "github_ref_fallback")
-    clone_source: str | None = None
-    local = king.get("local_develop_checkout")
-    if isinstance(local, dict) and isinstance(local.get("git_root"), str):
-        candidate = Path(local["git_root"]).expanduser()
-        candidate = (root / candidate).resolve() if not candidate.is_absolute() else candidate.resolve()
-        if candidate.is_dir():
-            clone_source = str(candidate)
-    spec = SourceSpec(
-        "king-sejong",
-        text_value(fallback.get("url"), "url"),
-        text_value(fallback.get("resolved_commit"), "resolved_commit"),
-        clone_source,
-    )
-    valid_spec(spec)
-    return spec
 
 
 def validate_materialized(target: Path, spec: SourceSpec) -> None:

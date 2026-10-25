@@ -78,8 +78,8 @@
         "guardrails": {"$ref": "#/$defs/nonEmptyRefs"},
         "commercial_evidence_state": {"enum": ["unknown", "pending", "observed"]},
         "external_action_authority": {"const": "explicit-ceo-approval"},
-        "execution_owner": {"const": "king-sejong-core"},
-        "final_verification_owner": {"const": "seungjeongwon"}
+        "execution_owner": {"enum": ["orca", "king-sejong-core"]},
+        "final_verification_owner": {"enum": ["qa-release", "seungjeongwon"]}
       }
     },
     "default_budget": {"$ref": "#/$defs/delegationBudget"},
@@ -95,7 +95,7 @@
           "minItems": 3,
           "uniqueItems": true,
           "items": {
-            "enum": ["ceo", "sejong-lead", "founder", "planning", "design", "development", "marketing", "qa-release"]
+            "enum": ["ceo", "company-lead", "sejong-lead", "founder", "planning", "design", "development", "marketing", "qa-release"]
           }
         },
         "agenda": {

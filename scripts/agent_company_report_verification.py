@@ -73,6 +73,7 @@ def _trusted_authority(bindings: VerificationBindings) -> TrustedVerificationAut
         issuer_ref=issuer_ref,
         reviewer_refs={
             "seungjeongwon": frozenset({issuer_ref}),
+            "company-lead": frozenset({issuer_ref}),
             "qa-release": frozenset({issuer_ref, *qa_refs}),
         },
     )

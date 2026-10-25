@@ -167,7 +167,7 @@ sets setup or the oracle; it never proves candidate behavior.
     availability or activity record without its outcome remains `unverified`.
 13. **Report partial success.** Keep passes even when another device or account
     lane blocks. Name residual risk and the smallest missing matching-surface
-    check, then hand off to Seungjeongwon.
+    check, then hand off to the assigning lead.
 
 ## Options And Tradeoffs
 
@@ -200,7 +200,7 @@ named source; manual observation records only what was seen.
 
 Return the exact candidate, distinct surface lanes, criterion statuses,
 closure rows, sanitized cleanup, residual risk, smallest next check,
-`next_recommended_surface: seungjeongwon`, and `forbidden_claims`.
+`next_recommended_surface: company-lead`, and `forbidden_claims`.
 
 ## Stop Or Escalate
 
@@ -211,7 +211,7 @@ guaranteed, an official current-source gap changes setup or expected behavior,
 or continuation would submit, release, accept an agreement, or modify production
 state. Record unavailable surfaces as `blocked` or `unverified`; do not invent a
 manual, purchase, account, permission, or device observation. Route final
-verification to Seungjeongwon.
+verification to the assigning lead.
 
 ## Compression Examples
 
@@ -223,7 +223,7 @@ Local StoreKit configuration proves purchase and restore only in that
 configuration, not the required sandbox storefront. The named SE3 is
 unavailable, so its camera criterion is blocked rather than replaced by the
 Simulator. Preserve the two narrow passes, sanitize screenshots, reset the
-Simulator, and send the three matching-surface gaps to Seungjeongwon."
+Simulator, and send the three matching-surface gaps to the assigning lead."
 
 **Bad:** "The Simulator link and StoreKit test worked and the app builds, so
 permissions, purchases, deep links, and SE3 behavior are verified."

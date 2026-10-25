@@ -62,6 +62,7 @@ class LogStatus:
     age_seconds: int | None
     mtime_epoch: float | None
     integrity: Literal["ok", "missing", "stale", "unsafe", "future", "unobserved"]
+    size_bytes: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,9 +201,12 @@ def parse_log(value: JsonValue, field: str) -> LogStatus:
     present, fresh = boolean(values, "present"), boolean(values, "fresh")
     age = integer(values, "age_seconds", optional=True)
     modified = number(values, "mtime_epoch")
+    size = integer(values, "size_bytes", optional=True)
     if age is not None and age < 0:
         raise StatusContractError("invalid_status_payload", field)
-    return LogStatus(present, fresh, age, modified, log_integrity(text(values, "integrity")))
+    if size is not None and size < 0:
+        raise StatusContractError("invalid_status_payload", field)
+    return LogStatus(present, fresh, age, modified, log_integrity(text(values, "integrity")), size)
 
 
 def parse_launchd(payload: dict[str, JsonValue]) -> LaunchdStatus:

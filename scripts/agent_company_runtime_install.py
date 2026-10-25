@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import os
 import stat
+import json
 
 from agent_company_deps import JsonValue
 from agent_company_install_engine import EXPECTED_AGENT_FILES, verify_prior
@@ -58,7 +59,8 @@ def installed_content_hash(manifest: dict[str, JsonValue]) -> str:
     files = map_field(manifest, "files")
     digest = hashlib.sha256()
     found = False
-    for entry in COPY_ENTRIES:
+    # Source installs include optional development evals; public installs omit them.
+    for entry in (*COPY_ENTRIES, "evals"):
         prefix = f"repo/{entry}"
         selected = sorted((name, value) for name, value in files.items() if name == prefix or name.startswith(f"{prefix}/"))
         for name, value in selected:
@@ -68,6 +70,18 @@ def installed_content_hash(manifest: dict[str, JsonValue]) -> str:
             digest.update(value.encode())
             found = True
     return digest.hexdigest() if found else ""
+
+
+def common_content_hash(manifest: dict[str, JsonValue]) -> str:
+    # Match policy_version: the new standalone lock is Company-owned content.
+    files = map_field(manifest, "files")
+    standalone = manifest.get("runtime_contract") == "orca-company-standalone/v1"
+    common = {key: value for key, value in files.items()
+              if key.startswith("repo/") and (standalone or key != "repo/agent-company.lock.json")}
+    if not common or not all(isinstance(value, str) and len(value) == 64 and
+                            all(c in "0123456789abcdef" for c in value) for value in common.values()):
+        return ""
+    return hashlib.sha256(json.dumps(common, sort_keys=True).encode()).hexdigest()
 
 
 def verify_snapshot_hashes(paths: RuntimePaths, snapshot_id: str) -> list[JsonValue]:
@@ -163,16 +177,19 @@ def installed_report(paths: RuntimePaths) -> tuple[dict[str, JsonValue], list[Js
     managed_count, managed_issues = managed_agent_report(paths)
     issues.extend(managed_issues)
     issues.extend(exact_generated_agent_issues(paths))
-    king = map_field(manifest, "king_sejong")
-    github = map_field(king, "github_ref_fallback")
+    contract = text_field(manifest, "runtime_contract")
+    standalone = contract == "orca-company-standalone/v1"
+    if manifest and not standalone:
+        issues.append(issue("historical_legacy_runtime", "Stored historical Company bytes are intact only if integrity checks pass; this generation is not certified Core-independent"))
     report: dict[str, JsonValue] = {
         "root": str(paths.root),
         "snapshot_id": snapshot_id,
         "installed_ref": text_field(manifest, "agent_company_commit"),
         "manifest_sha256": text_field(active, "manifest_sha256"),
         "installed_content_sha256": installed_content_hash(manifest),
-        "resolved_king_sejong_ref": text_field(github, "resolved_commit") or text_field(king, "commit"),
-        "king_sejong_dependency_mode": text_field(king, "selected_source"),
+        "company_common_sha256": common_content_hash(manifest),
+        "runtime_contract": contract,
+        "runtime_certification": "standalone" if standalone else "historical_legacy",
         "managed_agent_count": managed_count,
         "hash_status": "ok" if not issues else "fail",
     }

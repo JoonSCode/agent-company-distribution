@@ -17,13 +17,13 @@
       "required": ["semantic_profile", "model_id", "reasoning_effort", "authority", "dispatchable", "administrative_status", "runtime_availability_required", "service_tier_default", "speed_trait", "credit_trait", "allowed_task_types", "capability_rank", "capability_floor", "fallback_profile", "concurrency_cap", "rate_card_model_id"],
       "properties": {
         "semantic_profile": {"enum": ["mechanical", "standard-implementation", "bounded-deep", "integration", "specialist-reasoning", "role-lead-judgment", "company-judgment"]},
-        "model_id": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]},
-        "reasoning_effort": {"enum": ["medium", "high", "xhigh", "max"]},
+        "model_id": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra"]},
+        "reasoning_effort": {"enum": ["low", "medium", "high", "xhigh", "max"]},
         "authority": {"enum": ["executor", "role_lead", "company_root"]},
         "dispatchable": {"type": "boolean"},
         "administrative_status": {"enum": ["enabled", "disabled"]},
         "runtime_availability_required": {"const": true},
-        "service_tier_default": {"const": "priority"},
+        "service_tier_default": {"enum": ["default", "priority"]},
         "speed_trait": {"enum": ["fast", "balanced", "deep"]},
         "credit_trait": {"enum": ["lowest", "moderate", "highest"]},
         "allowed_task_types": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
@@ -31,7 +31,7 @@
         "capability_floor": {"type": "integer", "minimum": 1, "maximum": 7},
         "fallback_profile": {"type": ["string", "null"]},
         "concurrency_cap": {"type": "integer", "minimum": 1, "maximum": 8},
-        "rate_card_model_id": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"]}
+        "rate_card_model_id": {"enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol", "gpt-6-astra"]}
       }
     }
   }

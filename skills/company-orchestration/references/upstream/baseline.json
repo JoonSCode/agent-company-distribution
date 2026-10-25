@@ -1,0 +1,230 @@
+{
+  "schema_version": "company-orchestration-baseline/v1",
+  "revision": "2026-10-25.2",
+  "upstream": {
+    "source_url": "https://github.com/stablyai/orca",
+    "skill_path": "skills/orchestration/SKILL.md",
+    "folder_hash": "b0cd1d58b0c317cf7c3726fef7e6b1197c405246",
+    "stub": {
+      "path": "references/upstream/discovery-stub.md",
+      "sha256": "cd1b364bf35781bad06bf75ab1766afa8d6cec69cb2060529691d89871a2098a"
+    },
+    "app_version": "1.4.217",
+    "documents": [
+      {
+        "id": "kernel",
+        "reference": null,
+        "path": "references/upstream/kernel.md",
+        "sha256": "f6fa3a7e181adca97789b8c02f29de7f025de86b854c8bde9e950ca7a6d60e8d"
+      },
+      {
+        "id": "coordinator-loop",
+        "reference": "references/coordinator-loop.md",
+        "path": "references/upstream/coordinator-loop.md",
+        "sha256": "9bbfdcbc6c550db9af22806bae08638dc7460b1358db2412645dbb5435605f5c"
+      },
+      {
+        "id": "messaging-and-gates",
+        "reference": "references/messaging-and-gates.md",
+        "path": "references/upstream/messaging-and-gates.md",
+        "sha256": "975edc4caa6fda3bc4e7e2fc3736445bb0c5b6624d6b96e368bf29b90e791a30"
+      },
+      {
+        "id": "recovery-and-cleanup",
+        "reference": "references/recovery-and-cleanup.md",
+        "path": "references/upstream/recovery-and-cleanup.md",
+        "sha256": "dd26e5127f377cee176961492bb07d0c7ad148d010c3217eb7ca22ff5fc030df"
+      }
+    ]
+  },
+  "required_capabilities": {
+    "local_supervision": [
+      "orchestration.contract.v1"
+    ],
+    "launch_preferences": [
+      "orchestration.contract.v1",
+      "orchestration.worker-launch-preferences.v1"
+    ]
+  },
+  "policy_files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "2d887656506fc3421a7e92ce5f6c9f4da5e442c4aecbc85450bf7ec82064e939"
+    },
+    {
+      "path": "assets/record-cases.json",
+      "sha256": "a763cb6360f0ed21ebbb2a6f6f01934f46477e9238eb1f673c02ae265dfcb19f"
+    },
+    {
+      "path": "assets/routing-cases.json",
+      "sha256": "2fe127965b9bf13e1ae5853b01ef258673dc7a85d1f4cf9f001b1c4af3a3a2cd"
+    },
+    {
+      "path": "references/model-evidence.md",
+      "sha256": "fb316ff48d1f4880790151886f35d47de403faae1a8f51db9a9c1f0fe8e1e2a4"
+    },
+    {
+      "path": "references/model-routing.md",
+      "sha256": "1eb45e9ebc3f4b2ebc9b0c9d70981d3971802f30b3e41e94d3ce00a13fddd8ae"
+    },
+    {
+      "path": "references/orca-contract.md",
+      "sha256": "07f488e0be64dd2fcae66019a162d1b259d96ee1e5364e0c74f274f0d4ea66f4"
+    },
+    {
+      "path": "references/record-contract.md",
+      "sha256": "3260c5b709ec7ab8bc75512ed19ffb775fce09a8dae30b0e742272aecb79bdb0"
+    },
+    {
+      "path": "references/resource-policy.md",
+      "sha256": "349e45c7c13cda3bfc49cdffaaece066257caaf35b70c78c6db3651ada35402c"
+    },
+    {
+      "path": "references/update-policy.md",
+      "sha256": "7b48064971d305a83a24e306cf029204801f28f5d6c7681e2ed6141a1e496679"
+    },
+    {
+      "path": "scripts/orca_contract.py",
+      "sha256": "3912abf8dda81a7d88514a4535ebe604dedd1b79d4dd044946961b1554a49f77"
+    },
+    {
+      "path": "scripts/record_check.py",
+      "sha256": "e1e2839b55218f57dd3e0d574b8c7aee59d7404646e41a5c052aa7f9fc359878"
+    },
+    {
+      "path": "references/fleet-policy.md",
+      "sha256": "71c25cb0d8d89ec5c1f11892a35ecf169de7cd4b8f0346e72dc6b12d0441cfb5"
+    },
+    {
+      "path": "scripts/policy_version.py",
+      "sha256": "2f9c02b2146f92fd4ce22eeae4f37d9cedbf0e00e4f096a1bab6c92863db085c"
+    },
+    {
+      "path": "references/completion-retention.md",
+      "sha256": "4f2d97e2551ffc340154539fdab57439f25ec7514c2fd9a04d3b4caf813e7650"
+    },
+    {
+      "path": "scripts/run_completion.py",
+      "sha256": "2ff7191005c9a5a5ab5bc8495089103e6bef6c3afc87483185d83a331dfc2505"
+    },
+    {
+      "path": "scripts/completion_hook.py",
+      "sha256": "228383b887bb71aae53ad7bafbea4212076ae5dfb48b52f46cf7009ffe4afd38"
+    },
+    {
+      "path": "scripts/test_run_completion.py",
+      "sha256": "062b283908283037cb298a7600f8d06c71589f1a366c1af973793e6db3c4dbf4"
+    },
+    {
+      "path": "references/model-candidates.md",
+      "sha256": "a271c887e6c53d28e35d5c8ca1452443b2b99bc8982cb4e736f06c66ec253db8"
+    },
+    {
+      "path": "references/evidence-acquisition.md",
+      "sha256": "d7cc8465bbf3562747cb5955af0d480a00976295a200c1cc81926b98f6f26aba"
+    },
+    {
+      "path": "references/practitioner-evidence.md",
+      "sha256": "f130d1e65eb119d61f30db4f593e696678b18efa476bd85e8352af612ec544e8"
+    },
+    {
+      "path": "references/research-cache.md",
+      "sha256": "9901e34bc9415ffe488ee728693a937a72605abdf8905c63bb49189527760835"
+    },
+    {
+      "path": "scripts/research_cache.py",
+      "sha256": "8731fa6d2609ef46fd4489bdac1e45a4ffb6a1d4eb6c8e9c90d23a64f71206c2"
+    },
+    {
+      "path": "scripts/test_research_cache.py",
+      "sha256": "02f3b7789f8f392fceb0958ab5927d1a0302a65efc4312db5d6542ccd6a9fcc0"
+    },
+    {
+      "path": "references/session-continuity.md",
+      "sha256": "07757cf2097d6e4f9e4222ce7afed910c8597f85d7405a22107d8ba0342ed11f"
+    },
+    {
+      "path": "references/knowledge-repository.md",
+      "sha256": "c8ee38dd92dcf98596e1feb7dc8c77a2ab20e538b1f8b124fac698019921276c"
+    },
+    {
+      "path": "scripts/continuity.py",
+      "sha256": "4a54945d182aa8dc9a22ce3c5f0a8b5a9ea0b13efa7a0a985eeb6509dcaa8cb6"
+    },
+    {
+      "path": "scripts/knowledge_repository.py",
+      "sha256": "6569b78d41b68b36983b5352e0d94fc3023e184ab45bcb50b44c84fecf31dbd2"
+    },
+    {
+      "path": "scripts/test_continuity.py",
+      "sha256": "3f66f82629b3f298cffd66ad7fb173cbc8d566930d58ab49df68e20c57777bdc"
+    },
+    {
+      "path": "scripts/test_knowledge_repository.py",
+      "sha256": "6627c5bffc3f09df1f86b370b4d1ac2c373af79ea8843e08c29f64487003d64f"
+    },
+    {
+      "path": "references/organization-evidence.md",
+      "sha256": "c8071a078d6fb468f7b3f9d697dd04aeabb5aca1cb0d895ea0abd2ac8167e9c4"
+    },
+    {
+      "path": "scripts/org_audit.py",
+      "sha256": "3f77056c09dc519ea658e78c4efb5dd7193daf6217d6a076221bfb542267994b"
+    },
+    {
+      "path": "scripts/test_org_audit.py",
+      "sha256": "9ceda988742cbdd56fc9de7fead5c865018a0dd5aa3f84e229f68e7436e8e281"
+    },
+    {
+      "path": "scripts/test_routing_preflight.py",
+      "sha256": "747816fd14e489ee0a6f174a5c1fd5030835798cddb88756a18e82e503d86c11"
+    },
+    {
+      "path": "assets/config/common.md",
+      "sha256": "34a689598c174e3709d24dff5fb38b159fcf8b38f39bc4e152d21a6db11ea54c"
+    },
+    {
+      "path": "assets/config/presets/multiple.md",
+      "sha256": "73ddc76c82acca43cb30a77ab3349d3044b5ca6b4b4428c5ea46d652ab4eedb5"
+    },
+    {
+      "path": "assets/config/presets/single.md",
+      "sha256": "dcf0119d179cc53a342e9d51a7760d9d6a941af92e375683a2c3e7eba41b9b2a"
+    },
+    {
+      "path": "references/configuration.md",
+      "sha256": "4c43a1d107c1911d3314b91a354629cd19ea2be99e892975332f0477025befc2"
+    },
+    {
+      "path": "scripts/company_config.py",
+      "sha256": "40201768709a77bd09bba5c7625c2859fc62d4c62851602fc3e4ff93a31c99e7"
+    },
+    {
+      "path": "assets/claude-entry.md",
+      "sha256": "58994a33b193192360e3b2002c813ae60ea5c214d4ff1a82b9bae8ace92881bc"
+    }
+  ],
+  "adoptions": [
+    {
+      "source": "Orca upstream skill and bundled runtime documents",
+      "disposition": "adapted",
+      "reason": "Company owns portable operating policy while Orca retains current Task/Dispatch and lifecycle authority."
+    },
+    {
+      "source": "Standalone public configuration contract",
+      "disposition": "adopted",
+      "reason": "User-supplied Markdown and explicit current-task choices govern model and service intent; no personal preferences or account history are distributed."
+    },
+    {
+      "source": "Company evidence and independent acceptance contracts",
+      "disposition": "adapted",
+      "reason": "Preserve user authority, goal ownership, source provenance, independent verification and resource accounting without adding a scheduler or automatic paid fallback."
+    },
+    {
+      "source": "Standalone transactional installation contract",
+      "disposition": "adopted",
+      "reason": "Require Company-owned source identity, integrity and ownership guards for install/update/recovery; preserve private user records and unrelated installations without external Core execution."
+    }
+  ],
+  "verification_scope": "source identity and portable policy/tools; not a backend replacement or general runtime compatibility certification"
+}

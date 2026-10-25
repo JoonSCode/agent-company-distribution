@@ -19,13 +19,17 @@ from agent_company_deps import JsonValue
 from agent_company_runtime import runtime_paths, runtime_report
 from agent_company_runtime_values import issue, list_field, map_field, text_field
 from agent_company_status_checks import enrich_runtime_status
+from agent_company_execution_health import attach_execution_health, installation_home
 
 
 SEVERITY_ORDER: Final[tuple[str, ...]] = ("fresh", "dirty-derived", "drifted", "failed-update", "corrupt")
 
 
 def device_report(codex_home: Path) -> dict[str, JsonValue]:
-    payload = enrich_runtime_status(runtime_report(codex_home, write_doctor_timestamp=False))
+    home = installation_home(codex_home)
+    payload = enrich_runtime_status(runtime_report(home, write_doctor_timestamp=False))
+    payload = attach_execution_health(payload, home,
+        runtime_homes=[codex_home] if codex_home.absolute() != home else [])
     state = map_field(payload, "state")
     device = map_field(state, "device")
     install = map_field(payload, "install")
@@ -41,12 +45,13 @@ def device_report(codex_home: Path) -> dict[str, JsonValue]:
         "installed_ref": text_field(install, "installed_ref"),
         "installed_manifest_commit": text_field(payload, "installed_manifest_commit"),
         "installed_content_sha256": text_field(install, "installed_content_sha256"),
+        "company_common_sha256": text_field(install, "company_common_sha256"),
+        "completion_hook": map_field(payload, "completion_hook"),
+        "execution_health": map_field(payload, "execution_health"),
         "last_attempted_update": text_field(payload, "last_attempted_update"),
         "last_successful_update": text_field(payload, "last_successful_update"),
-        "resolved_king_sejong_ref": text_field(install, "resolved_king_sejong_ref")
-        or text_field(payload, "resolved_king_sejong_ref"),
-        "king_sejong_dependency_mode": text_field(install, "king_sejong_dependency_mode")
-        or text_field(payload, "king_sejong_dependency_mode"),
+        "runtime_contract": text_field(install, "runtime_contract"),
+        "runtime_certification": text_field(install, "runtime_certification"),
         "managed_agent_count": install.get("managed_agent_count"),
         "launchd": map_field(payload, "launchd"),
         "timestamps": map_field(state, "timestamps"),
@@ -58,11 +63,22 @@ def device_report(codex_home: Path) -> dict[str, JsonValue]:
 
 def drift_issues(devices: list[dict[str, JsonValue]]) -> list[JsonValue]:
     issues: list[JsonValue] = []
-    for field in ("installed_ref", "installed_content_sha256", "resolved_king_sejong_ref"):
+    common = [text_field(device, "company_common_sha256") for device in devices]
+    # A host-derived deployment may preserve a different approved Core pin.
+    # Older reports lacking the common fingerprint retain legacy strict checks.
+    valid_common = all(len(value) == 64 and all(c in "0123456789abcdef" for c in value) for value in common)
+    fields = ("company_common_sha256",) if valid_common else ("installed_ref", "installed_content_sha256")
+    for field in fields:
         values = {text_field(device, field) for device in devices if text_field(device, field)}
         if len(values) > 1:
             issues.append(issue("version_drift", f"{field} differs across devices"))
     return issues
+
+
+def host_differences(devices: list[dict[str, JsonValue]]) -> list[JsonValue]:
+    return [{"field": field, "values": sorted(values)}
+            for field in ("installed_ref",)
+            if len(values := {text_field(device, field) for device in devices if text_field(device, field)}) > 1]
 
 
 def highest_severity(devices: list[dict[str, JsonValue]], *, cross_device_drift: bool) -> str:
@@ -82,7 +98,7 @@ def sync_status(codex_homes: list[Path]) -> dict[str, JsonValue]:
         issues.extend(list_field(device, "issues"))
         warnings.extend(list_field(device, "warnings"))
     severity = highest_severity(devices, cross_device_drift=bool(cross_issues))
-    material = severity in {"drifted", "failed-update", "corrupt"}
+    material = severity in {"drifted", "failed-update", "corrupt"} or any(device.get("material_failure") is True for device in devices)
     status = "fail" if material else "ok"
     return {
         "schema_version": "0.2",
@@ -92,6 +108,7 @@ def sync_status(codex_homes: list[Path]) -> dict[str, JsonValue]:
         "material_failure": material,
         "device_count": len(devices),
         "devices": devices,
+        "host_differences": host_differences(devices),
         "issues": issues,
         "warnings": warnings,
         "launchd": map_field(devices[0], "launchd") if devices else {},

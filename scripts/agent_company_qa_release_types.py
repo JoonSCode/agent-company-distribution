@@ -178,5 +178,5 @@ class QaReport:
     failed_criteria: tuple[str, ...]
     blocked_criteria: tuple[str, ...]
     unverified_criteria: tuple[str, ...]
-    next_recommended_surface: str = "seungjeongwon"
-    final_verification_surface: str = "seungjeongwon"
+    next_recommended_surface: str = "company-lead"
+    final_verification_surface: str = "company-lead"

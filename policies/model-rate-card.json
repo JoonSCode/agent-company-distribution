@@ -3,11 +3,11 @@
   "availability": "available",
   "surface": "standard_chatgpt_subscription_credit",
   "source": {
-    "primary_url": "https://help.openai.com/en/articles/20001106-codex-rate-card",
-    "corroborating_url": "https://learn.chatgpt.com/docs/pricing",
-    "source_updated_at": "2026-07-30T18:26:16Z",
-    "observed_at": "2026-07-31T13:22:55Z",
-    "normalized_extracted_rate_digest": "7b99c566b3839db9b0e3290dbd88d30f1fa284520a83a6597f3e87ab7333a73b"
+    "primary_url": "https://learn.chatgpt.com/docs/pricing",
+    "corroborating_url": null,
+    "source_updated_at": null,
+    "observed_at": "2026-09-07T05:31:22Z",
+    "normalized_extracted_rate_digest": "039fe8ced23fadad1dfe158dd53faa2964ef3f221ce27a010d0bfe024adcccab"
   },
   "freshness_policy": {
     "refresh_after_seconds": 86400,
@@ -15,8 +15,9 @@
     "policy_label": "agent_company_policy"
   },
   "rates": [
-    {"model_id": "gpt-5.6-sol", "credits_per_million": {"input": 125, "cached_input": 12.5, "output": 750}, "cache_write_billing": "not_charged", "currency_price": null, "provider_debited_credits": null, "effective_from": null},
-    {"model_id": "gpt-5.6-terra", "credits_per_million": {"input": 50, "cached_input": 5, "output": 300}, "cache_write_billing": "not_charged", "currency_price": null, "provider_debited_credits": null, "effective_from": null},
-    {"model_id": "gpt-5.6-luna", "credits_per_million": {"input": 5, "cached_input": 0.5, "output": 30}, "cache_write_billing": "not_charged", "currency_price": null, "provider_debited_credits": null, "effective_from": null}
+    {"model_id": "gpt-6-astra", "credits_per_million": {"input": 250, "cached_input": 25, "output": 1250}, "cache_write_billing": "unknown", "currency_price": null, "provider_debited_credits": null, "effective_from": null},
+    {"model_id": "gpt-5.6-sol", "credits_per_million": {"input": 100, "cached_input": 10, "output": 500}, "cache_write_billing": "unknown", "currency_price": null, "provider_debited_credits": null, "effective_from": null},
+    {"model_id": "gpt-5.6-terra", "credits_per_million": {"input": 50, "cached_input": 5, "output": 300}, "cache_write_billing": "unknown", "currency_price": null, "provider_debited_credits": null, "effective_from": null},
+    {"model_id": "gpt-5.6-luna", "credits_per_million": {"input": 5, "cached_input": 0.5, "output": 30}, "cache_write_billing": "unknown", "currency_price": null, "provider_debited_credits": null, "effective_from": null}
   ]
 }

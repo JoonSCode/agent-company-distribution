@@ -37,7 +37,7 @@ Use this pack when:
 
 Do not use it when:
 
-- approved intent or acceptable risk is materially unsettled; return to Uigwe;
+- approved intent or acceptable risk is materially unsettled; return to the authorized decision owner;
 - no bounded leaf set or produced and consumed outputs exists yet; use the
   execution-plan pack first;
 - the request is runtime root-cause analysis, implementation, security scanning,
@@ -139,7 +139,7 @@ contradictory evidence and label facts `known`, `inferred`, or `unknown`.
     the contract-defined assignment tuple and `residual_risk_authority`; keep it
     outside the current runtime invariant schema. Apply the contract's blocked
     rule before handing off control. Return risk acceptance or intent changes to
-    Uigwe and hand only authorized, bounded controls to Seungjeongwon. Planning
+    the authorized decision owner and hand only authorized, bounded controls to the assigning lead. Planning
     may recommend order; it may not approve residual risk.
 
 ## Options And Tradeoffs
@@ -195,7 +195,7 @@ order, parallelism, containment, rollback, or replanning:
   assignment tuple, independent verifier, and residual risk;
 - the selected ordering, serious alternative, and tradeoff;
 - assumption register, dependency recheck schedule, stop conditions, replan and
-  Uigwe re-entry triggers;
+  material-decision re-entry triggers;
 - blocked work, work that may continue, external or approval-gated actions,
   confidence, `next_recommended_surface`, and `forbidden_claims`.
 
@@ -206,9 +206,9 @@ When a role handoff is requested, also preserve every required field of
 
 Stop when every material edge is evidenced, conditional, or explicitly blocked
 and every material risk has a decision owner plus a usable trigger. Escalate
-missing state to JangYeongsil, contested causal or topology claims to
-Jiphyeonjeon, changed acceptable risk or outcome to Uigwe, and execution plus
-independent control verification to Seungjeongwon. Stop before approving risk,
+missing state to bounded research, contested causal or topology claims to
+bounded evidence debate, changed acceptable risk or outcome to the authorized decision owner, and execution plus
+independent control verification to the assigning lead. Stop before approving risk,
 performing a migration, changing an external account, releasing, or declaring
 safety.
 
@@ -219,7 +219,7 @@ database migration finishing; UI may start against that frozen contract.
 Integrated verification still depends on both API and migration. Production
 migration is blocked because operator approval is unknown. Its leading signal
 is a failed staging rollback rehearsal; if observed, stop migration preparation
-and return the residual data-loss decision to Uigwe. Notification drafting may
+and return the residual data-loss decision to the authorized decision owner. Notification drafting may
 continue, but sending remains an unauthorized external action."
 
 **Bad:** "Database, API, UI, and launch all depend on each other. Run them in

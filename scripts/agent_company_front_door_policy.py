@@ -29,7 +29,10 @@ def project_front_door(
 ) -> JsonObject:
     route = validate_route_decision(decision, request)
     objective = _text(objective, "objective")
-    verification = "selected-surface" if route.lane == "direct" else "seungjeongwon"
+    verification = (
+        "selected-surface" if route.lane == "direct"
+        else "company-lead" if route.roles == ("qa-release",) else "qa-release"
+    )
     assignments: list[JsonValue] = []
     if route.lane == "role":
         assignments = [{

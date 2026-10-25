@@ -21,6 +21,15 @@ that directly covers each claim and state what supplied evidence proves and
 does not prove. Do not build rows for hypothetical surfaces merely to make the
 matrix look complete.
 
+For promotion work, apply
+`planning-contract.json#/promotion_experiment_guidance`. Bind the selected
+direction, expression and concept version to their separate proof targets.
+File generation, technical QA and policy compliance can establish production
+readiness; actual posting or exposure needs external-state evidence, and
+interest, app acquisition and payment contribution need their own observed
+signals. Preserve the approved early learning objective when downstream
+outcomes are still unknown. Reference or page quotas cannot stand in for it.
+
 ## Exact Triggers And Non-Triggers
 
 Use this pack when:
@@ -38,7 +47,7 @@ Use this pack when:
 Do not use it when:
 
 - the desired behavior, non-goal, or acceptable verification bar is a product
-  decision still awaiting Uigwe;
+  decision still awaiting the authorized decision owner;
 - the request is to implement the behavior, execute tests, perform manual QA,
   approve release, or report a final verdict;
 - milestones and executable leaves are the main gap; use the execution-plan
@@ -92,7 +101,7 @@ surface evidence proves a higher or different surface.
 
 1. **Freeze the verification bar.** Record the approved criterion, source,
    owner, non-goals, and must-preserve behavior. A proposed change to any of
-   these is Uigwe re-entry, not test-plan refinement.
+   these is material-decision re-entry, not test-plan refinement.
 2. **Close each criterion.** Express one observable claim per row as criterion
    → delivery leaf → proof target → verifier, with actor and precondition,
    event, expected state transition, bounds supplied by the owner, prohibited
@@ -136,8 +145,8 @@ surface evidence proves a higher or different surface.
 11. **Define completion and re-entry separately.** Completion requires every
     required criterion to meet its bar and residual areas to be dispositioned
     by the authorized verifier or gate owner. A changed bar, accepted exception,
-    or removed criterion returns to Uigwe.
-12. **Hand off without judging.** Send the evidence plan to Seungjeongwon and
+    or removed criterion returns to the authorized decision owner.
+12. **Hand off without judging.** Send the evidence plan to the assigning lead and
     the independent verifier. Planning proposes the bar and coverage; it does
     not execute or approve the verdict.
 
@@ -193,7 +202,7 @@ needed for an independent accept-or-falsify decision:
 - a proof-surface coverage summary that names substitutions that are not
   allowed;
 - partial evidence classified by what it proves and what remains unverified;
-- evidence retention, external-action gates, stop rules, residual gaps, Uigwe
+- evidence retention, external-action gates, stop rules, residual gaps, the authorized decision owner
   re-entry triggers, `next_recommended_surface`, and `forbidden_claims`.
 
 When a role handoff is requested, also preserve every required field of
@@ -203,11 +212,11 @@ When a role handoff is requested, also preserve every required field of
 
 Stop once every approved criterion has a reproducible oracle, matching surface,
 falsification signal, and independent verification owner, or is explicitly
-blocked. Escalate missing factual evidence to JangYeongsil, contested
-interpretation to Jiphyeonjeon, metric-definition needs to the bounded analytics
+blocked. Escalate missing factual evidence to bounded research, contested
+interpretation to bounded evidence debate, metric-definition needs to the bounded analytics
 specialist, and any changed criterion, exception, risk tolerance, or
-verification bar to Uigwe. Route execution and final independent verification
-to Seungjeongwon. Stop before running external actions, approving a gate,
+verification bar to the authorized decision owner. Route execution and final independent verification
+to the assigning lead. Stop before running external actions, approving a gate,
 certifying a release, or claiming completion.
 
 ## Compression Examples

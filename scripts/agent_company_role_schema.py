@@ -150,8 +150,8 @@ def validate_profile_shape(path: Path, profile: dict[str, JsonValue]) -> list[Pr
         errors.append(issue(path, "name", "invalid_field_type", "name must be non-empty text"))
     if not is_nonempty_string(profile.get("mission")):
         errors.append(issue(path, "mission", "missing_required_field", "mission must be a non-empty string"))
-    if not is_true(profile.get("uses_king_sejong")):
-        errors.append(issue(path, "uses_king_sejong", "missing_required_field", "uses_king_sejong must be true"))
+    if profile.get("uses_king_sejong") is not False:
+        errors.append(issue(path, "uses_king_sejong", "missing_required_field", "standalone profiles must set uses_king_sejong to false"))
     if not is_nonempty_string(profile.get("authority_boundary")):
         errors.append(
             issue(path, "authority_boundary", "missing_required_field", "authority_boundary must be a non-empty string")

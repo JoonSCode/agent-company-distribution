@@ -23,7 +23,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Final, TypeVar
 
-import agent_company_core_runtime as _core_runtime
+import agent_company_report_runtime as _core_runtime
 import agent_company_report_actions as _actions
 import agent_company_report_commercial as _commercial
 import agent_company_report_deliveries as _deliveries
@@ -33,7 +33,7 @@ import agent_company_report_render as _render
 import agent_company_report_runtime_capture as _runtime_capture
 import agent_company_report_status as _status
 import agent_company_report_verification as _verification
-from agent_company_core_external_action import (
+from agent_company_external_action_validation import (
     validate_external_action_ledger,
 )
 from agent_company_deps import JsonValue
@@ -121,7 +121,8 @@ def build_ceo_report(
     core_run_ref = bindings.core_run_ref
     external_action_ledger_ref = bindings.external_action_ledger_ref
     external_action_ledger = bindings.external_action_ledger
-    validate_company_context(job)
+    # Reporting reads stored evidence; historical owner labels do not route work.
+    validate_company_context(job, historical_read=True)
     if job.get("format") != "agent-company.job/v0.1":
         raise PolicyError("job has an unexpected format")
     if delegation_input.get("format") != "agent-company.core-delegation-input/v0.1":

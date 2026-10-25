@@ -1,6 +1,6 @@
 ---
 name: commercial-fit
-description: Validate whether a discovered problem merits a business experiment. Use when Agent Company has a candidate problem and needs to judge frequency, urgency, buyer, budget, founder fit, AI leverage, distribution access, and one-week testability before Uigwe planning.
+description: Assess whether a discovered problem merits a focused business experiment.
 ---
 
 # Commercial Fit
@@ -20,7 +20,7 @@ Start from a candidate with:
 - `current_workarounds`
 - `known`, `inferred`, and `unknown`
 
-If these fields are missing, request `problem-discovery` or JangYeongsil
+If these fields are missing, request `problem-discovery` or bounded research
 evidence before scoring.
 
 ## Evaluation Checks
@@ -45,7 +45,7 @@ Use `evidence-debate` when a check has a strong argument on both sides.
 ## Verdicts
 
 - `advance`: evidence supports a one-week business experiment.
-- `conditional`: one or two gaps can be checked before Uigwe.
+- `conditional`: one or two gaps can be checked before a material user decision.
 - `reject`: the problem is real but not a good current business target.
 - `return_to_discovery`: the candidate is too weak or mismatched; convert the
   failure into new search constraints.
@@ -64,8 +64,8 @@ Return:
 - `one_week_experiment`
 - `success_criteria`
 - `failure_criteria`
-- `recommended_next_surface`: usually `uigwe` for `advance`, `jangyeongsil`
-  for missing evidence, or `danjong` for rejected directions
+- `recommended_next_surface`: usually `planning` for `advance`, `company-lead`
+  for missing evidence or rejected directions
 
 ## Guardrails
 
@@ -73,4 +73,5 @@ Return:
 - Do not pass a candidate without a reachable first user or evidence path.
 - Do not require perfect proof; prefer a falsifiable one-week test when the
   downside is low.
-- Do not approve execution. Route handoff-ready experiments to Uigwe.
+- Do not approve execution. Route handoff-ready experiments to Planning or the
+  assigning Company lead; unresolved material choices remain with the user.

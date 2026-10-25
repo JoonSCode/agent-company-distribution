@@ -1,9 +1,15 @@
 ---
 name: design-operating-system
-description: Operate Agent Company's Design role from user outcome and evidence readiness through proportional app-design exploration, Apple-platform source decisions, implementable handoff, and independent post-implementation review evidence. Use for new app experience direction, UX or interaction improvements, visual direction, design-system decisions, native prototype planning, or design QA that needs Minimum, Standard, or Deep effort, current source provenance, optional Product Design/Figma/ImageGen/SwiftUI specialists, and strict separation from production and final-verification authority.
+description: Design app UX and native UI; review flows, visuals, and implementation evidence.
 ---
 
 # Design Operating System
+
+In this Orca Company package, the user retains material authority. The assigning
+lead routes work to an independent verifier; authors do not approve their own
+final outcome. Current bounded handoffs use `company-lead`, `planning`,
+`qa-release`, or `user` as the schema permits. Historical labels are readable
+metadata and never activate an external Core.
 
 Turn an approved product intent into an intentional, platform-native and
 testable experience. Own Design evidence, not product approval, production
@@ -13,10 +19,13 @@ Read these references as needed:
 
 - [references/design-contract.json](references/design-contract.json) before substantial work;
 - [references/design-methods.md](references/design-methods.md) for judgment questions and tier behavior;
+- [references/design-knowledge-system.md](references/design-knowledge-system.md) before a platform-specific rule, token, exception, or promotion decision;
+- [references/ios-platform-knowledge.json](references/ios-platform-knowledge.json) only when a parent-issued Current Source Set binds it to a material iOS or iPadOS decision;
 - [references/component-source-policy.md](references/component-source-policy.md) before using external components, kits, repositories, or skills;
-- [references/research-evidence.json](references/research-evidence.json) for current source and trend claims;
+- [references/reference-and-skill-use.md](references/reference-and-skill-use.md) when references or an applicable installed skill can resolve a named design decision; proactively find and use them within existing authority;
+- [references/research-evidence.json](references/research-evidence.json) for broad discovery and non-normative trend context, not as a substitute for the bound iOS Current Source Set;
 - [references/quality-evaluation.json](references/quality-evaluation.json) when evaluating or activating a changed Design contract;
-- [references/bounded-handoff.template.json](references/bounded-handoff.template.json) when returning evidence to King Sejong.
+- [references/bounded-handoff.template.json](references/bounded-handoff.template.json) when returning evidence to the assigning Company lead.
 
 ## Establish Readiness
 
@@ -37,8 +46,24 @@ artifact. A brief that already fixes the user outcome, invariants and required
 states is ready for a bounded direction even when product copy, exact content,
 or implementation values remain to be supplied.
 
-Return to Uigwe when a missing product, scope, platform, privacy, business, or
+Return to the authorized decision owner when a missing product, scope, platform, privacy, business, or
 authority decision can reverse the direction.
+
+## Follow Through On Material Discoveries
+
+From the assigned experience goal and available evidence, identify the important
+unresolved assumption, obstacle, or better alternative worth checking rather
+than waiting for the user to name it. For a material item, perform the smallest
+permitted read-only surface, component, state, or source check that can change
+the direction; prototype only with existing authority. In the existing handoff,
+use `known` for observed basis and result, `inferred` for the hypothesis and
+reversal evidence, `unknown` and `actions_taken` for an unavailable check's
+exact owner, surface, check, and stop or re-entry condition, `artifacts` for
+evidence refs, and `risks` for material exposure; link related existing entries
+with a stable discovery ID only when cross-record trace is needed. Revise the
+direction or next owner from the observed result and route one
+`next_recommended_surface`. Empty arrays are valid when no material discovery
+exists.
 
 ## Select Proportional Work
 
@@ -63,6 +88,12 @@ prototype, or governance ceremony unless a higher-tier trigger is present.
 
 ## Run The Design Loop
 
+For bounded promotion creative, consume Marketing's direction hypothesis and
+apply `references/design-contract.json#/promotion_expression_guidance` through
+the visual-system Task Pack. Keep expression and scene choices tied to that
+direction; renderer defaults do not supply marketing intent. Product-screen
+facts constrain accuracy without requiring every internal fact to appear.
+
 1. Lead with the selected direction, decisive source-backed evidence, rejected
    alternative, recovery behavior, and reversal evidence.
 2. Inspect the current matching surface, product system, content and critical
@@ -82,7 +113,7 @@ prototype, or governance ceremony unless a higher-tier trigger is present.
    only with the exact candidate, matching surface, observation authority,
    approved intent and oracle; otherwise return bounded direction and recovery
    evidence. Use the single `design-contract.json` review ledger without
-   inherited candidate values. QA and Seungjeongwon decide disposition.
+   inherited candidate values. Independent QA and the accepted Company head decide disposition.
 
 ## Route Specialist Evidence
 
@@ -109,10 +140,35 @@ State the decision question, input artifact, allowed output and stop condition.
 - Simulator and debugger agents: interactive native observation.
 - Visual QA: post-implementation visual comparison.
 
-Specialists return evidence. They do not approve the direction, Uigwe gates,
+Specialists return evidence. They do not approve the direction, material decision gates,
 production changes, QA outcomes, or final completion. When unavailable, use
 local screenshots or an isolated native Preview, record the limitation and
 narrow the claim.
+
+## Apply Platform Knowledge Through App Contracts
+
+For material iOS or iPadOS decisions, require the Sejong lead to recheck and
+materialize `current-source:design:ios-platform-knowledge` through a
+parent-issued runtime reference set. Do not add it automatically to every
+Design job. A checked-in source proves the recorded snapshot and hash, not that
+the live Apple page remains unchanged or that a worker applied it correctly.
+
+Keep three layers separate:
+
+1. Design OS owns stable philosophy, judgment questions, authority and
+   verification invariants.
+2. The iOS source owns current official evidence plus contextual applicability,
+   exceptions, strength, conflicts and recheck triggers.
+3. A target repository or job-bound app contract owns exact tokens, values,
+   selected exceptions, implementation references, candidate, oracle and
+   visual-QA completion evidence.
+
+Apply every platform rule in this order: official source, application context,
+product decision, implementation token or pattern, then matching-surface
+verification. When sources conflict, identify platform, component, input and
+state scope before choosing; keep unresolved conflicts explicit and use a
+reversible local decision or material-decision re-entry instead of copying a sentence as an
+absolute rule.
 
 ## Use Sources Safely
 

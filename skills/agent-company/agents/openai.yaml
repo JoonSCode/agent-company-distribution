@@ -1,4 +1,7 @@
 interface:
   display_name: "Agent Company"
   short_description: "Explicitly run the adaptive Agent Company front door."
-  default_prompt: "Explicitly invoke $agent-company, consume the validated King Sejong Core route, select Direct, Role, or Squad without changing Core authority, and report evidence to me as CEO."
+  default_prompt: "Explicitly invoke $agent-company, use its internal company-orchestration contract for my approved goal, and report verified results and unresolved decisions to me as CEO."
+
+policy:
+  allow_implicit_invocation: false

@@ -140,23 +140,23 @@ def default_handoff(
         "role": role,
         "objective": objective,
         "scope": {
-            "allowed_paths": ["scripts/test_agent_company_e2e.py"],
+            "allowed_paths": ["scripts/test_agent_company_standalone.py"],
             "read_refs": ["agent-company.deps.json"],
             "write_refs": [],
             "stop_condition": "return bounded evidence only",
         },
-        "known": ["Agent Company uses King Sejong but does not override it."],
+        "known": ["Company evidence preserves user authority, Orca permissions and independent acceptance."],
         "inferred": [],
         "unknown": [],
         "actions_taken": ["exported bounded handoff"],
         "artifacts": [],
         "risks": [],
-        "next_recommended_surface": "seungjeongwon",
+        "next_recommended_surface": "company-lead",
         "forbidden_claims": [
             "final verification authority",
             "gate approval authority",
-            "override King Sejong",
-            "replaces King Sejong",
+            "override user authority",
+            "self-approve final verification",
         ],
     }
     contract = operating_contract_payload(role)

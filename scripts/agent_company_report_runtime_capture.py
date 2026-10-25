@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from agent_company_core_runtime import ReportRuntimeBindings
+from agent_company_report_runtime import ReportRuntimeBindings
 from agent_company_deps import JsonValue
 from agent_company_evidence_digest import (
     EvidenceDigestError,
