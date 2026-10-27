@@ -204,7 +204,7 @@ class Checker:
             receipt['price_selection'] = self.price_result
         return receipt
 
-    def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False):
+    def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False, recorded_prelaunch=False):
         if self.configuration is None:
             self.error(path, 'price_selection_invalid', 'Resolved configuration is unavailable')
             return None
@@ -233,11 +233,33 @@ class Checker:
                     if observed.tzinfo is None or valid_until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= valid_until:
                         raise SelectionError('Host model inventory freshness is expired or unknown')
                     host_models = contents['models']
-            elif prelaunch and label == 'synthetic' and isinstance(selection, dict):
+            elif recorded_prelaunch and label != 'synthetic' and isinstance(selection, dict):
+                inventory = self.refs.get(selection.get('inventory_evidence'), {})
+                inventory_path = (self.base / inventory['file']).resolve()
+                contents = json.loads(inventory_path.read_bytes())
+                host_models = contents['models']
+                receipt_ref = self.refs[decision['receipt_evidence']]
+                receipt = json.loads((self.base / receipt_ref['file']).read_bytes())
+                checked = receipt['receipt']
+                if (receipt.get('ok') is not True or receipt.get('label') != 'real' or
+                        identity(checked['selected']) != identity(decision['selected']) or
+                        any(checked['binding'].get(k) != decision['binding'].get(k) for k in ('scope', 'revision')) or
+                        checked.get('spec_sha256') != decision['binding'].get('spec_sha256') or
+                        checked.get('spec_sha256') is None or
+                        checked['price_selection'].get('status') != 'selected' or
+                        (not pinned and identity(checked['price_selection'].get('selected')) != identity(decision['selected']))):
+                    raise SelectionError('Recorded prelaunch receipt does not bind this selection and specification')
+            elif (prelaunch or recorded_prelaunch) and label == 'synthetic' and isinstance(selection, dict):
                 inventory = self.refs.get(selection.get('inventory_evidence'), {})
                 host_models = inventory.get('host_models') if isinstance(inventory, dict) else None
-            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch,
-                                     requested=decision.get('selected') if prelaunch and not pinned else None, host_models=host_models)
+            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch or recorded_prelaunch,
+                                     requested=decision.get('selected') if (prelaunch or recorded_prelaunch) and not pinned else None, host_models=host_models)
+            if recorded_prelaunch and label != 'synthetic':
+                previous = checked['price_selection']
+                if (previous['candidate_table_sha256'] != result['candidate_table_sha256'] or
+                        any(previous[group] != result[group] for group in ('compared', 'rejected')) or
+                        previous['comparison_basis'] != result['comparison_basis']):
+                    raise SelectionError('Recorded candidate table or comparison differs from prelaunch receipt')
         except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
             self.error(path, 'price_selection_invalid', str(exc))
             return None
@@ -398,13 +420,15 @@ class Checker:
         if prelaunch and pinned is None and 'price_selection' not in decision:
             self.error(path + '.price_selection', 'price_selection_required', 'Fresh unpinned assignment requires a candidate comparison')
         if 'price_selection' in decision or decision.get('selected_reason') == 'price_informed':
-            result = self.price_selection(decision, path + '.price_selection', prelaunch=prelaunch, pinned=pinned is not None)
+            recorded_prelaunch = (not prelaunch and require_receipt and isinstance(decision.get('price_selection'), dict)
+                                  and 'inventory_evidence' in decision['price_selection'])
+            result = self.price_selection(decision, path + '.price_selection', prelaunch=prelaunch, pinned=pinned is not None, recorded_prelaunch=recorded_prelaunch)
             if result and result['status'] == 'selected':
-                if identity(result['selected']) != identity(selected) and not (prelaunch and pinned is not None):
+                if identity(result['selected']) != identity(selected) and not ((prelaunch or recorded_prelaunch) and pinned is not None):
                     self.error(path + '.selected', 'price_selection_mismatch',
                                'Selected model/effort must match the deterministic price-selection result')
                 rows = decision['price_selection']['candidates']
-                chosen = next((row for row in rows if identity(row) == identity(selected if pinned is not None and prelaunch else result['selected'])), None)
+                chosen = next((row for row in rows if identity(row) == identity(selected if pinned is not None and (prelaunch or recorded_prelaunch) else result['selected'])), None)
                 if (chosen is None or constraints.get('billing') != chosen['billing'] or constraints.get('quality') != 'met'
                         or constraints.get('tool') != 'supported' or (prelaunch and (
                             not chosen['supported'] or not chosen['authenticated'] or chosen['tools'] != 'supported'

@@ -89,7 +89,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "02f7d80a07006895f7beca03fbe7bd18ac9671eefb004e519e6df2fd014dda56"
+      "sha256": "09d7b768fc7f95b2e00d2e75c49d177694d80d02856531b8ccaab2a9cde1256b"
     },
     {
       "path": "references/fleet-policy.md",
@@ -177,7 +177,7 @@
     },
     {
       "path": "scripts/test_routing_preflight.py",
-      "sha256": "67c415f1aceb09345bdec9929566380b3956d5d729224fdf12406da66d96b46c"
+      "sha256": "7d38fd56cf2f11dc39cd8fd338ed26dc3d86ff599be559b510235a7a3976c5cb"
     },
     {
       "path": "assets/config/common.md",
@@ -277,7 +277,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "72960436622e2c58e1857e534950b3196bc060e2a0cefd13d203d42211474c95"
+      "sha256": "94ffd1787de2001d30b55174cf710116f6d7d42cd956972259ca75177a979221"
     },
     {
       "path": "scripts/routing_hook.py",
@@ -285,7 +285,7 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "f7fd0483716638d4913b0e864d52fd65e256eac71fe74176b7c04990b29350b6"
+      "sha256": "86e32fa61e8eb7f2c6b78307ce93b8c4799daa6cccd8d80b83a35a2ebf0fdadc"
     },
     {
       "path": "scripts/test_routing_hook.py",
@@ -293,7 +293,7 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "ce7c56d5124aef849b306522c56e4469cd241744d9f89e309a249bc686b82272"
+      "sha256": "533d0402f9bbee6a7c5ec9f375092e3d2460eb33cbfcd25a53f2ba05d413506a"
     }
   ],
   "adoptions": [

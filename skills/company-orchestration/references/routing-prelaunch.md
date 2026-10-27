@@ -45,6 +45,27 @@ model/effort readback.
 Unknown or changed evidence denies reuse without starting a replacement. Orca
 still owns Task and Dispatch lifecycle and recovery.
 
+For a precreated Task, use `--task <id> --run <id>` instead of `--spec`.
+The record's `run` and decision's `binding.run` must equal that Run, and
+`binding.task`, `binding.parent_task` and `binding.spec_sha256` must match the
+current host Task and its exact UTF-8 specification. A first dispatch uses a
+planned binding and a current record attempt `planned:<id>`. A retry additionally
+uses `--retry-of <dispatch>`; the record must bind that settled failed attempt,
+and the current host Task, latest Dispatch and worker observation must agree.
+Read-only host checks precede the single worker-start call. Pass placement again.
+An explicit Run on a new-spec launch also requires the record and decision Run
+binding; it does not change the coordinator's session binding. The resulting
+host receipt must identify that Run and, for an existing Task, the same Task
+and a different retry Dispatch. Missing identities are unverified; mismatches
+fail. All host output and effects remain in the result receipt.
+
+For a recorded decision with inventory evidence, record checking uses the
+archived, hash-pinned inventory and prelaunch receipt to recheck the selected
+pair and its comparison. It verifies the receipt's scope, revision, exact
+specification hash, selected pair, table and comparison. It does not require
+the old inventory still to be fresh, or claim a new launch is authorized.
+Historical records without inventory evidence retain their previous check.
+
 `routing_hook.py` is an opt-in Codex PreToolUse adapter. Its
 `bind --session ... --decision ... --record ... --receipt-dir ...` creates
 exclusive session metadata under the Company state directory. The optional
