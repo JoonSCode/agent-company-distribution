@@ -23,6 +23,16 @@ Reported observations, partial coverage, or partial/unknown candidate binding
 remain supporting evidence. Missing evidence is `unverified`; an unavailable
 required surface is `blocked`.
 
+An observation's `result: failed`, a criterion's decision, and coverage are
+separate facts. A denied-only failure does not establish that a granted state
+failed to survive relaunch. Preserve the partial failure and its references,
+leave that criterion `unverified`, and reject readiness when appropriate.
+A universal safety claim (for example, no document loss in any named state)
+can logically be falsified by one direct counterexample, unlike an unobserved
+sequence or an unmet statistical sample. The current v0.2 contract does not
+encode independently reviewed counterexample sufficiency, so it does not
+automatically promote partial failures to terminal criterion failures.
+
 Normalize artifact, environment, device, and cleanup references once under
 `references`, using `exact`, `unresolved`, or `not_applicable`. Exact references
 require a non-placeholder SHA-256. Evidence facts retain their own provenance

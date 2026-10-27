@@ -12,7 +12,7 @@
   "inferred": [],
   "knowledge_context_binding": {
     "attestation_scope": "resolver_materialized_selection",
-    "context_id": "18e4984ca785113bb949c87427e476f6a948a57ded649972f76cc7d5fdbbb1d7",
+    "context_id": "2420dd81ea9c45434afa66e4217d9630ef8695dbc7ee7b4ce1cf8bdbbe17e0bf",
     "decision_questions": [
       "How should the approved objective become bounded, dependency-safe, verifiable work?",
       "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
@@ -20,18 +20,18 @@
     "format": "agent-company.knowledge-context/v0.2",
     "issued_at": "2026-07-30T00:00:00Z",
     "issued_by": "agent-company-expertise-resolver/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "materialized_references": [
       {
         "id": "role-kernel:planning",
         "ref": "skills/planning-operating-system/references/planning-contract.json",
-        "sha256": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716",
+        "sha256": "8a76742d7644b13d51ac21e249c9c9017dfb7a54fd38aace9cd59eb021f6d193",
         "version": "0.1.0"
       },
       {
         "id": "task-pack:planning:execution-plan",
         "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
-        "sha256": "0c018252cb0634fd898afce6f56e0d88fb10a5b1f61fded999eaf67c3070ff79",
+        "sha256": "db026d2dde678c22be6bd5d8535712d71d679b3111be1549a1611f9cf8cc4847",
         "version": "0.1.0"
       }
     ],
@@ -56,15 +56,15 @@
   },
   "knowledge_usage_receipt": {
     "attestation_scope": "worker_reported_use_independent_verification_required",
-    "context_id": "18e4984ca785113bb949c87427e476f6a948a57ded649972f76cc7d5fdbbb1d7",
+    "context_id": "2420dd81ea9c45434afa66e4217d9630ef8695dbc7ee7b4ce1cf8bdbbe17e0bf",
     "decision_questions": [
       "How should the approved objective become bounded, dependency-safe, verifiable work?",
       "What evidence-backed execution planning decision should the planning role make, and what evidence would change it?"
     ],
     "format": "agent-company.knowledge-usage-receipt/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "objective_sha256": "9c0f7e66bef544fe0cd76b255126e18375d5b168edd31cf81905fa25370a144c",
-    "receipt_id": "e9b51b745ca43b66f6c02a767f532f122f57ae234a77f3e7454f2676ee7a4706",
+    "receipt_id": "b4473ba20e71d8578e37983ff01886487bc931843b2241448c19d23389311e09",
     "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "reported_at": "2026-07-30T00:01:00Z",
     "reported_by": "role-worker",
@@ -84,7 +84,7 @@
         ],
         "id": "role-kernel:planning",
         "ref": "skills/planning-operating-system/references/planning-contract.json",
-        "sha256": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716",
+        "sha256": "8a76742d7644b13d51ac21e249c9c9017dfb7a54fd38aace9cd59eb021f6d193",
         "version": "0.1.0"
       },
       {
@@ -94,7 +94,7 @@
         ],
         "id": "task-pack:planning:execution-plan",
         "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
-        "sha256": "0c018252cb0634fd898afce6f56e0d88fb10a5b1f61fded999eaf67c3070ff79",
+        "sha256": "db026d2dde678c22be6bd5d8535712d71d679b3111be1549a1611f9cf8cc4847",
         "version": "0.1.0"
       }
     ]
@@ -104,7 +104,7 @@
   "objective": "Replace with the approved planning objective.",
   "operating_contract_binding": {
     "ref": "skills/planning-operating-system/references/planning-contract.json",
-    "sha256": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716"
+    "sha256": "8a76742d7644b13d51ac21e249c9c9017dfb7a54fd38aace9cd59eb021f6d193"
   },
   "risks": [],
   "role": "planning",

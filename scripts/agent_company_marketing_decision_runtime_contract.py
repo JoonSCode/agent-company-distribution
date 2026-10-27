@@ -143,7 +143,15 @@ def validate_experiment(value: JsonValue | None) -> None:
     normalized_tested = tested.casefold().replace("_", " ").replace("-", " ")
     if normalized_tested in normalized:
         error("experiment.tested_variable cannot also be fixed")
-    if any(
+    # Keep the same single-variable distinction as the authoring model.
+    if normalized_tested == "paywall timing":
+        required = {
+            "audience", "eligibility", "offer", "price", "paywall presentation",
+            "channel", "product experience", "measurement",
+        }
+        if not required.issubset(normalized):
+            error("paywall timing requires presentation and canonical non-timing fixed variables")
+    elif any(
         term in normalized_tested
         for term in ("paywall", "price presentation", "offer presentation")
     ):

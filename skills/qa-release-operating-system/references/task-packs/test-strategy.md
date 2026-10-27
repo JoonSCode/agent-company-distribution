@@ -172,6 +172,8 @@ Choose focused, integration, contract-double, generative, or golden checks by
 their material falsification power; document isolation, source, and oracle
 limits rather than treating their output as universal proof.
 
+Read [optional methods](../optional-methods.md) only when they could change a material unresolved choice; skip them for settled work.
+
 ## Common Failure Patterns
 
 - treating build success, coverage percentage, or suite size as product proof;

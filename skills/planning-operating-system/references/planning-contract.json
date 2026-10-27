@@ -44,6 +44,8 @@
   },
   "scope_rules": {
     "scope_reduction_must_preserve_outcome": true,
+    "leaf_split_rule": "Split for distinct ownership, authority, or independently deliverable outcomes; multiple failure paths alone stay in one coherent leaf's checks and containment.",
+    "verification_proportionality": "Material claims require independent acceptance. Only the exact, low-impact local replacement exception in skills/company-orchestration/SKILL.md permits the assignee's deterministic diff check on the direct-work path; this is not independent QA and does not weaken executable-leaf runtime invariants.",
     "goal_change_requires_owner_reentry": true,
     "non_goal_change_requires_owner_reentry": true,
     "verification_bar_change_requires_owner_reentry": true,

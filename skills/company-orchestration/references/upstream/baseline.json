@@ -1,6 +1,6 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-10-25.2",
+  "revision": "2026-10-27.native-helper-r1",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
@@ -49,7 +49,7 @@
   "policy_files": [
     {
       "path": "SKILL.md",
-      "sha256": "2d887656506fc3421a7e92ce5f6c9f4da5e442c4aecbc85450bf7ec82064e939"
+      "sha256": "f534803b0ccdf7aa34d0b67a312f0370e1776ca46808782db53e6c964601625c"
     },
     {
       "path": "assets/record-cases.json",
@@ -61,19 +61,19 @@
     },
     {
       "path": "references/model-evidence.md",
-      "sha256": "fb316ff48d1f4880790151886f35d47de403faae1a8f51db9a9c1f0fe8e1e2a4"
+      "sha256": "d613a62035143a9d6f7b097747f6a6b740ff8f6c8cf72b4015dbdb47cdec4ff4"
     },
     {
       "path": "references/model-routing.md",
-      "sha256": "1eb45e9ebc3f4b2ebc9b0c9d70981d3971802f30b3e41e94d3ce00a13fddd8ae"
+      "sha256": "a9c653a5793f5df6137f07170abac5994de28993a98d80d217686c2430678ef4"
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "07f488e0be64dd2fcae66019a162d1b259d96ee1e5364e0c74f274f0d4ea66f4"
+      "sha256": "af731dda60ae87d51a150c2ae72dfa544cae4049e50f8f71e2c9db1b9fa9ca13"
     },
     {
       "path": "references/record-contract.md",
-      "sha256": "3260c5b709ec7ab8bc75512ed19ffb775fce09a8dae30b0e742272aecb79bdb0"
+      "sha256": "6bb218762ecac4416e56fcccb20c6a7ee1f419b63557be2300c541e71abfd503"
     },
     {
       "path": "references/resource-policy.md",
@@ -89,7 +89,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "e1e2839b55218f57dd3e0d574b8c7aee59d7404646e41a5c052aa7f9fc359878"
+      "sha256": "ffd5383924c3124181d8c97b6bf3988b706cb8d53429a71c902390ad5658cc28"
     },
     {
       "path": "references/fleet-policy.md",
@@ -101,11 +101,11 @@
     },
     {
       "path": "references/completion-retention.md",
-      "sha256": "4f2d97e2551ffc340154539fdab57439f25ec7514c2fd9a04d3b4caf813e7650"
+      "sha256": "9701d5e33bbf4935f58f6fee6147ff85506b3133e141cf9395abdd96876f2c1b"
     },
     {
       "path": "scripts/run_completion.py",
-      "sha256": "2ff7191005c9a5a5ab5bc8495089103e6bef6c3afc87483185d83a331dfc2505"
+      "sha256": "a5e8eae339dc3aa9b91bee559518b9cc54fe712b651314859981a89612d6008e"
     },
     {
       "path": "scripts/completion_hook.py",
@@ -113,11 +113,11 @@
     },
     {
       "path": "scripts/test_run_completion.py",
-      "sha256": "062b283908283037cb298a7600f8d06c71589f1a366c1af973793e6db3c4dbf4"
+      "sha256": "07a153485656a7c7b491fe3595bc45be657ce9dd191613aee1739fb5aa63848d"
     },
     {
       "path": "references/model-candidates.md",
-      "sha256": "a271c887e6c53d28e35d5c8ca1452443b2b99bc8982cb4e736f06c66ec253db8"
+      "sha256": "ef039ad12bbb9eea4f606ed174218ead043cbf7715295c0366664e8d165e80af"
     },
     {
       "path": "references/evidence-acquisition.md",
@@ -141,7 +141,7 @@
     },
     {
       "path": "references/session-continuity.md",
-      "sha256": "07757cf2097d6e4f9e4222ce7afed910c8597f85d7405a22107d8ba0342ed11f"
+      "sha256": "03023bd1ec3a90ac3a69a6ee6d8cdd48a68addfc6917c438d21d4527f8ab9737"
     },
     {
       "path": "references/knowledge-repository.md",
@@ -181,7 +181,7 @@
     },
     {
       "path": "assets/config/common.md",
-      "sha256": "34a689598c174e3709d24dff5fb38b159fcf8b38f39bc4e152d21a6db11ea54c"
+      "sha256": "2b299b06a15f5be30b3cd7fa1ac6f8a0e89e8d812e5a3975fb9a1768b3c3f5ed"
     },
     {
       "path": "assets/config/presets/multiple.md",
@@ -201,7 +201,79 @@
     },
     {
       "path": "assets/claude-entry.md",
-      "sha256": "58994a33b193192360e3b2002c813ae60ea5c214d4ff1a82b9bae8ace92881bc"
+      "sha256": "c39e9df5ef27aa992883bd1bd8a0c439a7c4de82b114280655fc23d17f10258b"
+    },
+    {
+      "path": "scripts/outcome_eval.py",
+      "sha256": "048a8b8d3eaa2165df85588d4a01d4c836dea7eacd37e6b24ed7e8aae0624386"
+    },
+    {
+      "path": "scripts/record_projection.py",
+      "sha256": "704cfe68dace8b1b82738447de798c8263bc1649349e1a2bc1a3499cb829ad59"
+    },
+    {
+      "path": "references/outcome-evaluation.md",
+      "sha256": "0fbced1efd786dce6f84c5f0f0e48178a14d4fa499daa489aba8c6e6d7ef15cd"
+    },
+    {
+      "path": "references/record-projection.md",
+      "sha256": "176628723250ac82e0821136684a8e0e8fc6f554034655a9d1a0cbf9b79f2145"
+    },
+    {
+      "path": "assets/outcome-eval/tasks.json",
+      "sha256": "b6f531d1547883262455efda8ac761bb62f772563111fa0af6e4b066a8c5d950"
+    },
+    {
+      "path": "assets/outcome-eval/context.template.json",
+      "sha256": "b02b61719fd9d971ca78eda7a905e4642a876645727ebfd4eb060eaf3e895e82"
+    },
+    {
+      "path": "assets/outcome-eval/tasks-next.json",
+      "sha256": "21a6278bdcc582dc9d52c7d3e00ae86d39fdf79183ec7322219cf4157b859836"
+    },
+    {
+      "path": "scripts/provider_usage.py",
+      "sha256": "fc35632a0a5ac84af9fa9430c2e73d45b70313e3a464ab8cff5cf865bb1c3296"
+    },
+    {
+      "path": "references/provider-usage.md",
+      "sha256": "526c4c0bcea52a1b4c654faa649c297cfc6099a5beb37bf3accc257c680185bd"
+    },
+    {
+      "path": "scripts/status_view.py",
+      "sha256": "c6329542ee8942ac013856f26ede385ad7d20af5b84c0d3d91a72df4196afb18"
+    },
+    {
+      "path": "references/status-view.md",
+      "sha256": "b4827c6aaccf4b57ac90d676b4237788551aeb3c2f1af2920a8569a7d0b67d64"
+    },
+    {
+      "path": "assets/status-view-cases.json",
+      "sha256": "48fb43da268d747168ec56136c35efe3d4570813ddbe22e45b0a0d068084661b"
+    },
+    {
+      "path": "references/launch-readiness.md",
+      "sha256": "8089a2455f7bf311fe470ef8656385d2edf4a7f6a058b54df4e4e49d0d47ad93"
+    },
+    {
+      "path": "scripts/launch_readiness.py",
+      "sha256": "1875302a53c85c76b49cb574593475f821a4d71dfcf224a0b82073e2ac673f7d"
+    },
+    {
+      "path": "scripts/test_launch_readiness.py",
+      "sha256": "2e5a4729f9dc770c572cbe92a7057b5b50b512c0efc89fcb11671ab7420243ac"
+    },
+    {
+      "path": "assets/model-choice-priors.json",
+      "sha256": "5c40a83bb02b9988556a08d6491bce42e51833fdc3d25713dfa4845771ed55aa"
+    },
+    {
+      "path": "scripts/route_select.py",
+      "sha256": "fe633f8d26ecd65e05250b8a3713972db4624a24f5a0c9dce9022757b3d93c76"
+    },
+    {
+      "path": "scripts/test_route_select.py",
+      "sha256": "e943218beb4454dc65b58dae0e8b9701d7a913f40caa74bf1fa004ebabb4a9f5"
     }
   ],
   "adoptions": [
@@ -224,6 +296,26 @@
       "source": "Standalone transactional installation contract",
       "disposition": "adopted",
       "reason": "Require Company-owned source identity, integrity and ownership guards for install/update/recovery; preserve private user records and unrelated installations without external Core execution."
+    },
+    {
+      "source": "Dots cloud improvement candidate and approved local brief constraints",
+      "disposition": "adapted",
+      "reason": "Bind integrated contribution/acceptance wording, permitted recovery alternatives and explicit constraints; preserve user authority, independent acceptance, and historical upstream hashes. Source checks do not certify live model or runtime outcomes."
+    },
+    {
+      "source": "Approved Company P0/P1 evaluation and instruction simplification",
+      "disposition": "adapted",
+      "reason": "Freeze saved outcome inputs and reuse observed receipt fields through optional tools; preserve independent acceptance and original records, with no new execution engine or mandatory per-task ritual. Source consistency does not establish model quality or token savings."
+    },
+    {
+      "source": "Approved company-next/r1 optional descriptive task set, saved Codex usage reader, and static status viewer",
+      "disposition": "adapted",
+      "reason": "Bind optional six-task outcome fixtures, single-turn captured Codex usage reader, and single-record static HTML/JSON status viewer with minimal discovery links; preserve upstream snapshots, independent acceptance, and no new mandatory workflow or runtime components. Source checks do not certify live provider quality, token savings, or installation state."
+    },
+    {
+      "source": "Approved bounded provider-native helper workflow",
+      "disposition": "adapted",
+      "reason": "Make task-fit native contributions actionable inside the existing Orca owner through one work note, original-result integration and honest settings/resource settlement; preserve independent QA and no automatic Task/Dispatch bridge."
     }
   ],
   "verification_scope": "source identity and portable policy/tools; not a backend replacement or general runtime compatibility certification"

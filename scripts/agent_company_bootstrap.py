@@ -23,7 +23,7 @@ from typing import Final, Literal
 from agent_company_config import ConfigError
 from agent_company_bootstrap_sources import (
     BootstrapError, CommandRequest, SourceSpec, checked, managed_container,
-    lexical_home, materialize_source, source_identity, source_target, validate_materialized,
+    lexical_home, materialize_source, object_value, source_identity, source_target, validate_materialized,
 )
 
 type Action = Literal["install", "verify"]
@@ -73,6 +73,7 @@ def bootstrap(config: BootstrapConfig, *, source_root: Path = ROOT) -> dict[str,
         config = replace(config, user=resolve(home=config.codex_home)["values"]["updater"])
     spec, targets = selected_sources(config, source_root)
     target = targets["agent_company"]
+    installation: dict[str, JsonValue] = {}
     if config.dry_run:
         container = managed_container(config.codex_home, create=False)
         if container.exists() and (target.exists() or target.is_symlink()):
@@ -90,13 +91,20 @@ def bootstrap(config: BootstrapConfig, *, source_root: Path = ROOT) -> dict[str,
         env = install_environment(config)
         installer = target / "scripts/agent_company_installer.py"
         checked(CommandRequest((sys.executable, str(installer), action, "--dry-run"), target, env, "company_preflight_failed"))
-        checked(CommandRequest((sys.executable, str(installer), action, *(["--user"] if config.user else []), *(["--disable-updater"] if config.disable_updater else [])), target, env, "company_install_failed"))
+        output = checked(CommandRequest((sys.executable, str(installer), action, *(["--user"] if config.user else []), *(["--disable-updater"] if config.disable_updater else [])), target, env, "company_install_failed"))
+        try:
+            installation = object_value(json.loads(output), "installer result")
+        except json.JSONDecodeError as exc:
+            raise BootstrapError("company_install_failed", "installer result was not JSON") from exc
     if config.files_only:
         # Reuse installer dry-run to verify the activated generation and hashes.
         checked(CommandRequest((sys.executable, str(target / "scripts/agent_company_installer.py"), "update", "--dry-run"), target, install_environment(config), "company_integrity_failed"))
     else:
         verify_company(config, target, install_environment(config))
-    return {"status": "verified" if config.action == "verify" else "installed", "company_action": action, "sources": {"agent_company": str(target)}, "runtime_contract": "orca-company-standalone/v1", "verification": "package_files_only; native runtime/provider unverified" if config.files_only else "company_sync_runtime"}
+    result: dict[str, JsonValue] = {"status": "verified" if config.action == "verify" else "installed", "company_action": action, "sources": {"agent_company": str(target)}, "runtime_contract": "orca-company-standalone/v1", "verification": "package_files_only; native runtime/provider unverified" if config.files_only else "company_sync_runtime"}
+    if "updater_removal" in installation:
+        result["updater_removal"] = installation["updater_removal"]
+    return result
 
 
 def main() -> int:

@@ -20,8 +20,11 @@ support and the user's authority; never use an API-paid automatic fallback.
 Use actual Orca Task/Dispatch and `--agent claude` only through the host's current
 supported contract. Workers receive self-contained approved scope, source paths,
 role OS/kernel and one task pack, explicit must/must-not, evidence/acceptance,
-resources and lifecycle. Native Codex TOML tools/sandbox permissions do not carry
-over to Claude. Preserve independent QA and no-self-approval.
+resources and lifecycle. Carry the operating policy's
+goal-to-contribution-to-acceptance link, material decision rationale, permitted
+alternatives and evidence/stop conditions into each brief; do not assume Claude
+receives the native Codex common instructions. Native Codex TOML tools/sandbox
+permissions do not carry over to Claude. Preserve independent QA and no-self-approval.
 
 The Codex Stop hook does not run for this Claude entry. The accepted lead must
 explicitly perform the existing run_completion.py freeze/cleanup checks with

@@ -1,96 +1,139 @@
 # Agent Company for Orca
 
-Agent Company helps an Orca user plan, design, implement and independently verify
-work on an app portfolio. It uses Orca Task/Dispatch and requires no King Sejong
-Core checkout, install, pin or account. The user retains decisions about goals,
-cost, publication and irreversible actions. Workers cannot approve their own work.
+**Turn an app goal into coordinated work, with clear ownership and independent review.**
 
-Use a reviewed, pinned Git checkout of this standalone distribution. Requirements:
-macOS for the optional launchd updater, Git, uv with Python 3.13+, and an Orca host
-that supports the chosen agent route. The policy can use Codex, Claude Code direct,
-Antigravity (its Claude route is separate), Grok or Cursor. Service selection is
-intent; actual support, authentication, tools, model/effort and billing must be
-verified before execution. No provider sign-in or API call occurs during setup.
+Agent Company helps you build and run a profitable app portfolio. It brings planning,
+design, development, marketing and release work into one workflow inside Orca.
+Describe the outcome you want; Company helps define the work, assign specialists
+and check the result against that outcome.
+
+You keep authority over goals, cost, publication and irreversible actions.
+Workers do not approve their own work.
+
+[Install](#install) · [First task](#try-a-first-task) · [How it works](#how-it-works) · [Configuration](#configuration) · [Help](#help)
+
+## Install
+
+You need an Orca host that supports your chosen agent, plus Bash, Git,
+[uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.13.
+Prepare missing tools separately. The optional daily updater requires macOS;
+the Bash entrypoints are not a native Windows installer.
+
+Clone this distribution, review the exact revision, then keep that checkout pinned:
 
 ```sh
-git clone --branch v0.2.0 --single-branch https://github.com/JoonSCode/agent-company-distribution.git
+git clone --single-branch https://github.com/JoonSCode/agent-company-distribution.git
 cd agent-company-distribution
-git describe --tags --exact-match  # v0.2.0
-# From this reviewed pinned checkout; inspect changes before applying.
-bash install.sh install --dry-run --no-input --services claude-code
+git rev-parse HEAD
+git checkout --detach HEAD
+# Only if Python 3.13 is missing; this downloads Python.
+uv python install 3.13
+# Preview configuration before applying it interactively.
+bash install.sh install --dry-run --no-input --services codex
 bash install.sh install
-# Fully specified, prompt-free alternative:
-bash install.sh install --preset single --services claude-code --updater off --no-input --yes
 ```
 
-Do not pipe the historical Core-bound v0.1.0 curl installer. This checkout's
-`install.sh` runs terminal setup, which wraps the existing transactional installer
-from a persistent managed source. A fresh public configuration has updater OFF,
-API-paid OFF and no implicit connection. Enable the optional daily updater only
-by explicit choice. No API-paid automatic fallback is allowed.
+Replace `codex` with your intended service when previewing. Fresh setup leaves
+API-paid execution and the updater off; no service is selected implicitly.
+Selecting a service does not sign you in or verify its runtime support.
+Setup applies package files and reports **runtime verification pending**.
+Review hook trust and agent readiness, then open a new Orca session.
 
-Configuration is Markdown: common operating rules → single/multiple preset →
-private user override → explicit current task, bounded by higher-priority safety
-and authority. User choices live in `<execution-home>/agent-company/user.md` and
-are preserved across update/rollback/uninstall. The execution home defaults to
-`~/.codex` for the existing host adapter; `--home` selects another private home.
-This directory name does not require a Codex account.
+Keep the persistent Git source path printed by setup. It is needed for updates
+and recovery. Snapshot `repo` copies have no Git history and are not update
+workspaces. See the [setup and recovery guide](skills/company-orchestration/references/getting-started.md)
+for non-interactive installation and health checks.
+
+## Try a first task
+
+In a new Codex session, invoke `$agent-company`; for the installed Claude Code
+entry, use `/agent-company`. Then start with a small, read-only request:
+
+> Agent Company: Read the installed Company entry and resolved configuration.
+> Propose three improvements to this repository, with reasons and checks for each.
+> Do not edit files or publish anything.
+
+Company should clarify material choices, identify an owner and propose observable
+completion criteria. You can then authorize a bounded implementation. An unfinished
+idea is enough to start; a full specification is not required.
+
+## How it works
+
+Company supplies the operating rules. **Orca runs the workers and records their
+Tasks, Dispatches and messages.** A Task is the work; a Dispatch is one attempt.
+Company's supported entry, installation, updates and recovery do not require an
+external King Sejong Core checkout or installation.
+
+1. **Agree on the outcome.** Establish scope, constraints and how to check success.
+2. **Assign the work.** Use the smallest sufficient team. For multi-team goals,
+   leads agree on contributions before assigning members.
+3. **Work and integrate.** Specialists raise concerns, use source evidence and
+   bring their results back to the responsible lead.
+4. **Verify and settle.** Review the integrated result independently and account
+   for workers and retained evidence before closing the goal.
+
+The six role areas are founder strategy, planning, marketing, design, development
+and QA/release. Roles are responsibilities, not fixed models or mandatory staffing.
+Models and reasoning effort are selected for the task and the supported execution route.
+When the actual host supports them, provider-native helpers can contribute bounded
+internal work under an existing Orca owner. The owner reviews and integrates their
+results; they do not replace Orca Task/Dispatch ownership or independent QA.
+There is no assumed automatic bridge between the two.
+
+Source checks, installed files, authenticated execution and user outcomes are
+separate evidence. A completed worker is not proof that the overall goal succeeded.
+Unreported token usage stays unknown; Company makes no measured savings claim.
+
+## Configuration
+
+Your choices live in private Markdown outside package generations. Precedence is:
+common rules → selected preset → private user override → explicit current task,
+within higher-priority instructions and permissions.
 
 ```sh
-bash scripts/setup.sh reconfigure --preset multiple --services claude-code,antigravity --no-input --yes
+# Preview without saving.
+bash scripts/setup.sh reconfigure --preset multiple --services codex,claude-code --dry-run --no-input
 uv run --no-project --python 3.13 python scripts/agent_company_config.py explain
 ```
 
-See [the configuration contract](skills/company-orchestration/references/configuration.md)
-for supported keys, copied custom presets, cancellation, versioned saves, explicit
-Markdown import and actual route checks. `--dry-run` writes no files and
-starts no downloads/installer. Non-TTY never waits; use `--yes` after reviewing a
-plan. Existing documents are merged, not silently reset to public defaults.
+Available service choices are Codex, Claude Code direct, Antigravity, Grok and Cursor.
+These are intent settings, not a promise of an adapter, authentication or included
+billing. The automatic native role files and completion hook target Codex.
+Claude Code direct has an explicit skill entry; other routes need actual host
+support and self-contained briefs. Antigravity's Claude route is separate from
+Claude Code direct. See the [configuration contract](skills/company-orchestration/references/configuration.md).
 
-The packaged automatic native roles and Stop hook currently target Codex. File
-installation, native hook trust and provider/runtime verification are separate
-results. Review Codex native `/hooks` before its runtime probe can pass. A
-Claude-only Company does not require a Codex/Astra head: in an authenticated Orca
-Claude session, explicitly read the installed `skills/agent-company/SKILL.md`,
-its linked configuration and role OS; use self-contained Orca worker briefs.
-Selecting Claude direct adds an owned explicit `/agent-company` entry under
-`~/.claude/skills` (or `--claude-home`); live discovery/auth remains unverified.
-Codex Stop hooks do not run for Claude, so the lead explicitly performs the
-existing completion freeze/cleanup checks. A Codex
-Doctor gap does not establish Claude availability or absence. Read the exact
-setup result and configuration guide before claiming native integration.
+## Architecture
 
-First safe task: “Read the Company entry and resolved configuration, then propose
-three improvements to this repository. Do not edit files or publish.” Use a new
-session when testing newly installed skills; old sessions do not reload by claim.
+| Layer | Responsibility | Read more |
+| --- | --- | --- |
+| Company entry | Explicit invocation and goal ownership | [Entry](skills/agent-company/SKILL.md) |
+| Coordination policy | Staffing, model selection, evidence and integration | [Operating policy](skills/company-orchestration/SKILL.md) |
+| Specialist roles | Founder strategy, planning, marketing, design, development and QA/release | [Role sources](agents/) |
+| Runtime tools | Configuration, installation, health and record checks | [Setup guide](skills/company-orchestration/references/getting-started.md) |
+| Orca host | Actual workers, messages and lifecycle | [Execution contract](skills/company-orchestration/references/orca-contract.md) |
 
-Setup prints the persistent Git source directory in
-`installation.sources.agent_company`. Keep that path and run lifecycle commands
-from that **Git source directory** (or the original reviewed pinned Git checkout).
-`<execution-home>/agent-company/active.json` records the installed commit and
-snapshot ID; it does not record the source path. Snapshot `repo` directories are
-read-only package copies without `.git`, so do not run installer update there.
-From the persistent Git source directory run:
+## Help
 
-```sh
-uv run --no-project --python 3.13 python scripts/doctor.py --json
-uv run --no-project --python 3.13 python scripts/sync-status.py --json
-uv run --no-project --python 3.13 python scripts/agent_company_installer.py update --dry-run
-uv run --no-project --python 3.13 python scripts/agent_company_installer.py recover
-uv run --no-project --python 3.13 python scripts/agent_company_installer.py rollback
-uv run --no-project --python 3.13 python scripts/agent_company_installer.py uninstall --dry-run
-```
+Use the [setup, health checks and recovery guide](skills/company-orchestration/references/getting-started.md)
+when installation or updates need attention. Review dry-runs before changing an
+installation. Private configuration and previous package generations have separate
+preservation rules; restored files alone do not certify runtime readiness.
 
-Set `CODEX_HOME` for these commands when using a custom execution home. Keep the
-explicit Claude configuration root (`CLAUDE_CONFIG_DIR` or the saved `claude_home`)
-when using a custom Claude location. Doctor and sync report installation/runtime
-gaps separately; a Claude-only file install does not certify Codex hook readiness.
-Inspect a
-dry-run before update or uninstall. Rollback restores package generations and
-preserves the current private document; unsupported document versions are rejected
-and preserved. Setup reports package files applied with runtime verification pending; no
-Codex binary or credentials are needed for that file-only install. A partial
-install is not runtime verification. Private evaluation
-inputs and internal history are excluded from this runtime distribution.
+Read the [changelog](CHANGELOG.md), or report a reproducible problem in
+[GitHub Issues](https://github.com/JoonSCode/agent-company-distribution/issues). Include the
+version, expected behavior and a redacted error; omit credentials, personal paths
+and raw execution traces.
 
-See [v0.2.0 release notes](CHANGELOG.md) for the release scope and verification boundaries.
+## Contributing
+
+This repository is the installable runtime projection. Start with a
+[public issue](https://github.com/JoonSCode/agent-company-distribution/issues)
+for bug reports or proposed changes. Include the expected behavior, observable
+acceptance criteria and any checks you ran. Maintainers apply changes to the
+development source and regenerate the distribution; installed role files are
+not the editing surface.
+
+## License
+
+[MIT](LICENSE). External component terms are listed in [Third-party notices](THIRD_PARTY_NOTICES.md).

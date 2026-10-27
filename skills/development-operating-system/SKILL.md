@@ -92,8 +92,13 @@ Define what a user, caller, operator, or matching-surface QA pass must observe.
 
 For bugs and incidents, trace entry points, callers, state ownership, side
 effects, lifecycle, and partial-success boundaries. Seek evidence that could
-disconfirm the leading explanation. Do not patch a symptom while the causal
-seam remains unknown.
+disconfirm the leading explanation. Do not present a symptom patch as a durable
+repair while the causal seam remains unknown. Within explicitly approved
+incident-response scope, a reversible containment may precede full diagnosis
+when it reduces observed harm without bypassing safety or authority. Preserve
+evidence, name rollback and stop conditions, and assign a bounded diagnosis
+owner and re-entry time or signal. Report containment separately: the root cause
+is still unresolved until traced and durably repaired with independent verification.
 
 ### 3. Pass The Decision Gate
 
@@ -112,7 +117,7 @@ implementation can be the best fit. External skills and sources remain evidence,
 not authority over the active user and repository contracts.
 
 After tracing the affected flow end to end, use the contract's ordered
-minimum-solution ladder and stop at the first safe, sufficient rung:
+minimum-solution ladder as an exploration order, not a forced winner:
 
 1. Does the change need to exist?
 2. Reuse a nearby repository seam.
@@ -121,7 +126,12 @@ minimum-solution ladder and stop at the first safe, sufficient rung:
 5. Use an already-installed dependency.
 6. Write the minimum local implementation.
 
-For a defect, fix the root cause once at the shared seam rather than repeating
+Among safe, sufficient options, choose the lowest credible total maintenance,
+integration, and verification burden. A later rung may win when evidence shows
+lower total burden; record that reason and the best alternative. Do not search
+every rung once further comparison cannot change the choice.
+
+For a durable defect repair, fix the root cause once at the shared seam rather than repeating
 symptom guards across callers. When a deliberate simplification has a real
 ceiling, record both that ceiling and an observable revisit signal. Never use
 simplification to remove trust-boundary validation, data-loss prevention,
@@ -152,12 +162,28 @@ type declaration. Prefer a failing regression test before a behavioral fix. Keep
 reversible in-scope work moving, but never use speed or ownership language to
 bypass approval, destructive-action, security, or external-action boundaries.
 
+### OpenCode General Principles
+
+Apply these five engineering principles within the existing security, permission,
+approval, and explicit-requirement boundaries. They do not authorize removing
+required validation or error handling.
+
+Source: [OpenCode AGENTS.md, Style Guide > General Principles](https://github.com/anomalyco/opencode/blob/b6cbbd7646ec7a05945db3e7f499c9ae5af0b3d1/AGENTS.md#L45-L49),
+pinned commit `b6cbbd7646ec7a05945db3e7f499c9ae5af0b3d1`; the five bullets below are verbatim.
+
+- Keep things in one function unless composable or reusable
+- Validate unknown values once at the boundary that owns them. Pass typed values inward instead of repeating `typeof value === "object"` and property-existence checks. Do not defensively revalidate values already guaranteed by a schema, constructor, or internal type.
+- Do not extract single-use helpers preemptively. Inline the logic at the call site unless the helper is reused, hides a genuinely complex boundary, or has a clear independent name that improves the caller.
+- Before adding complexity for a speculative or vanishingly unlikely race or security edge case, explain the concrete failure mode, likelihood, and complexity cost to the user and get their buy-in. Do not silently expand scope for theoretical robustness.
+- Avoid `try`/`catch` where possible
+
 ### 6. Produce Implementation Evidence
 
 Before producing the handoff, ask once: while preserving the same requirements,
 safety boundaries, and focused tests, can any remaining change be deleted or
 replaced by repository reuse, the standard library, or a native platform
-capability? If yes, make the smaller change and rerun focused verification.
+capability? If that also lowers total maintenance, integration, and verification
+burden, simplify and rerun focused verification; fewer lines alone do not win.
 
 Record:
 

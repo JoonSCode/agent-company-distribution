@@ -126,13 +126,13 @@ def run(
                     install_user_launchd()
                     start_user_job = True
                 case "uninstall":
-                    remove_user_launchd()
+                    result["updater_removal"] = remove_user_launchd()
                 case "rollback":
                     pass
                 case unreachable:
                     assert_never(unreachable)
         if disable_updater and selected in {"install", "update", "recover"}:
-            remove_user_launchd()
+            result["updater_removal"] = remove_user_launchd()
     finally:
         release_lock(paths, lock)
     if start_user_job:

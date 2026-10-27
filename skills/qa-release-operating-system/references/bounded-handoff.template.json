@@ -12,7 +12,7 @@
   "inferred": [],
   "knowledge_context_binding": {
     "attestation_scope": "resolver_materialized_selection",
-    "context_id": "e8a0c03a78983aa9c66e4e3fad75877576b5bea99e55dd0c4ba39e5828b7f278",
+    "context_id": "76cec46739232e5397a106b5ddebbef7f22dde7d7699f36f92b5d41b1d1ff203",
     "decision_questions": [
       "Does the exact candidate satisfy the named criterion on its matching surface?",
       "What evidence-backed release readiness decision should the qa-release role make, and what evidence would change it?"
@@ -20,7 +20,7 @@
     "format": "agent-company.knowledge-context/v0.2",
     "issued_at": "2026-07-30T00:00:00Z",
     "issued_by": "agent-company-expertise-resolver/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "materialized_references": [
       {
         "id": "role-kernel:qa-release",
@@ -58,15 +58,15 @@
   },
   "knowledge_usage_receipt": {
     "attestation_scope": "worker_reported_use_independent_verification_required",
-    "context_id": "e8a0c03a78983aa9c66e4e3fad75877576b5bea99e55dd0c4ba39e5828b7f278",
+    "context_id": "76cec46739232e5397a106b5ddebbef7f22dde7d7699f36f92b5d41b1d1ff203",
     "decision_questions": [
       "Does the exact candidate satisfy the named criterion on its matching surface?",
       "What evidence-backed release readiness decision should the qa-release role make, and what evidence would change it?"
     ],
     "format": "agent-company.knowledge-usage-receipt/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "objective_sha256": "d2029e4ca9f57e24c845571b1958bcbc5808fbd20ab26d4720122db6ee3db563",
-    "receipt_id": "ad2d69263e3bbf6d0856c80e96e5203098fe2032cfd5bd3ebd3b2441fb719210",
+    "receipt_id": "1fbe760861ca9f6120bfbaaba2df42a64a99616d431957f8811e97b8203d1be6",
     "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "reported_at": "2026-07-30T00:01:00Z",
     "reported_by": "role-worker",

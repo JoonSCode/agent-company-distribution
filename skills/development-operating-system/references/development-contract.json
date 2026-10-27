@@ -61,14 +61,24 @@
       "installed_dependency",
       "minimum_local_implementation"
     ],
-    "selection_rule": "first_safe_sufficient_rung",
+    "selection_rule": "lowest_total_burden_safe_sufficient_option",
+    "rung_semantics": "exploration_order_not_forced_winner",
+    "selection_evidence": ["maintenance burden", "integration burden", "verification burden", "best alternative"],
+    "later_rung_may_win_with_evidence": true,
     "requires_end_to_end_trace": true,
     "root_cause_once": true,
+    "trace_scope": "End-to-end trace is required for a durable repair; explicitly approved reversible incident containment may precede full diagnosis without claiming a root-cause fix.",
+    "incident_containment": {
+      "requires": ["explicit incident-response authority", "observed harm", "reversible in-scope action", "preserved evidence", "rollback and stop conditions", "diagnosis owner", "re-entry time or signal"],
+      "root_cause_remains_unresolved": true,
+      "must_not_bypass": ["approval", "safety", "independent verification"]
+    },
     "deliberate_simplification": {
       "required_fields": ["ceiling", "revisit_signal"]
     },
     "completion_self_check": {
       "required_before_handoff": true,
+      "apply_only_when": "same preservation targets and lower total maintenance, integration, and verification burden",
       "preservation_targets": [
         "requirements",
         "safety_boundaries",

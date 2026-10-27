@@ -68,6 +68,26 @@ Omit unsupported flags. `--effort` requires `--model`; neither combines with
 Record requested and effective settings separately. A ready/input-accepted
 receipt alone does not establish model quality or goal completion.
 
+At creation or reuse, name every worker by its actual role and bounded task. Pass a concise
+`--task-title` (for example, `Development lead · handoff policy`) rather than a
+generic worker label. Give the terminal/chat the same useful visible name through
+the host's supported naming path, and verify its readback separately: a Task title
+receipt alone does not prove the visible surface changed. Preserve the actual
+role and do not rename unrelated tabs or treat naming as ownership evidence.
+A process auto-title can differ from the custom tab name; verify the actual
+surface rather than substituting that process-title field.
+
+If the execution host has observed shell-startup questions or command loss before
+`agent_readiness`, do not send another fresh agent command through that startup
+path. Before the next Task attempt, use the conditional
+[prepared-shell workflow](launch-readiness.md): create an owned blank terminal
+without a command, inspect startup, verify a fresh harmless nonce round trip,
+then start one agent in that same terminal and verify its actual readiness before
+`worker-start --terminal`. Questions/unknown proof block command delivery; the
+checker never answers prompts or launches anything. This is a Company operator
+guard for an observed host risk, not an Orca startup fix or a new requirement for
+unrelated healthy launches. Preserve the failed attempt and exact recovery rules.
+
 Do not change a running assignment by writing canonical model or effort defaults.
 Use a per-process flag the launch route supports, or keep the current setting
 and record why the checkpoint continues. Read back the observed setting and
@@ -85,6 +105,56 @@ dependencies when ordering is needed; avoid unnecessary deep chains. Nested
 workers keep parent ownership and host depth limits; a new Run cannot bypass
 them. A failed `worker-start` is not permission to start again: inspect its
 failed stage, residual resources and exact recovery receipt first.
+
+## Task lineage and internal provider helpers
+
+A dispatched worker starts a useful nested leaf through its live preamble's
+`worker-start --spec`, inheriting the current Run without creating another one.
+When supported, set `--parent` to its actual Task id. Verify the resulting Task's
+`parent_id` separately from the Dispatch's `creatorDispatchId`, depth and creator
+inbox route. They describe work ancestry and attempt/message ownership respectively;
+neither a role name nor a tab placed beside another proves both. Preserve original
+Task/Dispatch receipts and the child's reply before claiming a working hierarchy.
+Use current host guidance for routing; an explicit Run selector is not authority
+to impersonate its coordinator. Company policy cannot change Orca's UI grouping.
+
+### Bounded native-helper workflow
+
+Consider provider-native helpers alongside direct tools and Orca workers for a
+useful separable contribution. Use the actual exposed native tools only when the
+current task policy, permissions, selected service, billing and aggregate resource
+budget permit them. Availability alone is not a reason to delegate; tiny or tightly
+coupled work can stay with one owner. This workflow adds no enable switch, generic
+adapter, scheduler or required Orca Task for each internal helper.
+
+1. The owning Orca worker gives a self-contained direction through the actual
+   native tool: goal, exact input/source revision, read-only or exclusive file
+   ownership, constraints, expected artifact/checks and stop/report conditions.
+   Use the [compact direction/report](session-continuity.md#compact-direction-and-report)
+   in one existing work note; do not create a second tracker. Name the native
+   helper by role and bounded task through supported naming, and read back its
+   actual name/identifier. No terminal tab is implied by a native helper name.
+2. Select model and effort by the same task-fit reasoning as other contributions.
+   Record requested settings separately from actual native readback or unknowns;
+   do not infer them from a role, catalog or requested flag. Count native helpers
+   against the combined resource limit, including nested work. No paid API or
+   global defaults change is authorized by native tool availability.
+3. Preserve the original helper result and actual identifier with the owning Orca
+   Dispatch. Its report names artifacts/checks, failures or unresolved decisions,
+   settings or unknowns, usage coverage and resource state. The parent reads the
+   originals, resolves conflicts and records what it integrated or rejected and
+   why. A tool call or an availability probe is not a useful completed contribution.
+4. Before the parent's completion, settle helpers through the actual native
+   lifecycle: retain the completed result, reuse for a named next contribution or
+   release when supported. Record completed versus released separately; unavailable
+   lifecycle controls or uncertain execution remain explicit gaps. Do not leave a
+   live or uncertain helper unaccounted for or stop unrelated workers.
+
+Native helpers do not replace requested Orca Task/Dispatch provenance, accepted
+ownership or independent QA. Keep native identifiers separate from real Orca
+Task/Dispatch IDs. There is no automatic Task/Dispatch bridge. A native role
+definition, catalog or available tool is not evidence of a live helper run or an
+Orca bridge. Never invent such a bridge or duplicate a writer to obtain one.
 
 ## Process messages and verify results
 

@@ -33,6 +33,47 @@ a pinned record in place or interpret a proposed successor as an accepted owner.
 A work note is not a second ownership ledger; changing Company ownership happens
 through the existing record and supported host workflow first.
 
+## Compact direction and report
+
+For a paired or cross-domain handoff, use one existing private workload note as
+the shared index. Keep the approved goal, exact source revision, design/contracts,
+files and single writer, acceptance checks, current decisions with reasons,
+open blockers and next owner/action together. Link originals and changed artifacts;
+do not relay full transcripts or copy a separate state store. Update it at a
+material decision or result. A note cannot grant authority or independent approval.
+
+The direction names the bounded change, target files, constraints, required checks
+and when to stop/escalate. The report names the exact artifact/diff, checks and
+their results, failure or question, and decision needed (or none). Use existing
+Task/work-note/bounded-handoff fields. The successor reads current originals,
+accepts the exact scope and next action, and raises mismatches before writing.
+For active ownership transfer, the existing live-work restrictions below apply.
+The navigator reviews ambiguity, contract changes, meaningful milestones and
+repeated failures; settled local edits stay with the executor. Independent QA
+receives the candidate and original evidence separately.
+
+Example, inside an already approved slice:
+
+> Direction: On source REV, keep contract C; implement change X in files A/B.
+> Executor E is the only writer. Run checks T/U. Stop for a contract mismatch.
+> Report: Candidate DIFF at REV+patch; T passed, U failed with original log L.
+> Blocker is Q; navigator N decides Q next. E retains the slice until a successor
+> accepts. Independent verifier V checks the final candidate after the fix.
+
+REV, C, X, A/B and the named people/checks are illustrative placeholders, not a
+claim that an assignment or check occurred. Small exact work may keep the current
+owner without pairing when a handoff adds more burden than value.
+
+Apply this same direction/report to bounded provider-native helpers. Keep one
+existing work note as the index, not a helper ledger. The direction identifies
+the owning Orca Task/Dispatch, helper role/task name, exact source inputs,
+read-only or exclusive file scope, required checks and return/stop conditions.
+The report preserves the native identifier and original result, artifacts/checks,
+unresolved decisions, requested versus observed settings or unknowns, usage coverage
+and resource state. The parent records what it integrated or rejected and why.
+Keep completed and released distinct. A native identifier is not an Orca
+Task/Dispatch ID, and this note creates no automatic bridge or independent approval.
+
 ## Tool contract
 
 Use `uv run --no-project --python 3.13 python` for these stdlib tools.

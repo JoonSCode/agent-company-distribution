@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "checked_at": "2026-10-27",
+  "api_rate_scope": "Published standard, global USD rates; <=272K input per request, 30-minute cache-write retention. Above 272K use 2x input/cache and 1.5x output. Other tiers/regions/retentions are not calculated by this helper.",
+  "capability_prior_status": "Company task-fit interpretation of current official qualitative guidance, not certified equivalence or account availability. Quality for the exact task/model/effort still needs a source-backed assessment; no compulsory local A/B.",
+  "benchmark_provenance": {
+    "name": "ALE v1",
+    "url": "https://openai.com/index/introducing-gpt-6-1-terra/",
+    "kind": "user-provided accessible-chart transcription",
+    "confidence_intervals": "not supplied; similar point scores are not proof of statistical equivalence",
+    "scope": "Use only as a directional initial price/quality prior. Never multiply $/benchmark-task into a new task estimate or call it actual charges.",
+    "independent_chart_retrieval": false
+  },
+  "models": {
+    "gpt-6.1-terra": {
+      "family": "terra",
+      "efforts": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "capability_priors": [
+        "focused",
+        "visual_writing",
+        "coding",
+        "judgment"
+      ],
+      "demanding_work_prior": false,
+      "api_source": "https://developers.openai.com/api/docs/models/gpt-6.1-terra",
+      "usd_per_million_standard": {
+        "uncached_input": 1,
+        "cached_input": 0.05,
+        "cache_write_30m": 1.25,
+        "output": 5
+      },
+      "ale_v1_user_transcription": {
+        "low": {
+          "score_percent": 55.9,
+          "usd_per_task": 0.16
+        },
+        "medium": {
+          "score_percent": 57.6,
+          "usd_per_task": 0.29
+        },
+        "high": {
+          "score_percent": 57.2,
+          "usd_per_task": 0.39
+        },
+        "xhigh": {
+          "score_percent": 58.5,
+          "usd_per_task": 0.66
+        },
+        "max": {
+          "score_percent": 60.0,
+          "usd_per_task": 1.01
+        }
+      }
+    },
+    "gpt-6.1-sol": {
+      "family": "sol",
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "capability_priors": [
+        "focused",
+        "visual_writing",
+        "coding",
+        "judgment"
+      ],
+      "demanding_work_prior": true,
+      "api_source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "usd_per_million_standard": {
+        "uncached_input": 2,
+        "cached_input": 0.1,
+        "cache_write_30m": 2.5,
+        "output": 10
+      },
+      "ale_v1_user_transcription": {
+        "low": {
+          "score_percent": 52.4,
+          "usd_per_task": 0.7
+        },
+        "medium": {
+          "score_percent": 53.8,
+          "usd_per_task": 1.31
+        },
+        "high": {
+          "score_percent": 55.3,
+          "usd_per_task": 1.45
+        },
+        "xhigh": {
+          "score_percent": 56.5,
+          "usd_per_task": 1.45
+        },
+        "max": {
+          "score_percent": 58.6,
+          "usd_per_task": 2.0
+        }
+      }
+    },
+    "gpt-6-astra": {
+      "family": "astra",
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "capability_priors": [
+        "focused",
+        "visual_writing",
+        "coding",
+        "judgment"
+      ],
+      "demanding_work_prior": true,
+      "api_source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "usd_per_million_standard": {
+        "uncached_input": 10,
+        "cached_input": 1,
+        "cache_write_30m": 12.5,
+        "output": 50
+      },
+      "ale_v1_user_transcription": {
+        "low": {
+          "score_percent": 53.4,
+          "usd_per_task": 3.55
+        },
+        "medium": {
+          "score_percent": 57.6,
+          "usd_per_task": 4.82
+        },
+        "high": {
+          "score_percent": 57.8,
+          "usd_per_task": 5.15
+        },
+        "xhigh": {
+          "score_percent": 58.3,
+          "usd_per_task": 5.91
+        },
+        "max": {
+          "score_percent": 59.3,
+          "usd_per_task": 7.24
+        }
+      }
+    },
+    "gpt-6-luna": {
+      "family": "luna",
+      "efforts": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "capability_priors": [
+        "focused",
+        "coding",
+        "judgment"
+      ],
+      "demanding_work_prior": false,
+      "api_source": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+      "usd_per_million_standard": {
+        "uncached_input": 0.1,
+        "cached_input": 0.01,
+        "cache_write_30m": 0.125,
+        "output": 0.5
+      },
+      "ale_v1_user_transcription": {
+        "max": {
+          "score_percent": 50.9,
+          "usd_per_task": 0.14
+        }
+      }
+    }
+  }
+}

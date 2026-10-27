@@ -42,6 +42,12 @@ evidence is `unverified`; an unavailable required surface is `blocked`; any
 open blocker forces readiness to `reject`. Historical v0.3 QA handoffs are
 readable evidence but never authorize current completion.
 
+Keep an observed failure distinct from the criterion decision and coverage:
+partial failed observations remain evidence and may support readiness rejection,
+without proving an unobserved relaunch sequence or statistical claim failed.
+See the [matching-surface guide](references/matching-surface-guide.md) for this
+boundary; do not relabel partial coverage as full to obtain a terminal decision.
+
 ## Establish The Candidate And Verification Plan
 
 1. Bind every observation to the exact app id, version, build, full source
@@ -79,6 +85,8 @@ with a stable discovery ID only when cross-record trace is needed. Revise the
 next check or owner from the observed result, route one
 `next_recommended_surface`, and leave final integration and acceptance to the
 accepted overall head. Independent technical evidence remains required.
+Discovery records do not add or rewrite approved criteria, scope, or authority.
+Propose a material criterion change to the authorized owner before adopting it.
 Empty arrays are valid when no material discovery exists.
 
 ## Execute Matching-Surface Verification

@@ -29,14 +29,57 @@ change global defaults or pay merely to make a configuration check pass.
 ## Compare by task evidence
 
 First satisfy explicit current-task pins, quality, authority, tools and billing.
-Apply the user's resolved service order and model exclusions where present. Among
-comparable candidates, prefer lower end-to-end observed raw tokens within the
-required deadline; consider completion time separately. Include parent, children,
-context, failures, retries, integration and independent review. Unknown tokens
-remain unknown. Quota, credits, API prices, output tokens and latency do not prove
-whole-work savings. Keep shared quotas counted once. Reuse applicable dated
-benchmarks and verified local evidence with source, scope, freshness and limits;
-do not benchmark every routine task or invent a permanent model ladder.
+Apply resolved service preferences and exclusions. Compare model × native effort
+for the current work, not CEO/head, lead or worker title. Among task-fit candidates,
+prefer the lower whole-work API-price proxy within the deadline; time and actual
+subscription charges/credits are separate. Include instructions/context, feedback,
+failed attempts, retries, independent review and integration across all participants.
+Unknown usage or cost stays unknown; raw token count alone is not the objective.
+Do not count shared requests twice or present a published price as a subscription bill.
+
+The LLM assesses semantic capability, complexity, coupling, decomposability and
+source-backed quality fit. The deterministic selector applies the supported
+candidate table, resolved configuration and declared comparison basis. Task-fit
+logical reasoning and applicable benchmark priors can justify an initial
+model/effort assignment without mandatory local measurement or A/B. Bind the
+reason to the task's ambiguity, coupling, failure risk and observable checks;
+for benchmark priors, retain model × effort, harness, date and transfer limits.
+Benchmark $/task is a directional prior, never an estimate of arbitrary
+work or proof of savings. Complete estimates for every eligible workflow take
+precedence over a requested benchmark basis; do not quietly replace missing usage
+with zero. The receipt retains requested and applied comparison bases. See [dated evidence](model-evidence.md).
+
+Do not use all Terra or a universal cheap-first ladder. Complex coupled execution
+can need Sol/Astra as the executor. These general capability priors are not family
+bans: a source-supported assessment bound to the exact task and candidate can
+supersede them; a bare adequate flag cannot. For separable complex outcomes, isolate hard
+design/contracts/judgment from bounded implementation and classify those actual
+work units separately. Consult a strong model on genuine ambiguity, conflict or
+repeated failure, not on every settled step. Small work needs neither every model
+nor every organizational tier; responsibilities and independent acceptance remain
+unchanged. Stronger/lower-effort and cheaper/higher-effort are separate candidates.
+
+A strong navigator with an economical executor is an optional task-fit pattern
+when difficult decisions separate cleanly from bounded execution. The navigator
+sets design/contracts, constraints and checkpoints; one executor owns the edits,
+tools and checks, and reports artifacts and unresolved decisions through the
+[shared work note](session-continuity.md#compact-direction-and-report). Consult
+the navigator on genuine ambiguity, a contract change, a meaningful milestone or
+repeated failure, not each edit. Compare strong-alone, economical-alone with
+review, checkpoint pairing and continuous pairing by expected accepted quality
+and whole-work burden, including briefing, waiting, feedback, rework, review and
+integration. Tightly coupled or hard-to-check work may favor a strong executor;
+tiny exact work may favor direct tools. Pairing does not supply independent QA.
+Choose by reasoned task fit now; a frozen comparison is optional validation, not
+an assignment gate. Claim measured savings only from comparable observed usage.
+
+Apply the same task-fit reasoning to provider-native helpers inside an existing
+Orca assignment. A bounded source extraction with clear checks can use a different
+supported model/effort from its parent; a coupled judgment may stay with the parent.
+Compare briefing, original-result review and integration burden before delegating.
+Keep the reason, requested/observed settings or unknowns and lifecycle evidence in
+the existing work note; do not fabricate an Orca routing receipt or a Task/Dispatch
+bridge for a native helper. Follow the [bounded native-helper workflow](orca-contract.md#bounded-native-helper-workflow).
 
 API-paid routes require api_paid: true from an explicit user or current-task
 document and current scope permission. This is permission to consider the route,
@@ -59,6 +102,16 @@ heads. No head or child model/effort pin is imposed by this boundary.
 
 ## Checked assignments and failure recovery
 
+For the packaged model table, run `record_check.py routing-select decision.json
+--json` using the LLM's `price_selection` input, then place its selected identity
+in the existing version-1 decision with `selected_reason: price_informed`.
+`routing-check` recomputes the same selection and rejects a mismatching candidate
+or incomplete decomposition. The selector is local, pure advice: it makes no API
+or Orca calls. Unknown/malformed capabilities, runtime support or billing do not
+trigger an inferred model, effort or paid fallback. Unlisted provider/model pairs
+remain under the existing evidence-based routing contract, not invented aliases.
+See [record fields and limits](record-contract.md#price-informed-selection).
+
 Use a version-1 routing decision and record_check.py routing-check before a
 material Orca assignment, retaining its receipt. Existing Task/Dispatch binding,
 source evidence, selected/alternative consistency, resource/lifecycle, causal
@@ -76,7 +129,9 @@ is not overall acceptance. No receipt grants a second authoritative writer.
 ## Verify settings, context and usage
 
 Record requested model/effort separately from actual host/provider readback and
-its provenance. Do not infer settings from role names, terminal titles or launch
+its provenance, including any fallback (or unknown fallback). Orca launch support
+for `--model` and `--effort` does not prove the effective setting: an unsupported
+effort can fall back. Check host capabilities, not an assumed minimum version. Do not infer settings from role names, terminal titles or launch
 arguments. Reassess model/effort, context relevance/contamination, tools,
 permissions, review independence and lifecycle at meaningful task boundaries.
 Reuse healthy relevant sessions only when the whole-work burden favors reuse.

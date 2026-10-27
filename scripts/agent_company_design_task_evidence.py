@@ -36,9 +36,15 @@ IMPLEMENTATION_QA_FORBIDDEN_CLAIMS: Final[frozenset[str]] = (
     FORBIDDEN_CLAIMS
     | frozenset({"candidate conformance", "candidate disposition"})
 )
-NEXT_SURFACES: Final[frozenset[str]] = frozenset(
+# Current producers use Company surfaces. Historical labels remain readable
+# without translating them into a new owner, permission, or Core execution path.
+CURRENT_NEXT_SURFACES: Final[frozenset[str]] = frozenset(
+    {"company-lead", "planning", "qa-release", "user"}
+)
+LEGACY_NEXT_SURFACES: Final[frozenset[str]] = frozenset(
     {"jangyeongsil", "jiphyeonjeon", "uigwe", "seungjeongwon"}
 )
+NEXT_SURFACES: Final[frozenset[str]] = CURRENT_NEXT_SURFACES | LEGACY_NEXT_SURFACES
 
 
 @dataclass(frozen=True, slots=True)

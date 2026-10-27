@@ -16,7 +16,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/founder-contract.json",
       "source_url": null,
-      "sha256": "709ba90fea7ad79a7c0a5a459caf6bd1b22cad21268cc0335dc3c7b41d6cf2ee",
+      "sha256": "667f0afaa2bb53154010e05f5b2ba16ff5d02b0cb16525eae68dcf30f5ad7943",
       "applies_to_tasks": [
         "*"
       ],
@@ -53,7 +53,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/task-packs/portfolio-decision.md",
       "source_url": null,
-      "sha256": "fa7c0794ae9340fea0add779ee1ebaab5a8430fabc22233eb7987e74ad58901f",
+      "sha256": "b29cb019846d3e1a0c19475ab206816682c721f2c7200b12d28e3ff6304f5968",
       "applies_to_tasks": [
         "portfolio-decision"
       ],
@@ -92,7 +92,7 @@
       "owner_role": "founder",
       "ref": "skills/founder-operating-system/references/task-packs/opportunity-validation.md",
       "source_url": null,
-      "sha256": "784a1b149285c057a709b93e3a838b79a6579ced9e3e16943455370b2b02eb3c",
+      "sha256": "5c8487f1e3385da6aa46236cab079ca6cfd277e2a11a178b2f00c21aa7a6215e",
       "applies_to_tasks": [
         "opportunity-validation"
       ],
@@ -170,7 +170,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/planning-contract.json",
       "source_url": null,
-      "sha256": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716",
+      "sha256": "8a76742d7644b13d51ac21e249c9c9017dfb7a54fd38aace9cd59eb021f6d193",
       "applies_to_tasks": [
         "*"
       ],
@@ -207,7 +207,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/execution-plan.md",
       "source_url": null,
-      "sha256": "0c018252cb0634fd898afce6f56e0d88fb10a5b1f61fded999eaf67c3070ff79",
+      "sha256": "db026d2dde678c22be6bd5d8535712d71d679b3111be1549a1611f9cf8cc4847",
       "applies_to_tasks": [
         "execution-planning"
       ],
@@ -246,7 +246,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/dependency-risk.md",
       "source_url": null,
-      "sha256": "1da069a4a9a0035765e7cd0f7e762018a6a83d0b10e6da12b8b3e0525f3e5d74",
+      "sha256": "bbec5e56bcf78e2da5b6db33339c68f400e5356eb96e1c476226a1181255df85",
       "applies_to_tasks": [
         "dependency-risk"
       ],
@@ -285,7 +285,7 @@
       "owner_role": "planning",
       "ref": "skills/planning-operating-system/references/task-packs/acceptance-verification.md",
       "source_url": null,
-      "sha256": "73bd94bd3d1748356a8b3b85fd1c29f4c03fb69a150313e38990fc0874c61847",
+      "sha256": "33eec8107831386563e71b2527f4f10f9c5e64aafc089bdaae0e6fa59ad7d428",
       "applies_to_tasks": [
         "acceptance-verification"
       ],
@@ -324,7 +324,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/marketing-contract.json",
       "source_url": null,
-      "sha256": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73",
+      "sha256": "dbcb8e073280e1e7ef56995545f820af12e92ecf77d0d53c74796189c4a1c889",
       "applies_to_tasks": [
         "*"
       ],
@@ -439,7 +439,7 @@
       "owner_role": "marketing",
       "ref": "skills/marketing-operating-system/references/task-packs/mobile-monetization.md",
       "source_url": null,
-      "sha256": "97056766cf4bfbc322bdee98cd03f9a69f18be0584c58f874e11b98d694f2e60",
+      "sha256": "09938f6d37a616cb417127d59d72f753147b7f0d03fe92b6691fd76715d78a52",
       "applies_to_tasks": [
         "mobile-monetization"
       ],
@@ -478,7 +478,7 @@
       "owner_role": "design",
       "ref": "skills/design-operating-system/references/design-contract.json",
       "source_url": null,
-      "sha256": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027",
+      "sha256": "b93cc233d4d6833e23d0352227f7c82e8be539970b853107c1aa37fe0404ace6",
       "applies_to_tasks": [
         "*"
       ],
@@ -632,7 +632,7 @@
       "owner_role": "development",
       "ref": "skills/development-operating-system/references/development-contract.json",
       "source_url": null,
-      "sha256": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb",
+      "sha256": "e78fdc94b904971f6e7f08e79b9890d78f4de73e7f08fd6db9be87fbb56a5974",
       "applies_to_tasks": [
         "*"
       ],
@@ -669,7 +669,7 @@
       "owner_role": "development",
       "ref": "skills/development-operating-system/references/task-packs/feature-implementation.md",
       "source_url": null,
-      "sha256": "f34b4f2641455922ac2db72cd3763c8d43eece27389429d0e0d5812a60e29874",
+      "sha256": "fc5cdf853f5b6130ea1beda1e4f40ff87eb3f4f4bb222aa1eb853c1ce08b9b84",
       "applies_to_tasks": [
         "feature-implementation"
       ],
@@ -708,7 +708,7 @@
       "owner_role": "development",
       "ref": "skills/development-operating-system/references/task-packs/causal-debugging.md",
       "source_url": null,
-      "sha256": "044085dd0e12ee4ad5dfa3817d80eae5a684ffb26aefacbf44df7d2cb8503ca5",
+      "sha256": "e7d0564509599af913221c74ec187ee38695e8db70c105e7a7d5d37bb0680366",
       "applies_to_tasks": [
         "causal-debugging"
       ],
@@ -823,7 +823,7 @@
       "owner_role": "qa-release",
       "ref": "skills/qa-release-operating-system/references/task-packs/test-strategy.md",
       "source_url": null,
-      "sha256": "bced16b6159177cb1c9d23096d8c4ab93f7c1f598884edca15c28de8c17cb5e1",
+      "sha256": "8310ab79cf441f1a9ea8cfee2b0fb6a11201dc378cdad8015f1dd60dbd878157",
       "applies_to_tasks": [
         "test-strategy"
       ],

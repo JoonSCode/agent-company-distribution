@@ -24,7 +24,10 @@ authority is unsettled.
    compatibility boundaries. Mark each changed, preserved, unverified, or not
    applicable; a missing product rule is a blocking unknown.
 3. **Choose the smallest option.** Compare the local seam with one alternative
-   only when coupling, containment, or reversibility differs. Reject added
+   when coupling, containment, reversibility, or total maintenance, integration,
+   and verification burden can change the choice. The minimum-solution ladder
+   orders exploration, not selection; a sufficient later rung may have lower
+   total burden. Reject added
    framework, service, cache, module, or adapter unless a current requirement
    pays for it; record the `revisit_signal`.
 4. **Set proof before production change.** For every changed or must-preserve
@@ -47,6 +50,8 @@ authority is unsettled.
 
 Use only the smallest allowed inspection, test, or runtime check that could
 reverse a current decision. Do not set a tool-count quota.
+
+Read [optional methods](../optional-methods.md) only when they could change a material unresolved choice; skip them for settled work.
 
 ## Compact Record
 

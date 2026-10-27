@@ -15,8 +15,9 @@ from pathlib import Path
 from typing import Final
 
 from agent_company_install_io import atomic_write, install_paths
-from agent_company_install_types import InstallError
+from agent_company_install_types import InstallError, JsonValue
 from agent_company_launchd_contract import LAUNCHD_LABEL
+from agent_company_launchd_output import LaunchdOutputError, parse_launchctl
 
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
@@ -153,11 +154,91 @@ def start_user_launchd() -> None:
         raise InstallError("launchd_kickstart_failed", started.stderr.strip() or started.stdout.strip())
 
 
-def remove_user_launchd() -> None:
-    _ = launchctl(("bootout", target()))
+def remove_user_launchd() -> dict[str, JsonValue]:
+    """The shared user-domain label alone never establishes install ownership."""
+    plist = user_plist()
     try:
-        user_plist().unlink()
+        metadata = plist.lstat()
     except FileNotFoundError:
-        return
+        return {"status": "preserved", "reason": "ownership_plist_missing"}
+    except OSError:
+        return {"status": "preserved", "reason": "ownership_plist_unreadable"}
+    if (
+        not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid()
+        or metadata.st_nlink != 1 or stat.S_IMODE(metadata.st_mode) not in {0o600, 0o644}
+    ):
+        return {"status": "preserved", "reason": "ownership_plist_unsafe"}
+    try:
+        parsed = plistlib.loads(plist.read_bytes())
+    except (OSError, ValueError, plistlib.InvalidFileException):
+        return {"status": "preserved", "reason": "ownership_plist_invalid"}
+    if not isinstance(parsed, dict) or parsed.get("Label") != LAUNCHD_LABEL:
+        return {"status": "preserved", "reason": "ownership_plist_invalid"}
+    arguments = parsed.get("ProgramArguments")
+    environment = parsed.get("EnvironmentVariables")
+    if (
+        not isinstance(arguments, list) or len(arguments) != 3
+        or arguments[0] != "/bin/bash" or arguments[2] != "--auto"
+        or not isinstance(arguments[1], str)
+        or not isinstance(environment, dict)
+        or environment.get("CODEX_HOME") != str(install_paths().codex_home)
+    ):
+        return {"status": "preserved", "reason": "ownership_install_mismatch"}
+    updater = Path(arguments[1])
+    if not updater.is_absolute() or ".." in updater.parts or updater.parts[-2:] != ("scripts", "update.sh"):
+        return {"status": "preserved", "reason": "ownership_updater_invalid"}
+
+    # A stale local plist must not authorize stopping another loaded install.
+    # Compare the root fields observed in launchctl print, not inherited/nested
+    # environments. An older source path/hash is allowed to update or recover.
+    observed = launchctl(("print", target()))
+    absent = observed.returncode == 113 and "Could not find service" in (observed.stdout + observed.stderr)
+    if not absent:
+        if observed.returncode != 0:
+            return {"status": "preserved", "reason": "loaded_ownership_unconfirmed"}
+        try:
+            valid = parse_launchctl(observed.stdout, observed.stderr).state != "invalid"
+        except LaunchdOutputError:
+            valid = False
+        if not valid:
+            return {"status": "preserved", "reason": "loaded_ownership_unconfirmed"}
+        paths: list[str] = []
+        programs: list[str] = []
+        argv_blocks: list[list[str]] = []
+        home_blocks: list[list[str]] = []
+        depth, section = 0, ""
+        for line in observed.stdout.splitlines():
+            value = line.strip()
+            if depth == 1:
+                if value.startswith("path = "):
+                    paths.append(value.removeprefix("path = "))
+                elif value.startswith("program = "):
+                    programs.append(value.removeprefix("program = "))
+                elif value == "arguments = {":
+                    argv_blocks.append([])
+                    section = "arguments"
+                elif value == "environment = {":
+                    home_blocks.append([])
+                    section = "environment"
+            elif depth == 2 and value != "}":
+                if section == "arguments":
+                    argv_blocks[-1].append(value)
+                elif section == "environment" and value.startswith("CODEX_HOME => "):
+                    home_blocks[-1].append(value.removeprefix("CODEX_HOME => "))
+            depth += line.count("{") - line.count("}")
+            if depth <= 1:
+                section = ""
+        if (
+            paths != [str(plist)]
+            or programs != ["/bin/bash"] or home_blocks != [[environment["CODEX_HOME"]]]
+            or argv_blocks != [arguments]
+        ):
+            return {"status": "preserved", "reason": "loaded_ownership_unconfirmed"}
+        stopped = launchctl(("bootout", target()))
+        if stopped.returncode != 0:
+            raise InstallError("launchd_remove_failed", stopped.stderr.strip() or stopped.stdout.strip() or "owned updater bootout failed")
+    try:
+        plist.unlink()
     except OSError as exc:
         raise InstallError("launchd_remove_failed", str(exc)) from exc
+    return {"status": "removed", "reason": "owned_plist_only" if absent else "owned_job_and_plist"}

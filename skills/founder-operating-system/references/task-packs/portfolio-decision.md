@@ -62,8 +62,10 @@ or `unknown`; stale or non-comparable evidence remains unknown for the choice.
 2. **Make options comparable.** For each option record the problem, buyer,
    commercial evidence, strategic advantage, distribution access, required
    capacity, time to evidence, dependencies, and exit cost.
-3. **Check admissibility.** Remove options that breach hard constraints or need
-   unapproved external action. Record them as rejected, not forgotten.
+3. **Check admissibility.** Reject hard-constraint violations and prohibited
+   outcomes, recording why. Keep otherwise viable approval-pending options
+   comparable; name the required approval and decision owner, and mark execution
+   blocked until approval exists. A recommendation never authorizes the action.
 4. **Test reversal facts.** Name the smallest missing fact that could change the
    ranking. Set readiness to `blocked`, `conditional`, or `ready` under the role
    kernel.
@@ -72,9 +74,11 @@ or `unknown`; stale or non-comparable evidence remains unknown for the choice.
    expose assumptions; it must not replace the evidence.
 6. **Keep one serious alternative.** It must be feasible and capable of winning
    if a named reversal condition becomes true.
-7. **Size the commitment to readiness.** `Blocked` permits only an evidence
-   request; `conditional` permits the smallest reversible test; `ready` permits
-   a bounded recommendation.
+7. **Size the recommendation to readiness.** `Blocked` means minimum problem,
+   target, or source grounding is missing: return an evidence request or a
+   non-committing option frame. `Conditional` means a meaningful small reversible
+   test is definable; recommend that test. `Ready` permits a bounded
+   recommendation. None of these statuses grants execution authority.
 8. **Make the recommendation falsifiable.** Define success, failure, kill, and
    revisit criteria, the next evidence horizon, and what is explicitly not
    funded.
@@ -94,6 +98,8 @@ or `unknown`; stale or non-comparable evidence remains unknown for the choice.
   lose momentum, customer trust, or a time-sensitive opening.
 - **Do nothing for the horizon:** preserves focus, but accepts the stated cost of
   inaction; it is a real option, not an omitted baseline.
+
+Read [optional methods](../optional-methods.md) only when they could change a material unresolved choice; skip them for settled work.
 
 ## Common Failure Patterns
 
@@ -130,8 +136,9 @@ When a role handoff is requested, also preserve every required field of
 Stop and return to the Sejong lead when the packet is complete. Escalate instead
 when a missing reversal fact keeps readiness blocked, options are not comparable,
 capacity or cash evidence is unavailable, a material target or risk decision
-needs the authorized decision owner, evidence is materially contested and needs bounded evidence debate, or any
-external action lacks explicit authority. Never claim gate approval or final
+needs the authorized decision owner, evidence is materially contested and needs bounded evidence debate, or an
+intended execution step requires missing approval. Non-executing comparison of
+otherwise viable approval-pending options may continue. Never claim gate approval or final
 verification.
 
 ## Compact Example

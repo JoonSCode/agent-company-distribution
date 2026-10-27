@@ -89,6 +89,66 @@ also verifies the prior accepted completion receipt/record. Active/unknown Runs
 cannot be replaced. Failed registration can resume against the same untouched
 init declaration, never by overwriting a changed manifest.
 
+## Explicit accepted-study deliverable
+
+The default above still requires every Task to succeed. A goal whose approved
+deliverable is a completed experimental report may explicitly opt in through
+this record extension:
+
+```json
+{
+  "study_completion": {
+    "mode": "accepted_study",
+    "plan": "frozen-plan-evidence-id",
+    "report": "saved-score-evidence-id",
+    "trials": {"frozen-trial-id": "actual-orca-task-id"}
+  }
+}
+```
+
+Use only the real, frozen feasibility plan and saved full report from the
+[outcome evaluator](outcome-evaluation.md). The mapping must include every
+expected trial exactly once. Completion checks plan/report hashes, the full
+denominator, actual Run/Task/Dispatch/executor, instruction candidate and original
+launch/done bytes. Every referenced frozen input, trial record, artifact, trace
+when present, review when present and report must have local relative file/hash
+entries in the record evidence map **and** unchanged manifest preserve bindings.
+The checker reuses the evaluator's pure status and full-report aggregation rules,
+checks the raw review, artifact and JSON-oracle facts, and validates saved Python
+oracle exit/output fields. It never runs Python task artifacts or launches trials.
+Saved Python exit/output fields are checked declarations, not authenticated proof
+of an interpreter execution. A missing oracle result, incomplete aggregate or a
+critical finding hidden by the saved report blocks completion even when all
+file hashes have been rebound. A changed grader hash makes an older plan stale;
+never rewrite that original bundle to pass this check.
+
+Every mapped execution must be settled. A missing done receipt is accepted only
+for an explicitly captured failed launch at `agent_readiness`, with a failed Task
+result and `environment_failure` in the saved report. This is an observed failed
+attempt, not model oracle failure; it requires no invented done, trace or model
+usage. Unknown execution or an unknown/missing trial remains blocking. A recorded
+failed done cannot be relabelled success. Candidate, Dispatch and result evidence
+must remain exact. All trial failures and any critical findings stay visible.
+
+Only these declared experiment trials may retain failed execution, technical or
+integration verdicts. Production, review, integration and other control Tasks
+remain subject to the original success gate. Do not put such Tasks into the
+experimental inventory to evade that gate. The overall goal must explicitly be
+the accepted evidence deliverable; this mode cannot accept a failed production,
+promotion or user outcome. The independent/human overall assessor must differ
+from the goal owner and every executor. Acceptance covers the full saved report,
+failures, evidence inventory and retention contract, not a claim that all trials
+succeeded or the studied candidate should be promoted. Declarations and byte
+checks do not authenticate the assessor's real identity or intent.
+An accepted evidence deliverable can retain a fully reported critical trial
+failure with its failed status, critical finding list and gate unchanged. This
+does not accept a candidate for promotion or a failed production/user outcome.
+
+The mode does not change existing records or retroactively accept a historical
+study. It retains the same consumer, quiescence, pin, open-file, symlink, file
+identity, quarantine, deletion and callback/session guards. A successful fixture
+does not authorize cleanup of an old real Run.
+
 ## Preservation and failures
 
 - `completion-receipt.json` preserves hashes and exact removed file bindings.

@@ -127,9 +127,15 @@ Keep `known`, `inferred`, and `unknown` separate throughout the plan.
      invariant schema.
 6. **Stop decomposition at the handoff boundary.** A leaf is small enough when
    one functional owner role with one named-assignee state can start it without
-   another planning decision and a different verifier can judge its evidence.
-   Split leaves that contain multiple functional owner roles, unrelated outputs,
-   hidden approvals, or more than one material failure path.
+   another planning decision and its evidence can be judged on the matching
+   surface. Split for distinct ownership, authority, or independently deliverable
+   outcomes. Several failure paths within one coherent outcome belong in that
+   leaf's checks and containment, not automatically in separate leaves.
+   Material claims need a different accountable verifier. The existing
+   [Company direct-work exception](../../../company-orchestration/SKILL.md#choose-the-organization-for-the-goal)
+   permits only an exact, low-impact local replacement with the assignee's
+   deterministic diff check. It is not independent QA. Keep emitted executable
+   leaves' runtime verifier invariant intact; do not invent a verifier to fit it.
 7. **Close only necessary dataflow edges.** Add `A -> write artifact -> B read
    artifact -> observation -> assignment tuple` only
    when B consumes A's output. Record coordination preferences separately and
@@ -179,6 +185,8 @@ Keep `known`, `inferred`, and `unknown` separate throughout the plan.
 Select by criterion coverage, reversal risk, and evidence—not by a preferred
 delivery style. Preserve at least one serious topology alternative when its
 tradeoff could change the sequence.
+
+Read [optional methods](../optional-methods.md) only when they could change a material unresolved choice; skip them for settled work.
 
 ## Common Failure Patterns
 

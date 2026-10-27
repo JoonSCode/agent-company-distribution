@@ -155,6 +155,11 @@ checks are deterministic preparation evidence only. Important acceptance needs
 an independent reviewer and actual user-path evidence; a green synthetic suite
 cannot claim worker behavior, runtime health, quality, token savings or deployment.
 
+For optional operations only—without adding any default or always-read requirement—use
+[receipt projection](record-projection.md) when projecting pinned Orca launch/done
+observations into a non-accepted supplementary draft, and [saved outcome evaluation](outcome-evaluation.md)
+when freezing inputs and grading saved trial outcomes for an approved study.
+
 ## Resource accounting
 
 Fresh Company Runs require root `resource_accounting: "required"`; invoke
@@ -225,7 +230,7 @@ mismatch. Standalone decisions require `label`; embedded decisions may omit it.
 Reassignment binds one prior candidate and one failure class.
 
 Candidates use `route` (`agy`, `antigravity`, `claude-code`, `claude`, `grok`, `codex`, `cursor`, `other`) and `family`
-(`flash`, `claude`, `grok`, `luna`, `sol`, `astra`, `other`, `excluded_pro`).
+(`flash`, `claude`, `grok`, `luna`, `terra`, `sol`, `astra`, `other`, `excluded_pro`).
 Model ids are opaque strings. `effort` is null when that route has no effort
 knob, or a nonempty provider label preserved as written. The checker does not
 translate labels and does not certify that a label was observed as a supported
@@ -240,7 +245,7 @@ a user actually wrote the pin. It never overrides safety or host permissions.
 
 `selected_reason` is `ordinary_assignment`, `bounded_codex_fallback`,
 `user_pin`, `tool_incompatibility`, `quality_incompatibility`, `complex_scope`,
-`not_required`, or `excluded_model`. Exactly one alternative has disposition
+`not_required`, `excluded_model`, or `price_informed`. Exactly one alternative has disposition
 `selected` and must match the selected route, family, model, effort, evidence,
 and reason. Other dispositions are `compared`, `incompatible`, `not_required`,
 and `excluded`. `not_required` may use null evidence. Every other candidate
@@ -299,3 +304,65 @@ installed callback can delete declared temporary files. It additionally requires
 real resource accounting, actual hash-bound acceptance evidence, overall accepted
 success, successful settled tasks and independent/parent acceptance. These guards
 do not authenticate a self-authored ledger or establish actual independent review.
+
+
+### Price-informed selection
+
+For the packaged current model table, add `price_selection` to the existing
+version-1 routing decision; legacy decisions without it keep their validation.
+`routing-select decision.json --json` returns advice, not a launch receipt.
+`routing-check` recomputes a present selection (required for reason
+`price_informed`) and checks the selected identity and quality/tool/billing
+constraints. The receipt includes the table hash and comparison basis. Existing
+Task/Dispatch, source hashes and optional `--record` binding still apply.
+
+`price_selection` contains integer `version: 1`, `task`, `cost_basis`
+(`benchmark_prior` or `whole_work_estimate`), boolean `scope_api_authorized`, and
+nonempty `candidates`. The LLM supplies `task` with `actor` (`company_head`,
+`team_lead`, `worker`; CEO/goal heads use `company_head`), `capability` (`focused`,
+`visual_writing`, `coding`, `judgment`), `complexity` (`bounded`, `complex`),
+`coupling` (`local`, `coupled`), boolean `decomposable`, `stage` (`outcome`,
+`execution`, `consultation`), `uncertainty` (`none`, `ambiguity`, `conflict`,
+`repeated_failure`) and an `evidence` id. A separable complex outcome returns
+`decompose`, not an executable choice; classify its real work units next.
+
+Each candidate has exact `route`, `family`, `model`, `effort`, boolean `supported`
+and `authenticated`, `tools` (`supported`, `unsupported`, `unknown`), `billing`
+(`subscription`, `paid_api`, `unknown`), `runtime_evidence`, `quality` (`adequate`,
+`insufficient`, `unknown`), `quality_evidence` and nullable `usage_estimate`.
+Supply only current-pin-compatible candidates. Runtime evidence must be host-kind
+(or synthetic in labeled tests), not merely an owner availability report. This
+checks supplied provenance, not its truth or freshness. Quality evidence must
+assess the actual task/model/effort; it may use applicable benchmark priors without
+new local trials. To supersede a conflicting general capability prior, the quality
+evidence entry needs `task_fit`: `task_evidence` matching this task's evidence id,
+`candidate` with the exact route/family/model/effort, a separate valid `support`
+evidence id, and a nonempty task-specific `rationale`. Unknown/insufficient quality
+cannot override a prior. These bindings reject empty, stale or self-supporting
+assertions; they do not authenticate the supplied assessment's substantive truth.
+Unknown/malformed runtime or semantic input fails closed;
+known-ineligible pairs are excluded. No automatic paid or unsupported fallback.
+
+A nonnull `usage_estimate` has `basis: estimate`, `evidence` and `stages` with all
+seven keys: `instructions`, `execution`, `feedback`, `failures`, `retries`,
+`review`, `integration`. Each is null (unknown) or a list of estimated full
+requests (`[]` explicitly means no separate requests). Each request has unique
+`id`, exact `model`, nonnegative integer `uncached_input`, `cached_input`,
+`cache_write_30m`, `output`, nonnegative `tools_usd`, `tier: standard`, and
+`region: global`. Input categories are disjoint; output includes reasoning already
+in the provider total. Assign each request to one stage only: instruction tokens
+inside an execution request are included there, not added again. Mixed-model
+review/retry requests use their own published model rate. Other price contexts
+are unsupported, not silently priced as Standard/global. All eligible workflows
+need complete estimates for an estimate comparison. When all eligible workflows
+have complete supplied estimates, they take precedence even if `benchmark_prior`
+was requested: the result records `requested_comparison_basis` separately from
+`comparison_basis`. Do not provide inapplicable estimates as comparable workflow
+inputs. Otherwise retain unknowns
+and explicitly use an applicable benchmark prior or obtain the missing evidence.
+
+Price advice leaves actual usage, subscription charges/credits and effective
+model/effort unknown. Keep requested versus observed settings in the existing
+Task model fields, with fallback/readback provenance in the associated evidence.
+A launch flag or a passed synthetic check is not effective-setting proof, permission
+to spend, a model call, a session switch or evidence of actual savings.

@@ -1,0 +1,15 @@
+{
+  "purpose": "Bounded feasibility and saved-outcome data-path validation; not a powered effects study",
+  "runtime_version": null,
+  "python": "3.13; record actual executable and patch version before running",
+  "host_cpu_ram": null,
+  "installed_policy_hash": null,
+  "global_instruction_hash": null,
+  "project_instruction_hash": null,
+  "host_hooks": null,
+  "memory": "No prior trial transcript supplied; host-injected memory cannot be certified absent",
+  "session": "A fresh actual Orca worker session for every planned trial; never reuse a pilot executor",
+  "tool_authority": "Only local reads, listed isolated artifact edits and Python checks; no network or external side effects",
+  "receipt_collection": "Identical saved raw receipt collection in both instruction arms",
+  "limits": "Fill observed common fields before freeze. Preserve unknowns. Host/global injection and hooks are not isolated by this supplied-instruction intervention. Backend model revision and real independence are not authenticated by hashes."
+}

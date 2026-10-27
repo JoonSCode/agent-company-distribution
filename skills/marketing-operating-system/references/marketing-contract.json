@@ -60,7 +60,10 @@
     "boundary_rules": {
       "fixed_variables_required": true,
       "tested_variable_must_not_be_fixed": true,
-      "external_outcome_transfer": "forbidden"
+      "external_outcome_transfer": "forbidden",
+      "paywall_presentation_fixed_variables": ["audience", "eligibility", "offer", "price", "paywall timing", "channel", "product experience", "measurement"],
+      "paywall_timing_fixed_variables": ["audience", "eligibility", "offer", "price", "paywall presentation", "channel", "product experience", "measurement"],
+      "timing_rule": "A paywall timing experiment tests timing alone while holding presentation and all other canonical variables fixed. This distinction does not authorize changing an approved offer or price."
     }
   },
   "evidence_action_contract": {

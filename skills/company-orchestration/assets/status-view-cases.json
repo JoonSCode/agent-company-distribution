@@ -1,0 +1,468 @@
+{
+  "version": 1,
+  "label": "synthetic",
+  "cases": [
+    {
+      "name": "execution-success-overall-pending",
+      "expected_check_ok": true,
+      "expected_error_codes": [],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "SYNTHETIC",
+        "성공 (정산됨 · 기록 일관성 확인)",
+        "통과 (기록됨)",
+        "대기 (전체 목표 평가 pending)",
+        "lead-b",
+        "제안됨 (proposed · 미수락 · 책임 이전 안 됨)"
+      ],
+      "expected_html_absent": [
+        "기록상 전체 목표 승인 완료"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"},
+          "accept-b": {"ref": "synthetic://accept-b", "sha256": null, "kind": "synthetic"},
+          "result": {"ref": "synthetic://result", "sha256": null, "kind": "synthetic"},
+          "review": {"ref": "synthetic://review", "sha256": null, "kind": "synthetic"},
+          "integration": {"ref": "synthetic://integration", "sha256": null, "kind": "synthetic"},
+          "assessment": {"ref": "synthetic://assessment", "sha256": null, "kind": "synthetic"},
+          "usage": {"ref": "synthetic://usage", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-demo-1",
+          "revision": "r1",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": {
+            "verdict": "pending",
+            "basis": "independent",
+            "evidence": "assessment",
+            "revision": "r1",
+            "scope": "company-next",
+            "actor": "independent-qa"
+          },
+          "current_owner": "lead-b",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-next", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"},
+          {"revision": "r1", "scope": "company-next", "from": "lead-a", "to": "lead-b", "status": "accepted", "accepted_by": "lead-b", "evidence": "accept-b"},
+          {"revision": "r1", "scope": "company-next", "from": "lead-b", "to": "lead-c", "status": "proposed", "accepted_by": null, "evidence": null}
+        ],
+        "tasks": [
+          {
+            "id": "task-1",
+            "goal_revision": "r1",
+            "goal_scope": "company-next",
+            "parent": "lead-b",
+            "current_dispatch": "ctx-current",
+            "candidate": "sha-current",
+            "execution": {
+              "state": "settled",
+              "actor": "worker-1",
+              "result": {
+                "task": "task-1",
+                "dispatch": "ctx-current",
+                "candidate": "sha-current",
+                "evidence": "result",
+                "outcome": "succeeded"
+              }
+            },
+            "technical": {
+              "task": "task-1",
+              "dispatch": "ctx-current",
+              "candidate": "sha-current",
+              "evidence": "review",
+              "verdict": "passed",
+              "actor": "reviewer-1"
+            },
+            "parent_integration": {
+              "task": "task-1",
+              "dispatch": "ctx-current",
+              "candidate": "sha-current",
+              "evidence": "integration",
+              "verdict": "passed",
+              "actor": "lead-b"
+            },
+            "model": {
+              "requested": "gemini-4-argon-high",
+              "observed": "gemini-4-argon-high",
+              "effort_requested": null,
+              "effort_observed": null
+            },
+            "retry_claimed": false,
+            "another_writer_claimed": false
+          }
+        ],
+        "usage": {
+          "coverage": "unknown",
+          "expected": ["vendor/request/req-1"],
+          "entries": []
+        }
+      }
+    },
+    {
+      "name": "wrong-candidate-and-dispatch",
+      "expected_check_ok": false,
+      "expected_error_codes": ["stale_binding"],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "stale_binding",
+        "ctx-current",
+        "ctx-old",
+        "sha-v2",
+        "sha-v1"
+      ],
+      "expected_html_absent": [
+        "기록상 전체 목표 승인 완료"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"},
+          "result": {"ref": "synthetic://result", "sha256": null, "kind": "synthetic"},
+          "review": {"ref": "synthetic://review", "sha256": null, "kind": "synthetic"},
+          "integration": {"ref": "synthetic://integration", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-1",
+          "revision": "r1",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": null,
+          "current_owner": "lead-a",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-next", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"}
+        ],
+        "tasks": [
+          {
+            "id": "task-1",
+            "goal_revision": "r1",
+            "goal_scope": "company-next",
+            "parent": "lead-a",
+            "current_dispatch": "ctx-current",
+            "candidate": "sha-v2",
+            "execution": {
+              "state": "settled",
+              "actor": "worker-1",
+              "result": {
+                "task": "task-1",
+                "dispatch": "ctx-old",
+                "candidate": "sha-v2",
+                "evidence": "result",
+                "outcome": "succeeded"
+              }
+            },
+            "technical": {
+              "task": "task-1",
+              "dispatch": "ctx-current",
+              "candidate": "sha-v1",
+              "evidence": "review",
+              "verdict": "passed",
+              "actor": "reviewer-1"
+            },
+            "parent_integration": {
+              "task": "task-1",
+              "dispatch": "ctx-current",
+              "candidate": "sha-v2",
+              "evidence": "integration",
+              "verdict": "passed",
+              "actor": "lead-a"
+            },
+            "model": {"requested": null, "observed": null, "effort_requested": null, "effort_observed": null},
+            "retry_claimed": false,
+            "another_writer_claimed": false
+          }
+        ],
+        "usage": {"coverage": "unknown", "expected": [], "entries": []}
+      }
+    },
+    {
+      "name": "unknown-usage",
+      "expected_check_ok": true,
+      "expected_error_codes": [],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "미상 (null — 0으로 간주하지 않음)",
+        "vendor/vendor-v1"
+      ],
+      "expected_html_absent": [
+        "<strong><code>0</code></strong>"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"},
+          "usage": {"ref": "synthetic://usage", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-usage",
+          "revision": "r1",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": null,
+          "current_owner": "lead-a",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-next", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"}
+        ],
+        "tasks": [],
+        "usage": {
+          "coverage": "partial",
+          "expected": ["vendor/request/req-1"],
+          "entries": [
+            {
+              "provider": "vendor",
+              "tokenizer": "vendor-v1",
+              "kind": "request",
+              "id": "req-1",
+              "session": "session-1",
+              "input": 120,
+              "output": null,
+              "cached_input": 20,
+              "reasoning": null,
+              "cached_in_input": true,
+              "reasoning_in_output": true,
+              "evidence": "usage"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "missing-proof",
+      "expected_check_ok": false,
+      "expected_error_codes": ["evidence_required", "unknown_evidence"],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "evidence_required",
+        "unknown_evidence",
+        "독립 기술 검증 미실시 (null)"
+      ],
+      "expected_html_absent": [
+        "기록상 전체 목표 승인 완료"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-missing-proof",
+          "revision": "r1",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": null,
+          "current_owner": "lead-a",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-next", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"}
+        ],
+        "tasks": [
+          {
+            "id": "task-1",
+            "goal_revision": "r1",
+            "goal_scope": "company-next",
+            "parent": "lead-a",
+            "current_dispatch": "ctx-1",
+            "candidate": "sha-1",
+            "execution": {
+              "state": "settled",
+              "actor": "worker-1",
+              "result": {
+                "task": "task-1",
+                "dispatch": "ctx-1",
+                "candidate": "sha-1",
+                "evidence": "absent-evidence-id",
+                "outcome": "succeeded"
+              }
+            },
+            "technical": null,
+            "parent_integration": {
+              "task": "task-1",
+              "dispatch": "ctx-1",
+              "candidate": "sha-1",
+              "evidence": null,
+              "verdict": "passed",
+              "actor": "lead-a"
+            },
+            "model": {"requested": null, "observed": null, "effort_requested": null, "effort_observed": null},
+            "retry_claimed": false,
+            "another_writer_claimed": false
+          }
+        ],
+        "usage": {"coverage": "unknown", "expected": [], "entries": []}
+      }
+    },
+    {
+      "name": "scope-mismatch",
+      "expected_check_ok": false,
+      "expected_error_codes": ["goal_binding", "owner_pending", "scope_acceptance"],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "goal_binding",
+        "scope_acceptance",
+        "owner_pending"
+      ],
+      "expected_html_absent": [
+        "기록상 전체 목표 승인 완료"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"},
+          "result": {"ref": "synthetic://result", "sha256": null, "kind": "synthetic"},
+          "review": {"ref": "synthetic://review", "sha256": null, "kind": "synthetic"},
+          "integration": {"ref": "synthetic://integration", "sha256": null, "kind": "synthetic"},
+          "assessment": {"ref": "synthetic://assessment", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-scope",
+          "revision": "r2",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": {
+            "verdict": "succeeded",
+            "basis": "independent",
+            "evidence": "assessment",
+            "revision": "r1",
+            "scope": "company-old",
+            "actor": "independent-qa"
+          },
+          "current_owner": "lead-a",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-old", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"}
+        ],
+        "tasks": [
+          {
+            "id": "task-1",
+            "goal_revision": "r1",
+            "goal_scope": "company-old",
+            "parent": "lead-a",
+            "current_dispatch": "ctx-1",
+            "candidate": "sha-1",
+            "execution": {
+              "state": "settled",
+              "actor": "worker-1",
+              "result": {"task": "task-1", "dispatch": "ctx-1", "candidate": "sha-1", "evidence": "result", "outcome": "succeeded"}
+            },
+            "technical": {"task": "task-1", "dispatch": "ctx-1", "candidate": "sha-1", "evidence": "review", "verdict": "passed", "actor": "qa"},
+            "parent_integration": {"task": "task-1", "dispatch": "ctx-1", "candidate": "sha-1", "evidence": "integration", "verdict": "passed", "actor": "lead-a"},
+            "model": {"requested": null, "observed": null, "effort_requested": null, "effort_observed": null},
+            "retry_claimed": false,
+            "another_writer_claimed": false
+          }
+        ],
+        "usage": {"coverage": "unknown", "expected": [], "entries": []}
+      }
+    },
+    {
+      "name": "hostile-text",
+      "expected_check_ok": false,
+      "expected_error_codes": ["unsafe_ref_scheme"],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "&lt;script&gt;alert(1)&lt;/script&gt;&quot;&#x27;&amp;&lt;img src=x onerror=alert(1)&gt;",
+        "unsafe_ref_scheme"
+      ],
+      "expected_html_absent": [
+        "<script>alert(1)</script>",
+        "<img src=x onerror=alert(1)>",
+        "href=\"javascript:"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "javascript:alert(1)//<script>alert(1)</script>\"'&<img src=x onerror=alert(1)>", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-hostile",
+          "revision": "r1",
+          "scope": "<script>alert(1)</script>\"'&<img src=x onerror=alert(1)>",
+          "plan": "plan",
+          "status": "pending",
+          "known_failure": false,
+          "assessment": null,
+          "current_owner": "lead-a",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "<script>alert(1)</script>\"'&<img src=x onerror=alert(1)>", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"}
+        ],
+        "tasks": [],
+        "usage": {"coverage": "unknown", "expected": [], "entries": []}
+      }
+    },
+    {
+      "name": "unapproved-owner-inference",
+      "expected_check_ok": false,
+      "expected_error_codes": ["unaccepted_owner"],
+      "expected_overall_success": false,
+      "expected_html_contains": [
+        "unaccepted_owner",
+        "오류: 미승인/불일치 소유자 주장 (unaccepted_owner)",
+        "제안됨 (proposed · 미수락 · 책임 이전 안 됨)"
+      ],
+      "expected_html_absent": [
+        "수락 완료 (lead-c)",
+        "기록상 전체 목표 승인 완료"
+      ],
+      "record": {
+        "version": 1,
+        "label": "synthetic",
+        "evidence": {
+          "plan": {"ref": "synthetic://plan", "sha256": null, "kind": "synthetic"},
+          "accept-a": {"ref": "synthetic://accept-a", "sha256": null, "kind": "synthetic"},
+          "accept-b": {"ref": "synthetic://accept-b", "sha256": null, "kind": "synthetic"}
+        },
+        "goal": {
+          "id": "goal-owner",
+          "revision": "r1",
+          "scope": "company-next",
+          "plan": "plan",
+          "status": "active",
+          "known_failure": false,
+          "assessment": null,
+          "current_owner": "lead-c",
+          "owner_acceptance": "accepted"
+        },
+        "ownership": [
+          {"revision": "r1", "scope": "company-next", "from": null, "to": "lead-a", "status": "accepted", "accepted_by": "lead-a", "evidence": "accept-a"},
+          {"revision": "r1", "scope": "company-next", "from": "lead-a", "to": "lead-b", "status": "accepted", "accepted_by": "lead-b", "evidence": "accept-b"},
+          {"revision": "r1", "scope": "company-next", "from": "lead-b", "to": "lead-c", "status": "proposed", "accepted_by": null, "evidence": null}
+        ],
+        "tasks": [],
+        "usage": {"coverage": "unknown", "expected": [], "entries": []}
+      }
+    }
+  ]
+}

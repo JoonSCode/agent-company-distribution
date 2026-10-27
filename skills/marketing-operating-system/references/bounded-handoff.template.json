@@ -12,7 +12,7 @@
   "inferred": [],
   "knowledge_context_binding": {
     "attestation_scope": "resolver_materialized_selection",
-    "context_id": "df065a6a724659f14d85bcf831f1a16621320a5e69aa6997e8b6cd7d778a63aa",
+    "context_id": "e2d20ec2d642667760d79138019026571380d59d4925187ab78b4bf09b060481",
     "decision_questions": [
       "Which evidence-backed marketing decision should be made next?",
       "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
@@ -20,12 +20,12 @@
     "format": "agent-company.knowledge-context/v0.2",
     "issued_at": "2026-07-30T00:00:00Z",
     "issued_by": "agent-company-expertise-resolver/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "materialized_references": [
       {
         "id": "role-kernel:marketing",
         "ref": "skills/marketing-operating-system/references/marketing-contract.json",
-        "sha256": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73",
+        "sha256": "dbcb8e073280e1e7ef56995545f820af12e92ecf77d0d53c74796189c4a1c889",
         "version": "0.1.0"
       },
       {
@@ -56,15 +56,15 @@
   },
   "knowledge_usage_receipt": {
     "attestation_scope": "worker_reported_use_independent_verification_required",
-    "context_id": "df065a6a724659f14d85bcf831f1a16621320a5e69aa6997e8b6cd7d778a63aa",
+    "context_id": "e2d20ec2d642667760d79138019026571380d59d4925187ab78b4bf09b060481",
     "decision_questions": [
       "Which evidence-backed marketing decision should be made next?",
       "What evidence-backed demand positioning decision should the marketing role make, and what evidence would change it?"
     ],
     "format": "agent-company.knowledge-usage-receipt/v0.2",
-    "manifest_sha256": "1c57d46acbe9a42642753e771e30235c8d60cfecdb5f82ed42ba0a560e435114",
+    "manifest_sha256": "95767d5415ec2806ef431465ba22177d7ec3859301b34847c1202d8fccc09ffb",
     "objective_sha256": "f76e6b25b61b5cc54b3548aa3e0500238881cf4a41c16292482161f65a559667",
-    "receipt_id": "b27fc62e8bfd322fdaa8671843d1ceaa565951020ad89c1ab8c45e1a9710aad8",
+    "receipt_id": "db3cb80fe5ad78e2791301d77f51ab2d14020a23cece73ab7af094d0aec09409",
     "registry_sha256": "ac1ba6dd83328ba8e2cf2089676bd94128b71e9144e1403b8b78f7425923347b",
     "reported_at": "2026-07-30T00:01:00Z",
     "reported_by": "role-worker",
@@ -84,7 +84,7 @@
         ],
         "id": "role-kernel:marketing",
         "ref": "skills/marketing-operating-system/references/marketing-contract.json",
-        "sha256": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73",
+        "sha256": "dbcb8e073280e1e7ef56995545f820af12e92ecf77d0d53c74796189c4a1c889",
         "version": "0.1.0"
       },
       {
@@ -104,7 +104,7 @@
   "objective": "Replace with the live marketing decision.",
   "operating_contract_binding": {
     "ref": "skills/marketing-operating-system/references/marketing-contract.json",
-    "sha256": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73"
+    "sha256": "dbcb8e073280e1e7ef56995545f820af12e92ecf77d0d53c74796189c4a1c889"
   },
   "risks": [],
   "role": "marketing",

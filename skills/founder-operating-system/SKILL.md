@@ -38,14 +38,19 @@ and `unknown`.
 
 Set `decision_readiness`:
 
-- `blocked` when a missing customer, commercial, capability, cash, or portfolio
-  fact could reverse the choice;
-- `conditional` when one reversible test can resolve the material uncertainty;
+- `blocked` when the problem, target, or credible evidence source is too unclear
+  to define a meaningful bounded test; request that minimum grounding first;
+- `conditional` when a material reversal fact is unknown but a clear hypothesis,
+  target, evidence source, owner, and small reversible test can resolve it;
 - `ready` when evidence supports a bounded recommendation and explicit kill or
   revisit criteria.
 
-When blocked, return an evidence request. Do not manufacture a market, buyer,
-urgency, or strategic certainty.
+Readiness is about evidence, not permission. Exclude options that violate hard
+constraints or prohibited outcomes. An otherwise viable option awaiting approval
+may remain in the comparison with its required approval and decision owner;
+it is not executable until that approval exists, even when readiness is `ready`.
+When blocked, return an evidence request or non-committing option frame. Do not
+manufacture a market, buyer, urgency, or strategic certainty.
 
 ## Follow Through On Material Discoveries
 
@@ -94,7 +99,7 @@ Return:
 - opportunity cost and what is explicitly not funded;
 - owner and next supported Company handoff destination.
 
-Prefer a small learning commitment when evidence is conditional. Do not use
+Recommend a small learning commitment when evidence is conditional. Do not use
 ownership language to justify sunk-cost escalation.
 
 ## Route Specialists Sparingly

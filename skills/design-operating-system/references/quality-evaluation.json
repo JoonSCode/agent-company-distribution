@@ -5,7 +5,7 @@
     {
       "id": "minimum-settings-label",
       "tier": "minimum",
-      "prompt": "Improve an ambiguous destructive settings label without changing navigation, data behavior, or the component family.",
+      "prompt": "Clarify the wording of an existing approved destructive settings label while preserving its approved meaning, authority, defaults, irreversibility, recovery, navigation, state model, data behavior and component family. State the evidence that the communicated risk meaning is unchanged; if it changes, use Deep instead of Minimum.",
       "required_states": ["default", "confirmation", "cancelled", "completed"]
     },
     {

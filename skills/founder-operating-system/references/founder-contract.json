@@ -3,14 +3,16 @@
   "decision_readiness": [
     {
       "status": "blocked",
+      "readiness_rule": "The problem, target, or credible evidence source is too unclear to define a meaningful bounded test.",
       "required_evidence": ["known", "inferred", "unknown", "reversal question", "next evidence action"],
       "allowed_outputs": ["evidence request", "non-committing option frame"],
       "forbidden_outputs": ["portfolio commitment", "budget allocation", "CEO decision claim"]
     },
     {
       "status": "conditional",
+      "readiness_rule": "A material reversal fact is unknown, but a clear hypothesis, target, evidence source, owner, and small reversible test can resolve it; execution still needs its required authority.",
       "required_evidence": ["credible opportunity", "material assumption", "smallest reversible test", "stop condition"],
-      "allowed_outputs": ["bounded learning commitment"],
+      "allowed_outputs": ["bounded learning recommendation subject to required approval"],
       "forbidden_outputs": ["irreversible commitment", "unsupported certainty"]
     },
     {
@@ -35,7 +37,9 @@
     "large_market_is_not_demand_proof": true,
     "sunk_cost_is_not_continuation_evidence": true,
     "irreversible_commitment_requires_ready_status": true,
-    "conditional_status_prefers_smallest_reversible_test": true
+    "conditional_status_prefers_smallest_reversible_test": true,
+    "option_admissibility": "Exclude hard-constraint violations and prohibited outcomes; retain otherwise viable approval-pending options for comparison with the required approval and decision owner, never for unapproved execution.",
+    "readiness_is_not_execution_authority": true
   },
   "specialist_routing": {
     "default_specialist_limit": 2,

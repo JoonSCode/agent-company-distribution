@@ -19,6 +19,9 @@ rationale. It is a decision map, not a checklist or ranking of celebrities.
 - Treat practitioner frameworks as lenses with limits, not universal laws.
 - Treat vendor guidance as useful but interested evidence.
 - Use the smallest lens set that changes the decision.
+- The targeted additions below adapt research checked on 2026-10-26; they are
+  not validated prompts, guaranteed outcomes, or execution authority. Reuse
+  existing decision fields rather than adding framework artifacts.
 - Keep source-derived claims in `known`, synthesis in `inferred`, and unresolved
   applicability in `unknown`.
 
@@ -37,29 +40,46 @@ objectives, and preventing channel-first planning.
 
 ### April Dunford: Positioning As Context
 
-Use when customers cannot quickly understand why to choose the product.
+Use when customers cannot quickly understand why to choose the product; skip
+repositioning when the live task is settled copy craft.
 
 - Inspect competitive alternatives, differentiated capabilities, customer
   value, best-fit segments, and market category.
 - Build messaging and storytelling only after positioning.
 - Limit: do not invent a new category by default; test and refresh positioning
-  as markets and alternatives change.
+  as markets and alternatives change. Its B2B origins do not settle consumer
+  habit or emotional context. Observed confusion, a changed real alternative,
+  or weaker downstream user quality can reverse the selected context.
 - Sources: [Introduction to positioning](https://www.aprildunford.com/post/an-introduction-to-positioning),
   [Quickstart guide](https://www.aprildunford.com/post/a-quickstart-guide-to-positioning).
 
 ### Clayton Christensen, Bob Moesta, Chris Spiek: Jobs To Be Done
 
-Use to understand why people switch, stall, or continue non-consumption.
+Use to understand why people switch, stall, or continue non-consumption; skip
+another interview framework when relevant behavior already explains the choice.
 
 - Inspect the struggling moment, purchase timeline, current workaround, real
   alternatives, desired progress, pull, push, anxiety, and habit.
 - Prefer recent switch interviews and observed behavior over stated feature
   preferences.
 - Limit: JTBD does not replace targeting, commercial validation, or market
-  sizing.
+  sizing. Retrospective accounts are recall-biased; observed use that conflicts
+  with the inferred job reopens the hypothesis rather than redefining the user.
 - Sources: [Christensen on JTBD](https://hbr.org/podcast/2020/01/revisiting-jobs-to-be-done-with-clayton-christensen),
   [Re-Wired guide](https://therewiredgroup.com/learn/complete-guide-jobs-to-be-done/),
-  [JTBD interview method](https://jobstobedone.org/).
+  [JTBD interview method](https://jobstobedone.org/),
+  [Christensen Institute](https://www.christenseninstitute.org/theory/jobs-to-be-done/).
+
+### The Mom Test: Past Behavior, Not Compliments
+
+Use when demand evidence consists of praise or future purchase promises; skip
+new interviews when observed switching, purchase or retained use already answers
+the decision. Recent concrete behavior and workarounds can reduce leading-question
+bias, but recall and sample selection still limit inference. Contradictory usage
+or credible commitment evidence changes the demand judgment; an interview alone
+does not establish market prevalence. Existing outreach and privacy authority
+still applies. Source: [author's introduction](https://www.momtestbook.com/)
+(not a claim to have read or validated the full book).
 
 ### Seth Godin: Smallest Viable Audience And Permission
 
@@ -202,6 +222,15 @@ Choose the method from the decision:
 
 Record power, confidence, comparison validity, conversion lag, and opportunity
 cost. Label underpowered or observational results as directional.
+
+Use a controlled incrementality test when a causal allocation choice needs it
+and a valid, authorized comparison is feasible; skip causal estimation for a
+settled copy edit or a small explicitly directional learning test. The benefit
+is separating credited demand from additional demand, not guaranteeing lift.
+The [eBay field experiment](https://www.nber.org/papers/w20171) illustrates
+selection bias; its result is not an app forecast. Valid assignment/exposure
+evidence, a changed baseline or downstream-quality harm can reverse the
+allocation judgment. An underpowered result remains inconclusive.
 
 Sources: [Google Conversion Lift](https://support.google.com/google-ads/answer/12005564?hl=en),
 [Google measurement stack](https://support.google.com/google-ads/answer/16719772?hl=en),

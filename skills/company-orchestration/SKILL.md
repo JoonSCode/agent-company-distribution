@@ -37,9 +37,9 @@ work continues through implementation, appropriate verification and any necessar
 alternative within scope. A completed worker is not a completed goal.
 
 For a consequential unresolved choice owned by the user, prepare criteria,
-credible alternatives with pros and cons, an evidence-based or conditional
-recommendation, its strongest counterargument and the evidence that would change
-it. Ask for the actual choice before dependent execution; continue independent
+the status quo and credible alternatives with pros and cons, an evidence-based or
+conditional recommendation, its strongest counterargument and the evidence that
+would change it. Ask for the actual choice before dependent execution; continue independent
 approved work. If decisive evidence is missing, identify a small next check.
 Do not ask again for settled approval or turn routine tactics into an interview.
 
@@ -56,6 +56,14 @@ work, integration risk and briefing/review burden. Large goals may start with
 all relevant leads; do not wait for a lone worker to fail first. Small exact
 tasks may need one owner and a deterministic check. A hard single-domain problem
 does not automatically need multiple teams.
+
+Start independent ready bounded contributions in parallel within the current
+worker and resource limits. Serialize actual dependencies, shared mutable
+resources and overlapping writers; do not hold unrelated advice or evidence
+collection behind one lead's unfinished output. Keep accepted team boundaries
+and integration owners, without a fixed squad size or compulsory extra layers.
+Independent QA may prepare from available originals, but its final verdict must
+bind the exact candidate after relevant changes settle.
 
 The overall Company head defaults to orchestration, judgment and acceptance:
 retaining user intent, acceptance criteria, decomposition and assignment, dependency
@@ -112,6 +120,18 @@ decisions and source-linked ownership using the
 import reduces repeated IDs but does not certify meaningful discussion or consent.
 New counterevidence reopens the affected assumption. Consensus, a fixed headcount
 or a mandatory number of meetings is not success.
+
+At decomposition, consider provider-native helpers as a normal task-fit option
+alongside direct tools and supervised Orca workers. Use one for a useful separable
+contribution when the actual host exposes the tools and the task's permissions,
+selected service and aggregate resource budget allow it. Keep tiny or tightly
+coupled work with one owner when briefing and review cost more than the benefit;
+helper use is not a quota. Follow the [bounded native-helper workflow](references/orca-contract.md#bounded-native-helper-workflow).
+The owning Orca worker reviews and integrates the original result, keeps the
+existing Task/Dispatch authority and settles its helper resources. Native helpers
+do not replace an accepted role owner or independent QA, and add no automatic
+Task/Dispatch bridge.
+
 Within a team, separate collection, settled execution and uncertain judgment
 only when the benefit exceeds briefing, context, review and integration costs.
 Use deterministic tools for mechanical work and retain tiny settled edits with
@@ -131,7 +151,10 @@ accepted owner remains responsible until then. The same owner may change local
 tactics inside accepted scope without reacceptance. Recover a missing owner by
 arranging a real successor acceptance, never by inventing one or bypassing an
 active/uncertain Dispatch. [Record contract](references/record-contract.md) provides
-a small supplementary format when durable checking is useful.
+a small supplementary format when durable checking is useful; optional on-demand
+references cover [saved outcome evaluation](references/outcome-evaluation.md),
+[saved Codex usage](references/provider-usage.md), and the
+[local status snapshot viewer](references/status-view.md).
 
 Keep durable work state separate from replaceable model sessions. At material
 corrections, decisions or results, retain a compact source-linked note; at a
@@ -139,6 +162,20 @@ handoff, the successor reads originals/current state and explicitly accepts
 the exact scope/version. Use [session continuity](references/session-continuity.md)
 when context pressure, recurring confusion or a work/review boundary warrants
 a session change. It grants no execution authority or permanent higher head.
+
+At a meaningful task or stage boundary, proactively identify the next needed
+contribution across domains: a settled decision ready for execution, a missing
+specialist input, a blocker, or a candidate ready for independent QA. Name the
+responsible owner, exact scope/source revision, observable acceptance and next
+action in the existing Task, work note or bounded handoff. Route an in-scope
+request to the responsible lead without waiting for the user to enumerate it;
+propose material scope/authority changes to the accepted decision owner. Until a
+successor explicitly accepts, the current owner retains the obligation. Keep one
+writer per mutable scope. A tiny settled step may stay with the current owner
+when briefing and integration cost more; record that short reason at the boundary.
+This does not require a new session, a child for every task or consultation on
+every edit. Use the [compact direction/report protocol](references/session-continuity.md#compact-direction-and-report)
+when coordination benefits from one shared workload note; it adds no new ledger.
 
 Separate execution settlement, technical acceptance and overall user/business
 outcome. All team checks passing cannot erase a failed integrated user path.
@@ -175,25 +212,29 @@ compilation and repeatable tests. Use AI for unresolved intent, conflicting
 evidence, design trade-offs, causal diagnosis and reasoning-heavy implementation
 or review. Static success does not prove usability or business success.
 
-Before assignment or a material phase change, use the internal
+Before assignment or a material phase change, read and apply the internal
 [model and context policy](references/model-routing.md) and resolve the
-[Markdown configuration](references/configuration.md). Common operating rules →
-selected preset → private user override → explicit current task is the precedence,
-bounded by higher-priority authority and safety. Read the resolver's source and
-hash explanation. No public head model, provider ordering or model exclusion is
-implied. Select only supported, authenticated routes whose tools and billing fit
-the current task. Claude Code direct and Antigravity Claude are distinct routes.
-Reuse applicable dated evidence and verify actual model/effort readback. Preserve
-independent acceptance and complete observed raw-token accounting; unknown usage
-stays unknown. API-paid execution needs explicit opt-in and never becomes an
-automatic fallback. Configuration never switches a running turn or app default.
+[Markdown configuration](references/configuration.md), including its source/hash
+explanation. Those required references govern precedence, route eligibility,
+authentication/tools/billing, model/effort readback, independent acceptance and
+observed raw-token accounting. API-paid execution requires explicit opt-in;
+unknown usage stays unknown. Configuration never switches a running turn or app default.
 
 Give each worker a self-contained brief: approved goal and contribution; target
-and permitted edits; constraints and authority; inputs/source versions; expected
-output and observable acceptance; verification/integration owner; resource/stop
-conditions; relevant model/context policy. Say other workers share the checkout
-and must not revert one another. Carry material dissent and original source refs;
+and permitted edits; explicit must/must-not constraints and authority; inputs/source versions; expected
+output and task-appropriate observable acceptance; verification/integration owner; resource/stop
+conditions; relevant model/context policy. Connect required contributions and
+checks to the approved goal and acceptance criteria; surface missing necessary
+work without silently changing scope or acceptance. Carry material decision
+rationale, permitted alternatives and evidence/stop conditions into the brief,
+not only the parent context. Routine exact work needs no options quota or extra
+form. Say other workers share the checkout and must not revert one another. Carry material dissent and original source refs;
 do not forward whole transcripts or another reviewer's conclusions by default.
+
+At Orca worker creation or reuse, name the actual role and bounded task visibly
+(`Role · task`). Set the supported Task title and terminal/chat name, then read
+back the actual visible name. A Task receipt or process auto-title alone is not
+custom tab-name verification. See [the host naming boundary](references/orca-contract.md).
 
 Before allocating workspaces, builds, devices or large artifacts, use the
 [resource reuse and retention policy](references/resource-policy.md). Reuse
@@ -237,13 +278,16 @@ The package's Python tools inspect and compare evidence; they do not schedule,
 launch, retry, stop, update or approve work on the operator's behalf.
 
 On failure, preserve the failed attempt, separate observation from hypothesis,
-choose a small discriminating check or a credible different approach, and name
-the next owner/action. Do not repeat the same failure without new evidence or
+choose a small discriminating check or a permitted different approach that
+preserves the acceptance claim and evidence quality, and name the next
+owner/action. Never bypass a denial or repeat a side effect while its result is unknown; inspect
+its state first. Do not repeat the same failure without new evidence or
 promote an unknown process state to exit. New information can justify a different
 model/path, not an automatic escalation to a favorite model.
 
-Before closing: check the original outcome against the final candidate, keep
-remaining failures/unknowns visible, and settle every worker resource. Report
+Before closing: check the original outcome against the final candidate, link
+observed evidence to the approved acceptance criteria, keep unverified criteria
+and remaining failures/unknowns visible, and settle every worker resource. Report
 local changes, verification and its limits, remaining work, and the next action.
 Do not claim installation, provider-wide adoption, savings, or product outcomes
 from a source check or a synthetic case.

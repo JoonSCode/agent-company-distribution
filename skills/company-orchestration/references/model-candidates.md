@@ -1,8 +1,8 @@
 # Task candidates
 
 Apply [routing policy](model-routing.md), [configuration](configuration.md) and
-[evidence freshness](model-evidence.md). This is a human decision aid, not a
-router, certified equivalence table or automatic model assignment.
+[evidence freshness](model-evidence.md). This is a task-fit decision aid; the packaged pure selector applies its supplied
+classifications and price priors, not certified equivalence or launch authority.
 
 ## Select by the task
 
@@ -14,20 +14,27 @@ model exclusion, head-model pin or effort floor applies.
 | Task | Starting approach | Evidence needed |
 |---|---|---|
 | Exact lookup, formatting or deterministic validation | Use an existing tool directly | Exact input and output checks |
-| Small clear edit or extraction | A supported candidate with reliable verification | Scope, acceptance and applied setting |
-| Interacting code or unexplained failure | Compare candidates suited to causal diagnosis | Failure evidence and meaningful regression checks |
+| Small clear edit or extraction | One supported task-fit pair; no all-tier invocation | Scope, acceptance and applied setting |
+| Complex coupled code | Consider Sol/Astra execution, not a mandatory cheap worker | Coupling, quality fit and meaningful regression checks |
+| Separable complex work | Hard design/contracts/judgment separated from bounded implementation | Real work-unit boundaries and total briefing/review cost |
 | Consequential judgment or integrated review | Compare reasoning, tool and context fit | Original evidence, counterevidence and independent acceptance |
 | Coordination across owned tasks | Smallest sufficient team | Briefing/integration burden, lifecycle and independent review |
 
-First meet quality, authority, tools and billing requirements. Then compare
-complete observed raw tokens within the deadline; keep time separate. Count
-context transfer, failed attempts, retries, integration and review. Different
-provider tokenizers limit cross-provider comparisons. Unknown usage stays unknown;
-price, quota or speed does not prove fewer total tokens.
+First meet quality, authority, tools and billing requirements. Then compare the
+whole-work API-price proxy, not raw tokens alone. Include instructions, feedback,
+failures, retries, integration and review, including other models used in the same
+workflow. Missing usage remains unknown. Published API rates and benchmark costs
+are not actual subscription charges/credits or local savings evidence.
 
-A stronger model at lower effort may outperform another at higher effort, or the
-reverse. Do not impose a mandatory cheap-first ladder or fixed role-to-model map.
-Reassess after a material scope/acceptance change, failure or relevant new evidence.
+The [dated table](../assets/model-choice-priors.json) covers exact model/effort
+pairs, current published rates and separately labeled user-transcribed ALE points.
+Task-specific quality assessment gates price comparison; a cheaper adequate pair
+can start without a compulsory local A/B. Neither similar point scores nor a
+provider's qualitative guidance proves identical capability. Max and xhigh are
+not interchangeable. A stronger model at lower effort can fit better than another
+at higher effort. Reassess after material scope/acceptance changes, genuine
+ambiguity, conflict, repeated failure or relevant new evidence; do not consult a
+strong model for every settled step or map job titles to fixed models.
 
 ## Route and selection receipt
 

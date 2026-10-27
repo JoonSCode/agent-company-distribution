@@ -67,14 +67,19 @@ exists.
 
 ## Select Proportional Work
 
-Choose the highest triggered tier.
+Choose the highest tier triggered by the current change, not merely by the
+surface's existing subject matter. Assess changes to meaning, authority,
+defaults, irreversibility and recovery. A wording-only edit that changes any
+of those risk semantics is not a minimum change.
 
 - `minimum`: bounded copy, spacing, color, style, or component adjustment that
-  preserves navigation, semantics, state model and data behavior.
+  preserves navigation, semantics, state model, data behavior, authority,
+  defaults, irreversibility and recovery, including the communicated risk meaning.
 - `standard`: a new screen, feature, flow, navigation change, information
   hierarchy, critical state, or meaningful interaction.
-- `deep`: a new product, onboarding, payment, health, privacy, permission,
-  destructive action, AI agency, or major redesign.
+- `deep`: a new product or major redesign; introducing or changing the risk
+  semantics of onboarding, payment, health, privacy, permission, destructive
+  action, AI agency or consequential automation, including through copy.
 
 Escalate immediately when a higher-tier trigger appears. Downgrade only when
 evidence proves the trigger does not apply. Do not force multiple visual

@@ -8,14 +8,15 @@ import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from company_config import ConfigError, resolve, route_errors
+from route_select import SelectionError, select as select_by_price
 
 ROUTES = ('agy', 'antigravity', 'claude-code', 'claude', 'grok', 'codex', 'cursor', 'other')
-FAMILIES = ('flash', 'claude', 'grok', 'luna', 'sol', 'astra', 'other', 'excluded_pro')
+FAMILIES = ('flash', 'claude', 'grok', 'luna', 'terra', 'sol', 'astra', 'other', 'excluded_pro')
 FAILURES = ('capacity', 'auth', 'tools', 'quality')
 TRIGGERS = ('initial', 'reassignment')
 DISPOSITIONS = ('selected', 'compared', 'incompatible', 'not_required', 'excluded')
 REASONS = ('ordinary_assignment', 'bounded_codex_fallback', 'user_pin', 'tool_incompatibility',
-           'quality_incompatibility', 'complex_scope', 'not_required', 'excluded_model')
+           'quality_incompatibility', 'complex_scope', 'not_required', 'excluded_model', 'price_informed')
 TASK_CLASSES = ('bounded_simple', 'complex_diagnosis', 'head_orchestration', 'other')
 QUALITIES = ('met', 'unmet', 'unknown')
 TOOLS = ('supported', 'unsupported', 'unknown')
@@ -25,8 +26,8 @@ REVIEWS = ('independent', 'parent', 'deterministic', 'pending')
 RECONSIDERS = ('failure_class_change', 'quality_evidence', 'tool_change', 'user_pin_change',
                'scope_boundary', 'none')
 ROUTING_LIMITS = (
-    'Structured enum and binding checks only. Does not intercept Orca, authenticate evidence, '
-    'rank models, require every candidate, mandate Luna, equate models, or convert quota to tokens.'
+    'Structured validation and supplied-evidence price selection only. Does not intercept Orca, '
+    'authenticate supplied semantic/price evidence, require every candidate, mandate a model, equate models, or convert quota to tokens.'
 )
 NO_RECORD = object()
 
@@ -44,6 +45,7 @@ class Checker:
         self.base = Path(base)
         self.errors = []
         self.refs = {}
+        self.price_result = None
         try:
             self.configuration = resolve()
         except (ConfigError, OSError) as exc:
@@ -192,11 +194,32 @@ class Checker:
         decision = decision if isinstance(decision, dict) else {}
         selected = decision.get('selected') if isinstance(decision.get('selected'), dict) else {}
         binding = decision.get('binding') if isinstance(decision.get('binding'), dict) else {}
-        return {'format': 'company-routing-decision/v1',
+        receipt = {'format': 'company-routing-decision/v1',
                 'binding': {field: binding.get(field) for field in ('task', 'scope', 'revision', 'attempt', 'planned')},
                 'selected': {field: selected.get(field) for field in ('route', 'family', 'model', 'effort')},
                 'configuration_sha256': self.configuration['configuration_sha256'] if self.configuration else None,
                 'limits': ROUTING_LIMITS}
+        if self.price_result is not None:
+            receipt['price_selection'] = self.price_result
+        return receipt
+
+    def price_selection(self, decision, path, require_selected=True):
+        if self.configuration is None:
+            self.error(path, 'price_selection_invalid', 'Resolved configuration is unavailable')
+            return None
+        config = self.configuration
+        label = decision.get('label', getattr(self, 'label', None))
+        if label == 'synthetic' and config['state'] != 'configured':
+            config = {**config, 'values': {**config['values'], 'services': ['codex', 'claude-code', 'antigravity', 'grok', 'cursor']}}
+        try:
+            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic')
+        except (SelectionError, ValueError, TypeError, KeyError, OSError) as exc:
+            self.error(path, 'price_selection_invalid', str(exc))
+            return None
+        self.price_result = result
+        if require_selected and result['status'] != 'selected':
+            self.error(path, 'price_selection_incomplete', 'Decompose the complex outcome before an executable selection')
+        return result
 
     def routing(self, decision, path, expected, require_receipt):
         required = ['version', 'binding', 'trigger', 'failure_class', 'prior', 'selected', 'alternatives',
@@ -334,6 +357,17 @@ class Checker:
                 self.error(path + '.tokens', 'token_basis', 'Unknown token basis cannot carry counts')
             if tokens.get('basis') == 'observed' and tokens.get('input') is None and tokens.get('output') is None:
                 self.error(path + '.tokens', 'token_basis', 'Observed token basis needs a count')
+        if 'price_selection' in decision or decision.get('selected_reason') == 'price_informed':
+            result = self.price_selection(decision, path + '.price_selection')
+            if result and result['status'] == 'selected':
+                if identity(result['selected']) != identity(selected):
+                    self.error(path + '.selected', 'price_selection_mismatch',
+                               'Selected model/effort must match the deterministic price-selection result')
+                rows = decision['price_selection']['candidates']
+                chosen = next(row for row in rows if identity(row) == identity(result['selected']))
+                if constraints.get('billing') != chosen['billing'] or constraints.get('quality') != 'met' or constraints.get('tool') != 'supported':
+                    self.error(path + '.constraints', 'price_selection_mismatch',
+                               'Decision constraints must preserve selected billing, adequate quality and supported tools')
         self.routing_rules(decision, path, binding, prior if isinstance(prior, dict) else None, selected,
                            alternatives, constraints, boundary)
 
@@ -623,6 +657,19 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None):
             'receipt': checker.routing_receipt(decision)}
 
 
+
+def selection_advice(decision, base):
+    checker = Checker(base)
+    if not isinstance(decision, dict):
+        checker.error('$', 'type', 'Expected decision object')
+    else:
+        checker.enum(decision.get('label'), '$.label', ['synthetic', 'real'])
+        checker.evidence_map(decision.get('evidence'), '$.evidence', decision.get('label'))
+        checker.price_selection(decision, '$.price_selection', require_selected=False)
+    return {'ok': not checker.errors, 'errors': checker.errors, 'advice': checker.price_result,
+            'limits': 'Advice only: complete the existing routing decision and run routing-check before an authorized launch.'}
+
+
 def case_suite(value, base, mode):
     checker = Checker(base)
     suite = checker.obj(value, '$', ['version', 'label', 'cases'])
@@ -660,7 +707,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--json', action='store_true', dest='global_json')
     sub = parser.add_subparsers(dest='command', required=True)
-    for command in ['check', 'cases', 'routing-check', 'routing-cases']:
+    for command in ['check', 'cases', 'routing-check', 'routing-cases', 'routing-select']:
         item = sub.add_parser(command)
         item.add_argument('path', type=Path)
         item.add_argument('--json', action='store_true')
@@ -681,6 +728,10 @@ def main(argv=None):
             result['errors'].append({'path': '$.resource_accounting', 'code': 'resource_accounting', 'message': 'Resource accounting is required for this invocation'})
             result['ok'] = False
             result['usage']['total_raw_tokens'] = None
+        code = 0 if result['ok'] else 1
+    elif args.command == 'routing-select':
+        result = selection_advice(value, args.path.parent)
+        result['request_sha256'] = decision_sha256
         code = 0 if result['ok'] else 1
     elif args.command == 'routing-check':
         record, error, record_sha256 = read_json_snapshot(args.record) if args.record is not None else (NO_RECORD, None, None)

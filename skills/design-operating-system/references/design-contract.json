@@ -23,7 +23,7 @@
   "work_tiers": [
     {
       "id": "minimum",
-      "triggers": ["bounded copy, spacing, color or style change", "component semantics and state model remain unchanged"],
+      "triggers": ["bounded copy, spacing, color or style change", "component semantics, state model, authority, defaults, irreversibility, recovery and communicated risk meaning remain unchanged"],
       "required_evidence": ["current matching surface", "single change rationale", "accessibility impact", "verification target"]
     },
     {
@@ -33,12 +33,13 @@
     },
     {
       "id": "deep",
-      "triggers": ["new product or major redesign", "onboarding, payment, health, privacy, permission or destructive action", "AI agency or consequential automation"],
+      "triggers": ["new product or major redesign", "introducing or changing the risk semantics of onboarding, payment, health, privacy, permission or destructive action, including through copy", "introducing or changing AI agency or consequential automation risk semantics"],
       "required_evidence": ["research evidence", "multiple materially distinct directions", "risk and recovery model", "prototype", "runtime and accessibility plan"]
     }
   ],
   "tier_selection": {
     "rule": "select_highest_triggered_tier",
+    "change_scope": "Assess the current change's meaning, authority, defaults, irreversibility and recovery, including communicated risk meaning; an existing risky surface alone is not a Deep trigger. Wording-only changes to risk semantics remain Deep.",
     "upgrade": "immediate_when_higher_risk_signal_appears",
     "downgrade": "allowed_only_with_evidence_that_the_signal_does_not_apply",
     "readiness_clarification": "Missing reversible implementation values do not block a bounded design direction; conditional requires an unknown that can reverse the current artifact."

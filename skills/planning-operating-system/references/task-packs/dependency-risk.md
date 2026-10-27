@@ -172,7 +172,8 @@ not the topology with the most parallel boxes.
   trigger;
 - naming "monitor closely" as mitigation with no detector, threshold, or owner;
 - omitting fallback and rollback for consequential changes;
-- allowing the executor to be the only verifier of its mitigation;
+- allowing the executor to be the only verifier of a material mitigation;
+  the contract's narrow direct-work diff-check exception is not independent QA;
 - silently reducing success criteria to route around a blocked dependency;
 - claiming the plan, migration, or release is safe.
 

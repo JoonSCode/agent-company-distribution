@@ -17,7 +17,7 @@ continuous-session attribution below. Read only the package references needed
 for the task; it does not require global orchestration or ultrawork skills.
 
 The Core route/job/TeamExecutor history is retained in the source checkout's
-`docs/legacy-core-baseline.md`; it is not a required installed-skill input. It is not this fork's
+`docs/legacy-core-baseline.md` under "Archived skill invocation contract"; it is not a required installed-skill input. It is not this fork's
 dispatch path and must not run alongside an Orca Dispatch. Supported Company
 invocation, bootstrap/install/update, diagnostics and recovery use Company-owned
 identity and integrity without an external Core. Existing user Core installations
@@ -178,10 +178,8 @@ completion does not itself end the session or prove the overall goal.
 Individual methods remain implicitly available within their own scope without
 starting Company; this does not reactivate disabled King Sejong routing.
 
-For multi-team work, follow the required five stages in
-[Company orchestration](../company-orchestration/SKILL.md#choose-the-organization-for-the-goal):
-head and lead consultation, accepted team outcomes, member feasibility before
-concrete assignments, lead/member execution, and lead-to-lead cross-team requests.
+For multi-team work, follow the required
+[five-stage boundary](../company-orchestration/SKILL.md#choose-the-organization-for-the-goal).
 A small direct or single-team task need not create extra teams. Domain leads
 retain bounded professional judgment and member integration responsibility.
 
@@ -191,10 +189,8 @@ interface validation and worker settlement do not award independent acceptance.
 User-owned decisions and material cross-team conflicts return to the overall
 head with source-linked evidence. No role approves its own final outcome.
 
-Historical Core dispatch commands and authority are preserved in the source
-checkout's `docs/legacy-core-baseline.md` under "Archived skill invocation contract".
-They do not activate King Sejong, select the Orca model route, or authorize a
-parallel Core attempt. Preserve Company transaction integrity and rollback;
+That historical contract does not activate King Sejong or select the Orca model
+route. Preserve Company transaction integrity and rollback;
 installation, Doctor, sync and effective loaded context require their own actual
 evidence. A historical generation restored by the new recovery controller remains
 historical; byte restoration does not certify its old runtime as Core-free.

@@ -67,7 +67,7 @@
         "required": ["operating_contract_ref", "operating_contract_sha256"],
         "properties": {
           "operating_contract_ref": {"const": "skills/marketing-operating-system/references/marketing-contract.json"},
-          "operating_contract_sha256": {"const": "af02def9df6aafb6887293b5e62475e2f2e04cd3e128b17d21806b564404ca73"}
+          "operating_contract_sha256": {"const": "dbcb8e073280e1e7ef56995545f820af12e92ecf77d0d53c74796189c4a1c889"}
         }
       }
     },
@@ -77,7 +77,7 @@
         "required": ["operating_contract_ref", "operating_contract_sha256"],
         "properties": {
           "operating_contract_ref": {"const": "skills/design-operating-system/references/design-contract.json"},
-          "operating_contract_sha256": {"const": "be58e4f395b0e3c2b82007804a41eef1608beaed8e7445e03f58cee822212027"}
+          "operating_contract_sha256": {"const": "b93cc233d4d6833e23d0352227f7c82e8be539970b853107c1aa37fe0404ace6"}
         }
       }
     },
@@ -87,7 +87,7 @@
         "required": ["operating_contract_ref", "operating_contract_sha256"],
         "properties": {
           "operating_contract_ref": {"const": "skills/development-operating-system/references/development-contract.json"},
-          "operating_contract_sha256": {"const": "8fa1c8fd2beaca313885c16a17d9304ed9642e76b5fcd687bcf68b52ca0c1fdb"}
+          "operating_contract_sha256": {"const": "e78fdc94b904971f6e7f08e79b9890d78f4de73e7f08fd6db9be87fbb56a5974"}
         }
       }
     },
@@ -107,7 +107,7 @@
         "required": ["operating_contract_ref", "operating_contract_sha256"],
         "properties": {
           "operating_contract_ref": {"const": "skills/founder-operating-system/references/founder-contract.json"},
-          "operating_contract_sha256": {"const": "709ba90fea7ad79a7c0a5a459caf6bd1b22cad21268cc0335dc3c7b41d6cf2ee"}
+          "operating_contract_sha256": {"const": "667f0afaa2bb53154010e05f5b2ba16ff5d02b0cb16525eae68dcf30f5ad7943"}
         }
       }
     },
@@ -117,7 +117,7 @@
         "required": ["operating_contract_ref", "operating_contract_sha256"],
         "properties": {
           "operating_contract_ref": {"const": "skills/planning-operating-system/references/planning-contract.json"},
-          "operating_contract_sha256": {"const": "d78e964493ec6b3aaec23f2f2e06a48e493b3ea70e26568c38213307142a6716"}
+          "operating_contract_sha256": {"const": "8a76742d7644b13d51ac21e249c9c9017dfb7a54fd38aace9cd59eb021f6d193"}
         }
       }
     },

@@ -136,7 +136,9 @@ holding audience, eligibility, offer, price, timing, channel, product
 experience, and measurement fixed where applicable. This is a fixed-variable
 invariant for the presentation test, not authorization to reopen a frozen
 product offer; an external result may motivate the hypothesis but cannot be
-transferred as the product outcome.
+transferred as the product outcome. For a separately authorized paywall timing
+experiment, test timing alone while holding paywall presentation and the same
+other canonical variables fixed; this is not permission to change price or offer.
 4. A blocked model or price slice returns only `none` or `evidence_action` and
    forbids `experiment`. `bounded_blueprint` requires the complete canonical
    experiment, including win, loss, inconclusive, quality, trust, and rollback

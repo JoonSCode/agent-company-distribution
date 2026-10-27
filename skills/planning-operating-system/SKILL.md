@@ -32,7 +32,9 @@ behavior.
    For decomposition, bind those settled fields and the independent verifier;
    return to the authorized decision owner only if a material change is required.
 2. Keep plan-artifact readiness separate from execution startability. Build the
-   smallest criterion-covered topology and proposed leaves; compile executable
+   smallest criterion-covered topology and proposed leaves. Split for distinct
+   ownership, authority, or independently deliverable outcomes, not merely for
+   multiple failure paths within one coherent outcome. Compile executable
    handoffs only when the contract permits execution.
 3. For each proposed leaf, record first action, inputs, scope, transition, done
    and falsification signals, dependencies, risks, stop condition, output, and
@@ -43,7 +45,12 @@ behavior.
    review, authority, fallback, recheck trigger, and residual-risk owner.
 5. Use the smallest matching proof surface: static contract, focused behavior,
    integrated runtime, user/device observation, external state, or outcome.
-   A build, fixture, or worker receipt proves no other surface.
+   A build, fixture, or worker receipt proves no other surface. Material claims
+   need independent acceptance. Only the existing Company orchestration
+   [exact, low-impact local replacement exception](../company-orchestration/SKILL.md#choose-the-organization-for-the-goal)
+   permits an assignee's deterministic diff check; it is not independent QA.
+   Use that direct-work path without inventing an independent verifier or
+   weakening the current executable-leaf runtime invariant.
    For promotion, apply `planning-contract.json#/promotion_experiment_guidance`:
    preserve direction-to-expression-to-concept dependencies and distinguish
    production readiness, actual posting evidence and business learning.

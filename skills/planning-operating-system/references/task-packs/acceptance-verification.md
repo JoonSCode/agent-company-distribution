@@ -134,11 +134,17 @@ surface evidence proves a higher or different surface.
 8. **Enforce independence.** The executor may provide candidate identity,
    commands, fixtures, logs, and a self-check. A different accountable verifier
    must independently reproduce or directly inspect the decisive evidence.
+   For only an exact, low-impact local replacement, the existing
+   [Company direct-work exception](../../../company-orchestration/SKILL.md#choose-the-organization-for-the-goal)
+   permits the assignee's deterministic diff check instead. Label its narrow
+   proof honestly, not independent QA; material technical/outcome claims and
+   emitted executable-leaf runtime invariants retain independent verification.
    The gate owner remains separate from both when the governing contract
    requires it.
 9. **Classify evidence per criterion.** Use `pass`, `fail`, `blocked`, or
    `unverified`. `Pass` requires matching evidence from the independent
-   verifier. Do not average criteria, convert a blocked row to pass, or let a
+   verifier, or only the narrow direct-work diff check allowed above. Do not
+   average criteria, convert a blocked row to pass, or let a
    low-surface pass mask a runtime failure.
 10. **Make partial evidence explicit.** Record what a build, unit test, mock,
     screenshot, or receipt does prove and the exact claims it leaves unverified.
@@ -175,7 +181,8 @@ better when they inspect the wrong surface.
 - declaring the whole objective complete because a build or focused test passes;
 - treating mocks, fixtures, screenshots, or worker receipts as integrated
   runtime or external-state proof;
-- letting the executor be the sole verifier of its own candidate;
+- letting the executor be the sole verifier outside the narrow direct-work
+  diff-check exception, or presenting that self-check as independent QA;
 - failing to identify the exact candidate, environment, account role, or data;
 - omitting denied, failure, boundary, persistence, or must-preserve states;
 - changing a threshold, cohort, viewport, or criterion after observing results;

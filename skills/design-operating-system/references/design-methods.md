@@ -19,12 +19,17 @@ Ask these in order and stop when evidence is insufficient.
 | --- | --- | --- | --- |
 | Existing semantics and state model preserved | Required | Optional | Optional |
 | New screen, navigation, state, or interaction | Forbidden | Trigger | Included |
-| Payment, health, privacy, permission, destructive action, AI agency | Forbidden | Escalate | Trigger |
+| Introduced or changed risk semantics: onboarding, payment, health, privacy, permission, destructive action, AI agency | Forbidden | Escalate | Trigger |
 | Alternatives | Only when a real decision exists | Material uncertainty | Multiple distinct directions |
 | Prototype | Usually unnecessary | When interaction cannot be judged statically | Required for consequential flow or novel interaction |
 | Runtime review | Focused changed surface | Core flow and critical states | Core flow, recovery, accessibility and risk surfaces |
 
-Select the highest triggered tier. A smaller requested artifact does not reduce the risk tier; it only narrows the current output.
+Select the highest tier triggered by the current change, not merely by an
+existing risky surface. Assess meaning, authority, defaults, irreversibility
+and recovery, including what the copy communicates. A bounded wording edit can
+remain Minimum only when those risk semantics are demonstrably preserved;
+copy that changes them is Deep. A smaller requested artifact does not reduce
+the risk tier; it only narrows the current output.
 
 Readiness is separate from completeness. If the brief fixes the user outcome,
 invariants and required states, produce the bounded direction and mark unknown
@@ -73,6 +78,22 @@ Include only applicable states, but make omissions intentional:
 Generate alternatives only when a decision can change. A serious alternative changes information hierarchy, interaction model, user agency, recovery, product emphasis, or emotional hypothesis. Color swaps and decorative variants do not count.
 
 Record why the selected direction serves the target task better and what evidence would revive a rejected direction.
+
+## Optional methods for an unresolved design question
+
+Use only a relevant row; skip methods that cannot change the direction and reuse
+the current artifact rather than adding a report. These are Company adaptations
+of sources checked in the supplied research on 2026-10-26, not validated prompts
+or execution authority. They do not replace current Apple evidence, the bound
+app contract, safety or accessibility requirements; another platform's style
+or another role's preference is not an iOS rule.
+
+| Lens and source | Use / skip | Benefit, limit, and reversal evidence |
+| --- | --- | --- |
+| [Usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) | Use to diagnose confusing feedback, control or recovery; skip a full heuristic audit for a settled Minimum delta. | Provides questions for likely interaction failures, not proof that users struggle or succeed. Matching-surface observations that contradict the suspected problem change its priority or direction. |
+| [Progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/) | Use when secondary choices compete with a clear primary task; skip hiding essential choices, consequences, consent or recovery. | Can reduce initial load, but can also conceal needed controls. Discovery failure or repeated backtracking by the target user is evidence to reveal, regroup or remove the hidden step. |
+| [Inclusive Design](https://inclusive.microsoft.design/articles/inclusive-101-guidebook) | Use when input, perception or situational constraints expose exclusion; skip a separate framework exercise when the existing state/accessibility plan already addresses the issue. | Reveals assumptions about an average user; one participant cannot represent every affected group. Observed inability to complete the task or a conflicting accessibility need changes the route, not the platform's authority. |
+| [Task-based usability observation](https://www.nngroup.com/articles/usability-testing-101/) | Use when competing interaction choices cannot be judged from artifacts; skip recruiting or new sessions when relevant observations already settle the choice. | Reveals actual hesitation and recovery. Think-aloud can alter timing, and small samples do not establish population success rates; observed failures change the direction. Without authorized participants or surface access, return a plan, not invented results or autonomous outreach. |
 
 ## Trend restraint
 

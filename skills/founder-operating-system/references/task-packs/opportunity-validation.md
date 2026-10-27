@@ -77,9 +77,12 @@ actually tested. Market size is not product demand. Label claims `known`,
    founder-network access is a biased starting sample, not a channel.
 7. **Surface disconfirmation.** State the strongest contradictory behavior and
    the fact most likely to invalidate the wedge.
-8. **Set readiness.** Use `blocked` when a missing buyer or commercial fact could
-   reverse the decision, `conditional` when one reversible test can resolve it,
-   and `ready` only when a bounded recommendation has direct commercial support.
+8. **Set readiness.** Use `blocked` when the problem, target, or credible
+   evidence source is too unclear to define a meaningful bounded test. Use
+   `conditional` when a clear hypothesis, target, source, owner, and reversible
+   test can resolve a material buyer or commercial unknown; use `ready` only
+   when a bounded recommendation has direct commercial support. Readiness never
+   authorizes spending, contact, publication, or other external action.
 9. **Choose one test.** Test the highest-value uncertainty with an owner,
    segment, offer, sample, time box, success, failure, kill, and data-quality
    rule. Do not change segment, offer, channel, and price together.
