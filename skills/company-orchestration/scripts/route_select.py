@@ -114,9 +114,10 @@ def estimated_cost(estimate, models, refs):
             'total_api_price_proxy_usd': float(total) if complete else None, 'stage_usd': stage_costs}
 
 
-def select(selection, refs, configuration, *, synthetic=False, table=None, table_sha256=None):
+def select(selection, refs, configuration, *, synthetic=False, table=None, table_sha256=None, prelaunch=False, requested=None, host_models=None):
     """LLM supplies semantics/quality fit; deterministic code applies gates and prices."""
-    obj(selection, ('version', 'task', 'cost_basis', 'scope_api_authorized', 'candidates'), 'price_selection')
+    fields = ('version', 'task', 'cost_basis', 'scope_api_authorized', 'candidates')
+    obj(selection, (*fields, 'inventory_evidence') if prelaunch or 'inventory_evidence' in selection else fields, 'price_selection')
     require(type(selection['version']) is int and selection['version'] == 1, 'Unknown selection version')
     require(type(selection['scope_api_authorized']) is bool, 'scope_api_authorized must be boolean')
     task = obj(selection['task'], ('actor', 'capability', 'complexity', 'coupling', 'decomposable',
@@ -137,10 +138,46 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
                 'limits': LIMITS}
     basis = choice(selection['cost_basis'], ('benchmark_prior', 'whole_work_estimate'), 'cost basis')
     require(isinstance(selection['candidates'], list) and selection['candidates'], 'No candidates supplied')
+    if prelaunch:
+        ref = evidence(selection['inventory_evidence'], refs, 'candidate inventory', host=True, synthetic=synthetic)
+        if not synthetic:
+            require(isinstance(refs[ref].get('file'), str) and isinstance(refs[ref].get('sha256'), str),
+                    'Candidate inventory requires a pinned host evidence file')
+        inventory = refs[ref].get('candidate_inventory')
+        require(isinstance(inventory, list) and inventory, 'Candidate inventory must enumerate the considered model and effort pairs')
+        for item in inventory:
+            obj(item, ('route', 'family', 'model', 'effort'), 'inventory candidate')
+        require(len({identity(item) for item in inventory}) == len(inventory), 'Duplicate inventory candidate')
+        require({identity(item) for item in inventory} == {identity(item) for item in selection['candidates']},
+                'Candidate list differs from supplied host inventory')
     if table is None:
         table, table_sha256 = load_table()
     require(table.get('version') == 1, 'Unknown candidate table version')
     models = table['models']
+    if prelaunch and requested and requested.get('route') == 'codex':
+        require(isinstance(host_models, list), 'Pinned Codex model inventory is required')
+        effort = requested.get('effort')
+        requested_model = models.get(requested.get('model'), {})
+        requested_prior = requested_model.get('ale_v1_user_transcription', {}).get(effort)
+        known = set()
+        for host in host_models:
+            require(isinstance(host, dict) and isinstance(host.get('slug'), str) and isinstance(host.get('supported_reasoning_levels'), list),
+                    'Malformed host model inventory')
+            model = models.get(host['slug'])
+            levels = {item.get('effort') for item in host['supported_reasoning_levels'] if isinstance(item, dict)}
+            if model and host['slug'] not in configuration['values'].get('excluded_models', []):
+                for level in levels.intersection(model['efforts']):
+                    prior = model['ale_v1_user_transcription'].get(level)
+                    if prior is None:
+                        continue
+                    dominates = (requested_prior is not None and prior['score_percent'] >= requested_prior['score_percent']
+                                 and prior['usd_per_task'] <= requested_prior['usd_per_task']
+                                 and (prior['score_percent'] > requested_prior['score_percent']
+                                      or prior['usd_per_task'] < requested_prior['usd_per_task']))
+                    if level == effort or dominates:
+                        known.add(('codex', model['family'], host['slug'], level))
+        supplied = {identity(row) for row in selection['candidates']}
+        require(known <= supplied, 'Known Codex host and table model/effort omitted from candidates')
     eligible, rejected, seen = [], [], set()
     for candidate in selection['candidates']:
         obj(candidate, ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools',
@@ -163,6 +200,19 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         evidence(candidate['quality_evidence'], refs, 'task-specific quality fit')
         require(candidate['tools'] != 'unknown' and candidate['billing'] != 'unknown',
                 'Unknown tools or billing; no automatic fallback')
+        if prelaunch:
+            require(candidate['quality'] != 'unknown', 'Unknown quality cannot establish a task-specific exclusion')
+            if candidate['quality'] == 'insufficient':
+                failure = refs[candidate['quality_evidence']].get('task_failure')
+                require(isinstance(failure, dict) and failure.get('task_evidence') == task['evidence']
+                        and failure.get('candidate') == dict(zip(('route', 'family', 'model', 'effort'), key))
+                        and isinstance(failure.get('support'), str) and failure['support'] in refs
+                        and failure['support'] != candidate['quality_evidence'],
+                        'Quality exclusion requires task and candidate bound failure evidence')
+            if not candidate['supported'] or not candidate['authenticated'] or candidate['tools'] == 'unsupported':
+                unavailable = refs[candidate['runtime_evidence']].get('unavailable_candidates')
+                require(isinstance(unavailable, list) and dict(zip(('route', 'family', 'model', 'effort'), key)) in unavailable,
+                        'Runtime exclusion requires candidate bound host evidence')
         cost = estimated_cost(candidate['usage_estimate'], models, refs)
         reasons = route_errors(configuration, route=candidate['route'], model=candidate['model'],
                                effort=candidate['effort'], billing=candidate['billing'],
@@ -178,7 +228,7 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         prior_conflict = (task['capability'] not in model['capability_priors'] or
                           ((demanding or task['stage'] == 'consultation') and not model['demanding_work_prior']))
         task_override = False
-        if prior_conflict and candidate['quality'] == 'adequate':
+        if prior_conflict and candidate['quality'] == 'adequate' and not prelaunch:
             task_override = exact_task_fit(candidate, task, refs)
             if not task_override:
                 reasons.append('General capability prior needs source-bound exact-task adequacy evidence to supersede it')
@@ -211,6 +261,19 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         return preference, Decimal(str(row['comparison_value'])), identity(row['candidate'])
     eligible.sort(key=rank)
     selected = eligible[0]
+    if prelaunch and requested is not None:
+        selected = next((row for row in eligible if identity(row['candidate']) == identity(requested)), None)
+        require(selected is not None, 'Requested candidate was not eligible in the comparison')
+        chosen_key = selected['candidate']
+        chosen_prior = models[chosen_key['model']]['ale_v1_user_transcription'].get(chosen_key['effort'])
+        if chosen_prior is not None:
+            for row in eligible:
+                key = row['candidate']
+                prior = models[key['model']]['ale_v1_user_transcription'].get(key['effort'])
+                if (prior is not None and prior['score_percent'] >= chosen_prior['score_percent']
+                        and row['comparison_value'] <= selected['comparison_value']
+                        and (prior['score_percent'] > chosen_prior['score_percent'] or row['comparison_value'] < selected['comparison_value'])):
+                    raise SelectionError('Requested candidate is dominated on benchmark score and comparison cost by an eligible candidate')
     return {'status': 'selected', 'selected': selected['candidate'], 'comparison_basis': basis,
             'requested_comparison_basis': requested_basis,
             'comparison_scope': ('ALE v1 directional starting prior, not this task estimate or confidence interval'

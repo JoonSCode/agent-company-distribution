@@ -16,6 +16,7 @@ from agent_company_completion_hook_install import (
     HOOKS, PREFIX, REGISTRY, SCRIPT, _decode, _owned, _read, _registry_entry, verify_hook,
 )
 from agent_company_hook_probe import list_hooks
+import agent_company_routing_hook_install as routing_hook
 from agent_company_install_io import install_paths, read_json
 from agent_company_install_types import InstallError
 from agent_company_runtime_values import issue
@@ -51,8 +52,8 @@ def execution_homes(home: Path, extra: list[Path] | None = None) -> list[Path]:
     return list(dict.fromkeys(path.expanduser().absolute() for path in homes))
 
 
-def probe_python(entry: dict, home: Path, *, resolve_home: bool = True) -> dict:
-    args = shlex.split(entry["hooks"][0]["command"][len(PREFIX):])
+def probe_python(entry: dict, home: Path, *, resolve_home: bool = True, prefix: str = PREFIX) -> dict:
+    args = shlex.split(entry["hooks"][0]["command"][len(prefix):])
     python = Path(args[0])
     if not python.is_file() or not os.access(python, os.X_OK):
         raise ValueError(f"registered Python is missing or not executable: {python}")
@@ -97,6 +98,20 @@ def attach_execution_health(payload: dict, home: Path, *, runtime_homes: list[Pa
         payload["completion_hook"] = {"status": "error", "reason": str(exc)}
         issues.append(issue("completion_hook_invalid", str(exc)))
         required, entry = True, None
+    routing_required, routing_entry = False, None
+    try:
+        active = read_json(paths.root / 'active.json') if (paths.root / 'active.json').is_file() else {}
+        routing_required = 'routing_hook_sha256' in active or (home / routing_hook.REGISTRY).exists()
+        if routing_required:
+            expected = active.get('routing_hook_sha256')
+            if not isinstance(expected, str):
+                raise ValueError('active generation has no routing hook binding')
+            payload['routing_hook'] = routing_hook.verify_hook(paths, expected)
+            routing_entry = routing_hook.registry_entry(paths, _read(paths, routing_hook.REGISTRY))
+    except (InstallError, OSError, ValueError) as exc:
+        routing_required = True
+        payload['routing_hook'] = {'status': 'error', 'reason': str(exc)}
+        issues.append(issue('routing_hook_invalid', str(exc)))
     homes = execution_homes(home, runtime_homes)
     observed = probe_hooks if probe_hooks is not None else (home == Path.home() / ".codex" or bool(runtime_homes))
     for runtime in homes:
@@ -106,6 +121,19 @@ def attach_execution_health(payload: dict, home: Path, *, runtime_homes: list[Pa
             errors.append(issue(code, message, runtime))
         try:
             cfg = tomllib.loads((_read(install_paths(runtime), "config.toml") or b"").decode())
+            if routing_required and routing_entry is not None:
+                document = _decode(_read(install_paths(runtime), HOOKS))
+                entries = document.get('hooks', {}).get('PreToolUse', [])
+                if not isinstance(entries, list) or entries.count(routing_entry) != 1:
+                    fail('routing_hook_missing_or_changed', 'execution home lacks the bound routing PreToolUse command')
+                elif cfg.get('hooks', {}).get('state', {}).get(f'{runtime / HOOKS}:pre_tool_use:{entries.index(routing_entry)}:0', {}).get('enabled') is False:
+                    fail('routing_hook_disabled', 'routing hook is disabled in execution-home config')
+                if cfg.get('features', {}).get('hooks') is False:
+                    fail('routing_hooks_feature_disabled', 'Codex hooks feature is explicitly disabled')
+                try:
+                    row['routing_python'] = probe_python(routing_entry, runtime, resolve_home=False, prefix=routing_hook.PREFIX)
+                except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
+                    fail('routing_python_unusable', str(exc))
             if required and entry is not None:
                 _, stop, owned = _owned(_decode(_read(install_paths(runtime), HOOKS)))
                 if len(owned) != 1 or owned[0] != entry:
@@ -130,22 +158,28 @@ def attach_execution_health(payload: dict, home: Path, *, runtime_homes: list[Pa
                         fail("completion_home_mismatch", "producer and callback resolve different Company record homes")
                 except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
                     fail("completion_python_unusable", str(exc))
-            if required and observed:
+            if (required or routing_required) and observed:
                 probe_diagnostics = {}
                 try:
                     hooks = list_hooks(runtime, diagnostics=probe_diagnostics)
                     row["effective_hooks"] = "observed"
                     company = [h for h in hooks if isinstance(h.get("command"), str) and h["command"].startswith(PREFIX)]
-                    if (entry is None or len(company) != 1 or
+                    if required and (entry is None or len(company) != 1 or
                             company[0].get("command") != entry["hooks"][0]["command"]):
                         fail("completion_hook_not_loaded", "fresh Codex hooks/list did not load the bound Company Stop command")
-                    else:
+                    elif required:
                         row["enabled"] = company[0].get("enabled")
                         row["trust_status"] = company[0].get("trustStatus")
                         if company[0].get("enabled") is not True:
                             fail("completion_hook_disabled", "fresh Codex hooks/list reports Company Stop disabled")
                         if company[0].get("trustStatus") != "trusted":
                             fail("completion_hook_untrusted", "fresh Codex hooks/list does not report Company Stop trusted")
+                    if routing_required:
+                        routed = [h for h in hooks if isinstance(h.get('command'), str) and h['command'].startswith(routing_hook.PREFIX)]
+                        if routing_entry is None or len(routed) != 1 or routed[0].get('command') != routing_entry['hooks'][0]['command']:
+                            fail('routing_hook_not_loaded', 'fresh Codex hooks/list did not load the routing command')
+                        elif routed[0].get('enabled') is not True or routed[0].get('trustStatus') != 'trusted':
+                            fail('routing_hook_untrusted', 'fresh Codex hooks/list does not report enabled trusted routing hook')
                 except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
                     row["effective_hooks"] = "unverifiable"
                     fail("hook_observation_unavailable", str(exc))

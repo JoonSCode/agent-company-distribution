@@ -105,8 +105,9 @@ heads. No head or child model/effort pin is imposed by this boundary.
 For the packaged model table, run `record_check.py routing-select decision.json
 --json` using the LLM's `price_selection` input, then place its selected identity
 in the existing version-1 decision with `selected_reason: price_informed`.
-`routing-check` recomputes the same selection and rejects a mismatching candidate
-or incomplete decomposition. The selector is local, pure advice: it makes no API
+`routing-check` rejects a dominated candidate or incomplete decomposition and
+requires the supplied candidate inventory for a fresh unpinned assignment. It
+allows a nondominated choice other than the advice's cheapest choice. The selector is local, pure advice: it makes no API
 or Orca calls. Unknown/malformed capabilities, runtime support or billing do not
 trigger an inferred model, effort or paid fallback. Unlisted provider/model pairs
 remain under the existing evidence-based routing contract, not invented aliases.

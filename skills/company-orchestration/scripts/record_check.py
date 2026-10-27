@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Portable, non-authoritative Company record and routing-decision checks (stdlib only)."""
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from company_config import ConfigError, resolve, route_errors
+from company_config import ConfigError, canonical_home, resolve, route_errors
 from route_select import SelectionError, select as select_by_price
 
 ROUTES = ('agy', 'antigravity', 'claude-code', 'claude', 'grok', 'codex', 'cursor', 'other')
@@ -203,7 +204,7 @@ class Checker:
             receipt['price_selection'] = self.price_result
         return receipt
 
-    def price_selection(self, decision, path, require_selected=True):
+    def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False):
         if self.configuration is None:
             self.error(path, 'price_selection_invalid', 'Resolved configuration is unavailable')
             return None
@@ -212,8 +213,32 @@ class Checker:
         if label == 'synthetic' and config['state'] != 'configured':
             config = {**config, 'values': {**config['values'], 'services': ['codex', 'claude-code', 'antigravity', 'grok', 'cursor']}}
         try:
-            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic')
-        except (SelectionError, ValueError, TypeError, KeyError, OSError) as exc:
+            selection = decision.get('price_selection')
+            host_models = None
+            if prelaunch and label != 'synthetic' and isinstance(selection, dict):
+                inventory_ref = selection.get('inventory_evidence')
+                inventory = self.refs.get(inventory_ref, {}) if isinstance(inventory_ref, str) else {}
+                if isinstance(inventory, dict) and isinstance(inventory.get('file'), str):
+                    inventory_path = (self.base / inventory['file']).resolve()
+                    if inventory_path != (canonical_home() / 'models_cache.json').resolve():
+                        raise SelectionError('Codex inventory must reference this host canonical models_cache.json')
+                    inventory_bytes = inventory_path.read_bytes()
+                    if hashlib.sha256(inventory_bytes).hexdigest() != inventory.get('sha256'):
+                        raise SelectionError('Candidate inventory hash changed before comparison')
+                    contents = json.loads(inventory_bytes)
+                    if not isinstance(contents, dict) or not isinstance(contents.get('models'), list):
+                        raise SelectionError('Pinned Codex inventory must contain the host models array')
+                    observed = datetime.fromisoformat(inventory['observed_at'].replace('Z', '+00:00'))
+                    valid_until = datetime.fromisoformat(inventory['valid_until'].replace('Z', '+00:00'))
+                    if observed.tzinfo is None or valid_until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= valid_until:
+                        raise SelectionError('Host model inventory freshness is expired or unknown')
+                    host_models = contents['models']
+            elif prelaunch and label == 'synthetic' and isinstance(selection, dict):
+                inventory = self.refs.get(selection.get('inventory_evidence'), {})
+                host_models = inventory.get('host_models') if isinstance(inventory, dict) else None
+            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch,
+                                     requested=decision.get('selected') if prelaunch and not pinned else None, host_models=host_models)
+        except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
             self.error(path, 'price_selection_invalid', str(exc))
             return None
         self.price_result = result
@@ -221,7 +246,7 @@ class Checker:
             self.error(path, 'price_selection_incomplete', 'Decompose the complex outcome before an executable selection')
         return result
 
-    def routing(self, decision, path, expected, require_receipt):
+    def routing(self, decision, path, expected, require_receipt, prelaunch=False):
         required = ['version', 'binding', 'trigger', 'failure_class', 'prior', 'selected', 'alternatives',
                     'selected_reason', 'constraints', 'boundary']
         if require_receipt:
@@ -256,6 +281,15 @@ class Checker:
         pinned = identity(raw_selected) if decision.get('selected_reason') == 'user_pin' and self.pin_bound(raw_selected) else None
         if decision.get('selected_reason') == 'user_pin' and pinned is None:
             self.error(path + '.selected.reason_evidence', 'unbound_pin', 'Explicit task pin requires exact route/model/effort evidence binding')
+        if prelaunch and pinned is not None and decision.get('label') != 'synthetic':
+            pin_evidence = self.refs.get(raw_selected.get('reason_evidence'), {})
+            if not isinstance(pin_evidence, dict) or pin_evidence.get('kind') != 'human':
+                self.error(path + '.selected.reason_evidence', 'unbound_pin', 'A real user pin requires human evidence')
+        if prelaunch and pinned is not None:
+            pin_evidence = self.refs.get(raw_selected.get('reason_evidence'), {})
+            pin_binding = pin_evidence.get('task_binding') if isinstance(pin_evidence, dict) else None
+            if not isinstance(pin_binding, dict) or any(pin_binding.get(field) != binding.get(field) for field in ('task', 'scope', 'revision', 'attempt')):
+                self.error(path + '.selected.reason_evidence', 'unbound_pin', 'User pin must bind this task, scope, revision and attempt')
         prior = decision.get('prior')
         if prior is not None:
             prior = self.route_fields(prior, path + '.prior', [], True)
@@ -266,6 +300,10 @@ class Checker:
         elif selected.get('supported') is not True:
             self.error(path + '.selected.supported', 'unsupported_effort',
                        'Selected effort must be recorded as supported by that route')
+        if prelaunch and pinned is not None and decision.get('label') != 'synthetic':
+            selected_evidence = self.refs.get(selected.get('evidence'), {})
+            if not isinstance(selected_evidence, dict) or selected_evidence.get('kind') != 'host':
+                self.error(path + '.selected.evidence', 'host_evidence_required', 'A pinned launch requires host support evidence')
         self.evidence(selected.get('reason_evidence'), path + '.selected.reason_evidence', True)
         self.enum(decision.get('selected_reason'), path + '.selected_reason', REASONS)
         selected_rows = []
@@ -357,15 +395,20 @@ class Checker:
                 self.error(path + '.tokens', 'token_basis', 'Unknown token basis cannot carry counts')
             if tokens.get('basis') == 'observed' and tokens.get('input') is None and tokens.get('output') is None:
                 self.error(path + '.tokens', 'token_basis', 'Observed token basis needs a count')
+        if prelaunch and pinned is None and 'price_selection' not in decision:
+            self.error(path + '.price_selection', 'price_selection_required', 'Fresh unpinned assignment requires a candidate comparison')
         if 'price_selection' in decision or decision.get('selected_reason') == 'price_informed':
-            result = self.price_selection(decision, path + '.price_selection')
+            result = self.price_selection(decision, path + '.price_selection', prelaunch=prelaunch, pinned=pinned is not None)
             if result and result['status'] == 'selected':
-                if identity(result['selected']) != identity(selected):
+                if identity(result['selected']) != identity(selected) and not (prelaunch and pinned is not None):
                     self.error(path + '.selected', 'price_selection_mismatch',
                                'Selected model/effort must match the deterministic price-selection result')
                 rows = decision['price_selection']['candidates']
-                chosen = next(row for row in rows if identity(row) == identity(result['selected']))
-                if constraints.get('billing') != chosen['billing'] or constraints.get('quality') != 'met' or constraints.get('tool') != 'supported':
+                chosen = next((row for row in rows if identity(row) == identity(selected if pinned is not None and prelaunch else result['selected'])), None)
+                if (chosen is None or constraints.get('billing') != chosen['billing'] or constraints.get('quality') != 'met'
+                        or constraints.get('tool') != 'supported' or (prelaunch and (
+                            not chosen['supported'] or not chosen['authenticated'] or chosen['tools'] != 'supported'
+                            or chosen['quality'] != 'adequate'))):
                     self.error(path + '.constraints', 'price_selection_mismatch',
                                'Decision constraints must preserve selected billing, adequate quality and supported tools')
         self.routing_rules(decision, path, binding, prior if isinstance(prior, dict) else None, selected,
@@ -626,7 +669,7 @@ def check_record(record, base, require_routing=False):
     return Checker(base).check(record, require_routing=require_routing)
 
 
-def check_routing(decision, base, record=NO_RECORD, record_base=None):
+def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaunch=False):
     checker = Checker(base)
     expected = None
     if record is not NO_RECORD:
@@ -652,7 +695,7 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None):
         checker.evidence_map(decision.get('evidence'), '$.evidence', label)
         if expected is not None and 'label' not in decision:
             checker.error('$.label', 'required', 'Missing field')
-        checker.routing(decision, '$', expected, False)
+        checker.routing(decision, '$', expected, False, prelaunch=prelaunch)
     return {'ok': not checker.errors, 'label': label, 'errors': checker.errors,
             'receipt': checker.routing_receipt(decision)}
 
@@ -739,7 +782,7 @@ def main(argv=None):
             result, code = {'ok': False, 'errors': [error]}, 2
         else:
             result = check_routing(value, args.path.parent, record,
-                                   args.record.parent if args.record is not None else None)
+                                   args.record.parent if args.record is not None else None, prelaunch=True)
             result['receipt']['decision_sha256'] = decision_sha256
             if args.record is not None:
                 result['receipt']['record_sha256'] = record_sha256

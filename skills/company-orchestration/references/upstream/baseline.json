@@ -1,6 +1,6 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-10-27.native-helper-r1",
+  "revision": "2026-10-27.routing-prelaunch-r1",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
@@ -49,7 +49,7 @@
   "policy_files": [
     {
       "path": "SKILL.md",
-      "sha256": "f534803b0ccdf7aa34d0b67a312f0370e1776ca46808782db53e6c964601625c"
+      "sha256": "6dfb87154f48ebd4c62263bf7fd734edf59742e433dfeab3feb70596bfd19a2a"
     },
     {
       "path": "assets/record-cases.json",
@@ -65,15 +65,15 @@
     },
     {
       "path": "references/model-routing.md",
-      "sha256": "a9c653a5793f5df6137f07170abac5994de28993a98d80d217686c2430678ef4"
+      "sha256": "e8f79d57f22ca17055683840be97facbb40f24672a2966c531d13ef59f86f557"
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "af731dda60ae87d51a150c2ae72dfa544cae4049e50f8f71e2c9db1b9fa9ca13"
+      "sha256": "95bde81708b970eef6676ead151a71069d2620447b32ef6f09f201e7632beef7"
     },
     {
       "path": "references/record-contract.md",
-      "sha256": "6bb218762ecac4416e56fcccb20c6a7ee1f419b63557be2300c541e71abfd503"
+      "sha256": "604142d01a1ee9e4ad4380f8751a0520ef55da2f6950d113ab109f6f6ef8a131"
     },
     {
       "path": "references/resource-policy.md",
@@ -89,7 +89,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "ffd5383924c3124181d8c97b6bf3988b706cb8d53429a71c902390ad5658cc28"
+      "sha256": "02f7d80a07006895f7beca03fbe7bd18ac9671eefb004e519e6df2fd014dda56"
     },
     {
       "path": "references/fleet-policy.md",
@@ -177,7 +177,7 @@
     },
     {
       "path": "scripts/test_routing_preflight.py",
-      "sha256": "747816fd14e489ee0a6f174a5c1fd5030835798cddb88756a18e82e503d86c11"
+      "sha256": "67c415f1aceb09345bdec9929566380b3956d5d729224fdf12406da66d96b46c"
     },
     {
       "path": "assets/config/common.md",
@@ -269,11 +269,31 @@
     },
     {
       "path": "scripts/route_select.py",
-      "sha256": "fe633f8d26ecd65e05250b8a3713972db4624a24f5a0c9dce9022757b3d93c76"
+      "sha256": "1206d5dd5f994e5e0b9eff56251d65599ff1deb62dfc066aa176e53ac48df84f"
     },
     {
       "path": "scripts/test_route_select.py",
-      "sha256": "e943218beb4454dc65b58dae0e8b9701d7a913f40caa74bf1fa004ebabb4a9f5"
+      "sha256": "5000430b9bffb9de5657e3fd2eae1f04372196c03adf6a74bb9cfa7e1a94ef1b"
+    },
+    {
+      "path": "scripts/routing_launch.py",
+      "sha256": "72960436622e2c58e1857e534950b3196bc060e2a0cefd13d203d42211474c95"
+    },
+    {
+      "path": "scripts/routing_hook.py",
+      "sha256": "c495c3375c02354961c0f741be32af7d172f990090a2d19e2ff95e030bb78938"
+    },
+    {
+      "path": "scripts/test_routing_launch.py",
+      "sha256": "f7fd0483716638d4913b0e864d52fd65e256eac71fe74176b7c04990b29350b6"
+    },
+    {
+      "path": "scripts/test_routing_hook.py",
+      "sha256": "35c66e947461334cc324b90fcd24a164c3e43d7a27017b908b8b210222418786"
+    },
+    {
+      "path": "references/routing-prelaunch.md",
+      "sha256": "ce7c56d5124aef849b306522c56e4469cd241744d9f89e309a249bc686b82272"
     }
   ],
   "adoptions": [

@@ -309,11 +309,13 @@ do not authenticate a self-authored ledger or establish actual independent revie
 ### Price-informed selection
 
 For the packaged current model table, add `price_selection` to the existing
-version-1 routing decision; legacy decisions without it keep their validation.
+version-1 routing decision; historical record checks remain readable.
 `routing-select decision.json --json` returns advice, not a launch receipt.
-`routing-check` recomputes a present selection (required for reason
-`price_informed`) and checks the selected identity and quality/tool/billing
-constraints. The receipt includes the table hash and comparison basis. Existing
+`routing-check` is the fresh prelaunch check. It requires a candidate comparison
+for unpinned decisions and checks the selected identity and quality/tool/billing
+constraints. A nondominated choice may differ from the advice's cheapest choice.
+The receipt includes the table hash and comparison basis. See the
+[prelaunch contract and limits](routing-prelaunch.md). Existing
 Task/Dispatch, source hashes and optional `--record` binding still apply.
 
 `price_selection` contains integer `version: 1`, `task`, `cost_basis`

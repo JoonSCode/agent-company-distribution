@@ -225,6 +225,7 @@ scripts/agent_company_role_schema.py
 scripts/agent_company_route_authority.py
 scripts/agent_company_route_contract.py
 scripts/agent_company_route_policy.py
+scripts/agent_company_routing_hook_install.py
 scripts/agent_company_runtime.py
 scripts/agent_company_runtime_install.py
 scripts/agent_company_runtime_source.py
@@ -246,6 +247,7 @@ scripts/agent_company_update_store.py
 scripts/bootstrap.sh
 scripts/doctor.py
 scripts/install.sh
+scripts/repair_runtime_hook.py
 scripts/setup.sh
 scripts/sync-status.py
 scripts/update.sh
@@ -286,6 +288,7 @@ skills/company-orchestration/references/record-contract.md
 skills/company-orchestration/references/record-projection.md
 skills/company-orchestration/references/research-cache.md
 skills/company-orchestration/references/resource-policy.md
+skills/company-orchestration/references/routing-prelaunch.md
 skills/company-orchestration/references/session-continuity.md
 skills/company-orchestration/references/status-view.md
 skills/company-orchestration/references/update-policy.md
@@ -309,6 +312,8 @@ skills/company-orchestration/scripts/record_check.py
 skills/company-orchestration/scripts/record_projection.py
 skills/company-orchestration/scripts/research_cache.py
 skills/company-orchestration/scripts/route_select.py
+skills/company-orchestration/scripts/routing_hook.py
+skills/company-orchestration/scripts/routing_launch.py
 skills/company-orchestration/scripts/run_completion.py
 skills/company-orchestration/scripts/status_view.py
 skills/copywriting-operating-system/SKILL.md

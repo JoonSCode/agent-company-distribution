@@ -170,6 +170,11 @@ acknowledged. Process every row, including ones outside a wake filter: answer
 questions, validate completions against the expected active Dispatch, read
 artifacts and decide settled terminal ownership before acknowledging. A successful
 send proves enqueue, not reading, acceptance or turn start.
+For status and instructions, record acceptance, unresolved points and next
+actions in the existing work record, then acknowledge the batch without waiting
+for implementation to finish. Acknowledgment confirms receipt, not success,
+approval or settlement; questions and completion/resource checks still need
+their actual handling.
 
 The accepted team lead launches or reuses its members, reads their evidence and
 integrates the team result before reporting milestones, blockers or material

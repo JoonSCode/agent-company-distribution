@@ -168,7 +168,7 @@ def rollback(paths: InstallPaths) -> dict[str, JsonValue]:
             ("apply_snapshot", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("agent-company/snapshots/")))),
             ("apply_skills", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("skills/")))),
             ("apply_agents", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative.startswith("agents/")))),
-            ("write_indexes", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative in {"agent-company/managed-index.json", "agent-company/completion-hook.json", "agent-company/claude-entry.json", "agent-company/claude-entry"}))),
+            ("write_indexes", lambda: restore_entries(paths, source, tuple(entry for entry in desired if entry.relative in {"agent-company/managed-index.json", "agent-company/completion-hook.json", "agent-company/routing-hook.json", "agent-company/claude-entry.json", "agent-company/claude-entry"}))),
         )
         for name, operation in groups:
             before_phase(name)

@@ -17,6 +17,7 @@ from agent_company_config import resolve
 import agent_company_claude_entry as claude_entry
 from agent_company_agent_registry import plan_agents
 from agent_company_completion_hook_install import REGISTRY as HOOK_REGISTRY, SCRIPT as HOOK_SCRIPT, apply_hook, preflight_hook, verify_hook
+import agent_company_routing_hook_install as routing_hook
 from agent_company_deps import DepsError, JsonValue
 from agent_company_install_apply import apply_snapshot, apply_targets, remove_target
 from agent_company_install_fs import safe_relative, sha256_file
@@ -77,6 +78,10 @@ def verify_prior(paths: InstallPaths, index: ManagedIndex | None) -> None:
             if not isinstance(hook_hash, str):
                 raise InstallError("mixed_generation", "completion hook digest is malformed")
             verify_hook(paths, hook_hash)
+        if hook_hash := active.get("routing_hook_sha256"):
+            if not isinstance(hook_hash, str):
+                raise InstallError("mixed_generation", "routing hook digest is malformed")
+            routing_hook.verify_hook(paths, hook_hash)
         if active.get("schema_version") == "0.2" and index is None:
             raise InstallError("mixed_generation", "v0.2 active generation has no managed index")
         if index is not None:
@@ -116,6 +121,8 @@ def commit_generation(paths: InstallPaths, commit: GenerationCommit) -> None:
     hook_fields = {}
     if (paths.codex_home / HOOK_REGISTRY).exists():
         hook_fields["completion_hook_sha256"] = verify_hook(paths)["registry_sha256"]
+    if (paths.codex_home / routing_hook.REGISTRY).exists():
+        hook_fields["routing_hook_sha256"] = routing_hook.verify_hook(paths)["registry_sha256"]
     write_json(paths.root / "installed-hashes.json", {"schema_version": "0.2", "snapshot_id": snapshot_id, "files": commit.files, "managed_index_sha256": index_hash, "skills": index.skills, "agents": index.agents})
     midpoint("ledger_hashes")
     write_json(
@@ -159,6 +166,8 @@ def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]
     identity = snapshot_identity()
     if (ROOT / HOOK_SCRIPT).is_file() or (paths.codex_home / HOOK_REGISTRY).exists():
         preflight_hook(paths, enabled=(ROOT / HOOK_SCRIPT).is_file())
+    if (ROOT / routing_hook.SCRIPT).is_file() or (paths.codex_home / routing_hook.REGISTRY).exists():
+        routing_hook.preflight_hook(paths, enabled=(ROOT / routing_hook.SCRIPT).is_file())
     snapshot_id = identity.snapshot_id
     transaction_id = uuid.uuid4().hex
     begin(paths, TransactionSpec(transaction_id, action, snapshot_id))
@@ -182,7 +191,7 @@ def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]
         agents, stale_agents = plan_agents(paths.codex_home, agents, prior)
         phase(paths, "stage_all")
         before_phase("backup_managed")
-        relatives = ("agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", HOOK_REGISTRY, "agent-company/claude-entry.json", "agent-company/claude-entry", f"agent-company/snapshots/{staged_id}", *(target.relative for target in skills + stale_skills + agents + stale_agents))
+        relatives = ("agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", HOOK_REGISTRY, routing_hook.REGISTRY, "agent-company/claude-entry.json", "agent-company/claude-entry", f"agent-company/snapshots/{staged_id}", *(target.relative for target in skills + stale_skills + agents + stale_agents))
         capture(paths, transaction_id, relatives)
         phase(paths, "backup_managed")
         verify_all_staged_targets(stage, staged)
@@ -213,6 +222,11 @@ def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]
         elif (paths.codex_home / HOOK_REGISTRY).exists():
             apply_hook(paths, enabled=False)
             remove_managed(paths, HOOK_REGISTRY)
+        if (ROOT / routing_hook.SCRIPT).is_file():
+            routing_hook.apply_hook(paths)
+        elif (paths.codex_home / routing_hook.REGISTRY).exists():
+            routing_hook.apply_hook(paths, enabled=False)
+            remove_managed(paths, routing_hook.REGISTRY)
         before_phase("write_indexes")
         index = ManagedIndex(staged_id, {Path(item.relative).name: item.expected_hash for item in skills}, {Path(item.relative).name: item.expected_hash for item in agents})
         write_index(paths, index)
@@ -248,7 +262,7 @@ def uninstall(paths: InstallPaths) -> dict[str, JsonValue]:
         phase(paths, "stage_all")
         targets = tuple(f"skills/{name}" for name in prior.skills) + tuple(f"agents/{name}" for name in prior.agents)
         before_phase("backup_managed")
-        capture(paths, transaction_id, ("agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", HOOK_REGISTRY, "agent-company/claude-entry.json", "agent-company/claude-entry", *targets))
+        capture(paths, transaction_id, ("agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", HOOK_REGISTRY, routing_hook.REGISTRY, "agent-company/claude-entry.json", "agent-company/claude-entry", *targets))
         phase(paths, "backup_managed")
         before_phase("apply_snapshot")
         phase(paths, "apply_snapshot")
@@ -256,6 +270,9 @@ def uninstall(paths: InstallPaths) -> dict[str, JsonValue]:
         if (paths.codex_home / HOOK_REGISTRY).exists():
             apply_hook(paths, enabled=False)
             remove_managed(paths, HOOK_REGISTRY)
+        if (paths.codex_home / routing_hook.REGISTRY).exists():
+            routing_hook.apply_hook(paths, enabled=False)
+            remove_managed(paths, routing_hook.REGISTRY)
         if (paths.root / 'claude-entry.json').exists():
             claude_entry.remove(paths.codex_home)
         changed = 0

@@ -93,6 +93,10 @@ def restore_entries(paths: InstallPaths, base: Path, entries: tuple[BackupEntry,
             from agent_company_completion_hook_install import restore_hook
             before = None if entry.kind == "absent" else read_path_bytes(base / safe_relative(entry.backup))
             restore_hook(paths, before)
+        if entry.relative == "agent-company/routing-hook.json":
+            from agent_company_routing_hook_install import restore_hook
+            before = None if entry.kind == "absent" else read_path_bytes(base / safe_relative(entry.backup))
+            restore_hook(paths, before)
         if entry.kind == "absent":
             try:
                 remove_managed(paths, entry.relative)

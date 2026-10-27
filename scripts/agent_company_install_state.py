@@ -65,7 +65,7 @@ def entries_json(entries: tuple[BackupEntry, ...]) -> list[JsonValue]:
 
 def allowed_backup_target(relative: str) -> bool:
     parts = safe_relative(relative).parts
-    if relative in {"agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", "agent-company/completion-hook.json", "agent-company/claude-entry.json", "agent-company/claude-entry"}:
+    if relative in {"agent-company/active.json", "agent-company/installed-hashes.json", "agent-company/managed-index.json", "agent-company/completion-hook.json", "agent-company/routing-hook.json", "agent-company/claude-entry.json", "agent-company/claude-entry"}:
         return True
     if len(parts) == 3 and parts[:2] == ("agent-company", "snapshots") and SAFE_NAME.fullmatch(parts[2]) is not None:
         return True

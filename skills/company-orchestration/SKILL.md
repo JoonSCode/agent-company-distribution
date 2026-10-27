@@ -257,8 +257,9 @@ For every fresh Company Run, `run_completion.py init` writes
 `worker-start`, run `record_check.py routing-check` on the decision and keep
 the receipt. Completion rejects a current task without a valid decision even
 if the supplementary record omits the flag. Historical manifests and a plain
-record check stay readable. This is an operator command plus a completion
-gate, not an Orca launch intercept. See
+record check stay readable. The checked launcher and opt-in hook adapter are
+limited to the paths in the [prelaunch contract](references/routing-prelaunch.md);
+neither is an Orca server intercept. See
 [routing decisions](references/record-contract.md#routing-decisions).
 
 For each fresh Run, the lead must execute exact session registration and declare
