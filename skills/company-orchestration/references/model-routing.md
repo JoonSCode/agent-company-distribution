@@ -109,8 +109,15 @@ in the existing version-1 decision with `selected_reason: price_informed`.
 requires the supplied candidate inventory for a fresh unpinned assignment. It
 allows a nondominated choice other than the advice's cheapest choice. The selector is local, pure advice: it makes no API
 or Orca calls. Unknown/malformed capabilities, runtime support or billing do not
-trigger an inferred model, effort or paid fallback. Unlisted provider/model pairs
-remain under the existing evidence-based routing contract, not invented aliases.
+trigger an inferred model, effort or paid fallback. For an unlisted provider/model,
+include the known Codex inventory and candidate comparison, bind actual route,
+host, support, authentication, tools, billing and exact task fit to current pinned
+evidence, and use an ordinary evidence-based reason rather than `price_informed`.
+Its price, benchmark comparison and tokens remain unknown; do not substitute a
+table alias or rank it by an invented value. Another route offering the same
+model ID needs independent evidence and does not inherit the Codex price. The
+checker verifies supplied files and bindings, not the truth of an operator's
+interpretation or live execution.
 See [record fields and limits](record-contract.md#price-informed-selection).
 
 Use a version-1 routing decision and record_check.py routing-check before a

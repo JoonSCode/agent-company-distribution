@@ -4,7 +4,8 @@
 records remain readable through `check` and the historical case suite; their
 successful validation does not certify a past prelaunch check.
 
-An unpinned fresh decision supplies `price_selection.inventory_evidence`. The
+An unpinned fresh decision, and an unlisted non-Codex selection even if pinned,
+supplies `price_selection.inventory_evidence`. The
 referenced host evidence includes `candidate_inventory`, a list of route,
 family, model and effort objects. Real evidence must pin the current host's
 canonical Codex home's `models_cache.json`. For an unpinned Codex selection, the checker
@@ -23,6 +24,19 @@ Benchmark scores and prices are directional priors, not actual task outcomes or
 charges. A candidate dominated on score and cost is rejected; a nondominated
 choice is allowed. A fresh user pin binds task, scope, revision, attempt and
 the selected pair. A real pin requires human evidence and host support evidence.
+
+For an unlisted non-Codex selection, the inventory must include all available,
+non-excluded Codex model/effort pairs with table priors; those pairs retain the
+same quality and runtime-exclusion rules. The unlisted candidate requires the
+separate current host, model, support, authentication, tool, billing and exact
+task-fit bindings in [the record contract](record-contract.md#price-informed-selection).
+The pinned inventory and the unlisted runtime must declare the same host; model
+and effort must appear together in one of the contract's supported catalog
+shapes. Unknown shapes do not establish support. These checks do not authenticate
+the host labels or raw source origin.
+Its price and benchmark comparison are unknown, so selecting it is a reasoned
+operator decision rather than a price or dominance result. The existing checked
+launcher remains Codex-only; use an actually supported Orca path for other agents.
 
 `routing_launch.py` supports new Codex workers and evidence-bound reuse. It requires the current
 record, a decision whose binding contains the SHA-256 of the exact UTF-8

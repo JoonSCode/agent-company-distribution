@@ -316,6 +316,17 @@ skills/company-orchestration/scripts/routing_hook.py
 skills/company-orchestration/scripts/routing_launch.py
 skills/company-orchestration/scripts/run_completion.py
 skills/company-orchestration/scripts/status_view.py
+skills/company-orchestration/scripts/test_continuity.py
+skills/company-orchestration/scripts/test_knowledge_repository.py
+skills/company-orchestration/scripts/test_launch_readiness.py
+skills/company-orchestration/scripts/test_org_audit.py
+skills/company-orchestration/scripts/test_research_cache.py
+skills/company-orchestration/scripts/test_route_select.py
+skills/company-orchestration/scripts/test_routing_hook.py
+skills/company-orchestration/scripts/test_routing_launch.py
+skills/company-orchestration/scripts/test_routing_preflight.py
+skills/company-orchestration/scripts/test_run_completion.py
+skills/company-orchestration/scripts/test_unlisted_routes.py
 skills/copywriting-operating-system/SKILL.md
 skills/copywriting-operating-system/agents/openai.yaml
 skills/copywriting-operating-system/references/conversion-copy.md

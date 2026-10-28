@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pure task-fit selection. No model, provider, host, network or billing calls."""
 from decimal import Decimal
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -114,7 +115,7 @@ def estimated_cost(estimate, models, refs):
             'total_api_price_proxy_usd': float(total) if complete else None, 'stage_usd': stage_costs}
 
 
-def select(selection, refs, configuration, *, synthetic=False, table=None, table_sha256=None, prelaunch=False, requested=None, host_models=None):
+def select(selection, refs, configuration, *, synthetic=False, table=None, table_sha256=None, prelaunch=False, requested=None, host_models=None, current_runtime=True, explicit_pin=False, legacy_record=False):
     """LLM supplies semantics/quality fit; deterministic code applies gates and prices."""
     fields = ('version', 'task', 'cost_basis', 'scope_api_authorized', 'candidates')
     obj(selection, (*fields, 'inventory_evidence') if prelaunch or 'inventory_evidence' in selection else fields, 'price_selection')
@@ -154,7 +155,7 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         table, table_sha256 = load_table()
     require(table.get('version') == 1, 'Unknown candidate table version')
     models = table['models']
-    if prelaunch and requested and requested.get('route') == 'codex':
+    if prelaunch and requested:
         require(isinstance(host_models, list), 'Pinned Codex model inventory is required')
         effort = requested.get('effort')
         requested_model = models.get(requested.get('model'), {})
@@ -174,7 +175,7 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
                                  and prior['usd_per_task'] <= requested_prior['usd_per_task']
                                  and (prior['score_percent'] > requested_prior['score_percent']
                                       or prior['usd_per_task'] < requested_prior['usd_per_task']))
-                    if level == effort or dominates:
+                    if requested.get('route') != 'codex' or level == effort or dominates:
                         known.add(('codex', model['family'], host['slug'], level))
         supplied = {identity(row) for row in selection['candidates']}
         require(known <= supplied, 'Known Codex host and table model/effort omitted from candidates')
@@ -182,15 +183,22 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
     for candidate in selection['candidates']:
         obj(candidate, ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools',
                         'billing', 'runtime_evidence', 'quality', 'quality_evidence', 'usage_estimate'), 'candidate')
-        for field in ('route', 'family', 'model', 'effort'):
+        for field in ('route', 'family', 'model'):
             require(isinstance(candidate[field], str) and candidate[field], 'Incomplete model/effort identity')
+        require(candidate['effort'] is None or (isinstance(candidate['effort'], str) and candidate['effort'].strip()),
+                'Incomplete model/effort identity')
         key = identity(candidate)
         require(key not in seen, 'Duplicate candidate')
         seen.add(key)
-        require(candidate['model'] in models, 'Unknown candidate model: refresh source table, never infer an alias')
-        model = models[candidate['model']]
-        require(candidate['effort'] in model['efforts'] and candidate['family'] == model['family'],
-                'Unsupported table model/effort/family combination')
+        # The table is scoped to the Codex path. A different service offering
+        # the same model ID is a separate, independently evidenced candidate.
+        model = models.get(candidate['model']) if candidate['route'] == 'codex' or legacy_record else None
+        if model is not None:
+            require(candidate['effort'] in model['efforts'] and candidate['family'] == model['family'],
+                    'Unsupported table model/effort/family combination')
+        else:
+            require(candidate['route'] != 'codex',
+                    'Unknown Codex model: refresh source table, never infer an alias')
         require(type(candidate['supported']) is bool and type(candidate['authenticated']) is bool,
                 'Unknown or malformed runtime support/authentication; no automatic fallback')
         choice(candidate['tools'], ('supported', 'unsupported', 'unknown'), 'tools')
@@ -200,6 +208,56 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         evidence(candidate['quality_evidence'], refs, 'task-specific quality fit')
         require(candidate['tools'] != 'unknown' and candidate['billing'] != 'unknown',
                 'Unknown tools or billing; no automatic fallback')
+        if model is None:
+            runtime = refs[candidate['runtime_evidence']].get('unlisted_runtime')
+            obj(runtime, ('candidate', 'agent', 'host', 'supported', 'authenticated', 'tools', 'billing',
+                          'model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence',
+                          'billing_evidence', 'observed_at', 'valid_until'), 'unlisted runtime')
+            require(runtime['candidate'] == dict(zip(('route', 'family', 'model', 'effort'), key)),
+                    'Unlisted runtime must bind the exact candidate and effort')
+            require(runtime['agent'] == ROUTE_ALIASES.get(candidate['route'], candidate['route']),
+                    'Unlisted runtime must bind the actual agent route')
+            require(isinstance(runtime['host'], str) and runtime['host'].strip(),
+                    'Unlisted runtime requires the observed host')
+            require(all(runtime[field] == candidate[field] for field in ('supported', 'authenticated', 'tools', 'billing')),
+                    'Unlisted runtime observations do not match candidate support, authentication, tools or billing')
+            for field in ('model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence', 'billing_evidence'):
+                ref = evidence(runtime[field], refs, 'unlisted ' + field, host=True, synthetic=synthetic)
+                if not synthetic:
+                    require(isinstance(refs[ref].get('file'), str) and isinstance(refs[ref].get('sha256'), str),
+                            'Unlisted runtime evidence needs a pinned host file')
+                    require(refs[ref].get('host') == runtime['host'], 'Unlisted evidence is for a different host')
+                    try:
+                        source_at = datetime.fromisoformat(refs[ref]['observed_at'].replace('Z', '+00:00'))
+                        source_until = datetime.fromisoformat(refs[ref]['valid_until'].replace('Z', '+00:00'))
+                    except (KeyError, ValueError, AttributeError, TypeError):
+                        raise SelectionError('Unlisted host evidence freshness is malformed')
+                    require(source_at.tzinfo is not None and source_until.tzinfo is not None and source_at <= source_until,
+                            'Unlisted host evidence freshness is malformed')
+                    if prelaunch and current_runtime:
+                        require(source_at <= datetime.now(timezone.utc) <= source_until,
+                                'Unlisted host evidence freshness is expired or unknown')
+            try:
+                observed = datetime.fromisoformat(runtime['observed_at'].replace('Z', '+00:00'))
+                until = datetime.fromisoformat(runtime['valid_until'].replace('Z', '+00:00'))
+            except (ValueError, AttributeError, TypeError):
+                raise SelectionError('Unlisted runtime freshness is malformed')
+            require(observed.tzinfo is not None and until.tzinfo is not None and observed <= until,
+                    'Unlisted runtime freshness is malformed')
+            if prelaunch and current_runtime:
+                require(observed <= datetime.now(timezone.utc) <= until,
+                        'Unlisted runtime freshness is expired or unknown')
+            require(candidate['usage_estimate'] is None,
+                    'Unlisted model has no verified rate in the table; do not fabricate an estimate')
+            if candidate['quality'] == 'adequate':
+                require(exact_task_fit(candidate, task, refs), 'Unlisted candidate needs exact task-fit evidence')
+                if not synthetic:
+                    fit = refs[candidate['quality_evidence']]['task_fit']
+                    for ref in (candidate['quality_evidence'], fit['support']):
+                        item = refs[ref]
+                        require(item.get('kind') in ('human', 'independent', 'host', 'source', 'provider')
+                                and isinstance(item.get('file'), str) and isinstance(item.get('sha256'), str),
+                                'Unlisted task-fit and support need separate pinned real evidence files')
         if prelaunch:
             require(candidate['quality'] != 'unknown', 'Unknown quality cannot establish a task-specific exclusion')
             if candidate['quality'] == 'insufficient':
@@ -216,7 +274,8 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         cost = estimated_cost(candidate['usage_estimate'], models, refs)
         reasons = route_errors(configuration, route=candidate['route'], model=candidate['model'],
                                effort=candidate['effort'], billing=candidate['billing'],
-                               head=task['actor'] == 'company_head')
+                               head=task['actor'] == 'company_head',
+                               explicit_pin=explicit_pin and requested is not None and identity(requested) == key)
         if not candidate['supported'] or not candidate['authenticated'] or candidate['tools'] != 'supported':
             reasons.append('Runtime, authentication or tools unavailable')
         if candidate['billing'] == 'paid_api' and not selection['scope_api_authorized']:
@@ -225,8 +284,8 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
             reasons.append('Task-specific model and effort quality is not adequately supported')
         demanding = (task['complexity'] == 'complex' and
                      (task['coupling'] == 'coupled' or task['capability'] in ('coding', 'judgment')))
-        prior_conflict = (task['capability'] not in model['capability_priors'] or
-                          ((demanding or task['stage'] == 'consultation') and not model['demanding_work_prior']))
+        prior_conflict = (model is not None and (task['capability'] not in model['capability_priors'] or
+                          ((demanding or task['stage'] == 'consultation') and not model['demanding_work_prior'])))
         task_override = False
         if prior_conflict and candidate['quality'] == 'adequate' and not prelaunch:
             task_override = exact_task_fit(candidate, task, refs)
@@ -249,34 +308,39 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
     for row in eligible:
         if basis == 'whole_work_estimate':
             row['comparison_value'] = row['cost']['total_api_price_proxy_usd']
-        else:
+        elif row['candidate']['model'] in models and (row['candidate']['route'] == 'codex' or legacy_record):
             key = row['candidate']
             prior = models[key['model']]['ale_v1_user_transcription'].get(key['effort'])
             require(prior is not None, 'No exact-effort benchmark prior; do not interpolate effort or invent usage')
             row['comparison_value'] = prior['usd_per_task']
+        else:
+            row['comparison_value'] = None
     order = configuration['values'].get('service_order', [])
     def rank(row):
         service = ROUTE_ALIASES.get(row['candidate']['route'], row['candidate']['route'])
         preference = order.index(service) if service in order else len(order)
-        return preference, Decimal(str(row['comparison_value'])), identity(row['candidate'])
+        value = row['comparison_value']
+        return preference, value is None, Decimal(str(value)) if value is not None else Decimal(0), str(identity(row['candidate']))
     eligible.sort(key=rank)
     selected = eligible[0]
     if prelaunch and requested is not None:
         selected = next((row for row in eligible if identity(row['candidate']) == identity(requested)), None)
         require(selected is not None, 'Requested candidate was not eligible in the comparison')
         chosen_key = selected['candidate']
-        chosen_prior = models[chosen_key['model']]['ale_v1_user_transcription'].get(chosen_key['effort'])
-        if chosen_prior is not None:
+        chosen_model = models.get(chosen_key['model']) if chosen_key['route'] == 'codex' or legacy_record else None
+        chosen_prior = chosen_model['ale_v1_user_transcription'].get(chosen_key['effort']) if chosen_model else None
+        if chosen_prior is not None and not explicit_pin:
             for row in eligible:
                 key = row['candidate']
-                prior = models[key['model']]['ale_v1_user_transcription'].get(key['effort'])
+                comparison_model = models.get(key['model']) if key['route'] == 'codex' or legacy_record else None
+                prior = comparison_model['ale_v1_user_transcription'].get(key['effort']) if comparison_model else None
                 if (prior is not None and prior['score_percent'] >= chosen_prior['score_percent']
                         and row['comparison_value'] <= selected['comparison_value']
                         and (prior['score_percent'] > chosen_prior['score_percent'] or row['comparison_value'] < selected['comparison_value'])):
                     raise SelectionError('Requested candidate is dominated on benchmark score and comparison cost by an eligible candidate')
     return {'status': 'selected', 'selected': selected['candidate'], 'comparison_basis': basis,
             'requested_comparison_basis': requested_basis,
-            'comparison_scope': ('ALE v1 directional starting prior, not this task estimate or confidence interval'
+            'comparison_scope': ('ALE v1 directional starting prior; unlisted values are unknown and unranked, not this task estimate or confidence interval'
                                  if basis == 'benchmark_prior' else 'Estimated whole-work API price proxy, not a bill'),
             'candidate_table_sha256': table_sha256, 'compared': eligible, 'rejected': rejected,
             'actual_usage': None, 'actual_subscription_charge_or_credits': None,

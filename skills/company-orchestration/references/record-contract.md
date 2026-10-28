@@ -345,6 +345,61 @@ assertions; they do not authenticate the supplied assessment's substantive truth
 Unknown/malformed runtime or semantic input fails closed;
 known-ineligible pairs are excluded. No automatic paid or unsupported fallback.
 
+For a model on a non-Codex route, use the same `price_selection`
+candidate inventory, including every available non-excluded Codex model/effort
+with a table prior. Its `usage_estimate` is null; its `comparison_value`, actual
+usage and subscription charge remain null. The selected reason cannot be
+`price_informed`. The checker does not compare unknown price or quality against
+the table. For a Codex selection it still checks known omissions and dominance;
+an explicit bound pin keeps its existing authority. The same model ID on another
+route is a separate candidate: verify that route independently and do not copy
+the Codex price or benchmark. Unknown Codex aliases do not acquire table values.
+
+The unlisted candidate's host `runtime_evidence` adds `unlisted_runtime` with
+exact `candidate` identity (`route`, `family`, `model`, `effort`), canonical
+`agent`, `host`, `supported`, `authenticated`, `tools`, `billing`, time-zone
+aware `observed_at`/`valid_until`, and evidence IDs `model_evidence`,
+`support_evidence`, `auth_evidence`, `tools_evidence`, and `billing_evidence`.
+Values must match the candidate. Each referenced real host entry has `file`,
+SHA-256, matching `host`, and its own current `observed_at`/`valid_until`.
+The unlisted runtime host must also match the `host` on the pinned Codex
+inventory; at prelaunch that inventory is the current canonical host file.
+These host labels are supplied evidence, not authenticated host identity.
+
+The pinned model file must match one of these limited catalog shapes:
+
+- A JSON object with a `models` array. The exact `id` row must contain
+  `supported_reasoning_levels` with an explicit matching `effort`. A nonempty
+  `error`, or `ok` or `success` set to false, invalidates the catalog. A model
+  name appearing only in an error or another field does not count.
+- For Antigravity, the captured tab-separated model ID and display-name rows,
+  with a recognized effort suffix on each ID matching the display-name suffix;
+  the exact model and requested effort must occur together.
+- For Grok, the captured login/default header and `Available models:` list of
+  starred or hyphenated model rows. This shape carries no effort setting, so it
+  is usable only when the requested effort is null; it does not prove support
+  for any named effort.
+
+Unknown formats, a bare model name, an unsupported effort, malformed lists and
+the declared JSON error/status fields above fail closed. These parsers check recognizable structure and
+supplied bindings; they do not establish that a file came from a successful
+command, authenticate its origin or interpret the truth of its statements.
+Quality evidence needs the `task_fit` binding described above.
+For a real unlisted candidate, both the task-fit entry and its separate support
+entry must be non-synthetic and bind SHA-256-pinned files.
+Synthetic cases label all entries synthetic and cannot prove real availability.
+
+For support, authentication, tools, and billing, each referenced host evidence
+file is a JSON observation with `format: company-runtime-observation/v1`, the
+same `candidate`, `agent` and `host`, one `claim` (`supported`, `authenticated`,
+`tools`, or `billing`), its corresponding `value`, and `source_evidence` naming
+a separate, current, same-host, SHA-256-pinned host file. Preserve the raw source
+and the operator's rationale. The checker reads the observation and pins and
+checks the declared time windows; it does not authenticate a file's origin or
+interpret the raw source as proof of that claim. The operator and independent
+reviewer must inspect those sources, actual provider support and billing before
+using the supported Orca route. The checker neither launches nor intercepts it.
+
 A nonnull `usage_estimate` has `basis: estimate`, `evidence` and `stages` with all
 seven keys: `instructions`, `execution`, `feedback`, `failures`, `retries`,
 `review`, `integration`. Each is null (unknown) or a list of estimated full

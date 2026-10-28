@@ -5,11 +5,12 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from company_config import ConfigError, canonical_home, resolve, route_errors
-from route_select import SelectionError, select as select_by_price
+from route_select import SelectionError, load_table, select as select_by_price
 
 ROUTES = ('agy', 'antigravity', 'claude-code', 'claude', 'grok', 'codex', 'cursor', 'other')
 FAMILIES = ('flash', 'claude', 'grok', 'luna', 'terra', 'sol', 'astra', 'other', 'excluded_pro')
@@ -37,6 +38,41 @@ def identity(candidate):
     if not isinstance(candidate, dict):
         return None
     return tuple(candidate.get(field) for field in ('route', 'family', 'model', 'effort'))
+
+
+def catalog_supports_candidate(contents, candidate):
+    """Recognize only the captured catalog shapes, not arbitrary provider text."""
+    model, effort = candidate['model'], candidate['effort']
+    if contents.lstrip().startswith('{'):
+        catalog = json.loads(contents)
+        if (not isinstance(catalog, dict) or not isinstance(catalog.get('models'), list)
+                or catalog.get('error') or catalog.get('ok') is False or catalog.get('success') is False):
+            return False
+        for row in catalog['models']:
+            if not isinstance(row, dict) or row.get('id') != model:
+                continue
+            levels = row.get('supported_reasoning_levels')
+            if isinstance(levels, list) and any(isinstance(level, dict) and 'effort' in level
+                                                and level['effort'] == effort for level in levels):
+                return True
+        return False
+
+    if candidate['route'] in ('agy', 'antigravity'):
+        lines = contents.splitlines()
+        rows = [re.fullmatch(r'([A-Za-z0-9_.-]+)-(low|medium|high|xhigh|max)\t[^\t\r\n]+ \((low|medium|high|xhigh|max)\)',
+                             line, re.IGNORECASE) for line in lines]
+        return bool(rows) and all(row is not None and row.group(2).lower() == row.group(3).lower() for row in rows) and any(
+            row.group(1) + '-' + row.group(2) == model and row.group(2).lower() == effort for row in rows)
+
+    if candidate['route'] == 'grok' and effort is None:
+        lines = contents.splitlines()
+        if (len(lines) < 6 or lines[0] != 'You are logged in with grok.com.' or lines[1] != ''
+                or not re.fullmatch(r'Default model: [A-Za-z0-9_.-]+', lines[2])
+                or lines[3] != '' or lines[4] != 'Available models:'):
+            return False
+        rows = [re.fullmatch(r'  [*-] ([A-Za-z0-9_.-]+)(?: \(default\))?', line) for line in lines[5:]]
+        return bool(rows) and all(row is not None for row in rows) and any(row.group(1) == model for row in rows)
+    return False
 
 
 
@@ -204,7 +240,7 @@ class Checker:
             receipt['price_selection'] = self.price_result
         return receipt
 
-    def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False, recorded_prelaunch=False):
+    def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False, recorded_prelaunch=False, legacy_record=False):
         if self.configuration is None:
             self.error(path, 'price_selection_invalid', 'Resolved configuration is unavailable')
             return None
@@ -253,7 +289,52 @@ class Checker:
                 inventory = self.refs.get(selection.get('inventory_evidence'), {})
                 host_models = inventory.get('host_models') if isinstance(inventory, dict) else None
             result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch or recorded_prelaunch,
-                                     requested=decision.get('selected') if (prelaunch or recorded_prelaunch) and not pinned else None, host_models=host_models)
+                                     requested=decision.get('selected') if (prelaunch or recorded_prelaunch) and (not pinned or decision.get('selected', {}).get('route') != 'codex') else None,
+                                     host_models=host_models, current_runtime=not recorded_prelaunch,
+                                     explicit_pin=pinned, legacy_record=legacy_record)
+            if label != 'synthetic' and (prelaunch or recorded_prelaunch):
+                models = load_table()[0]['models']
+                for candidate in selection['candidates']:
+                    if candidate['route'] == 'codex' and candidate['model'] in models:
+                        continue
+                    runtime = self.refs[candidate['runtime_evidence']]['unlisted_runtime']
+                    if inventory.get('host') != runtime['host']:
+                        raise SelectionError('Unlisted runtime host must match the pinned Codex inventory host')
+                    source = self.refs[runtime['model_evidence']]
+                    catalog = (self.base / source['file']).read_text()
+                    suffix = re.search(r'-(low|medium|high|xhigh|max)$', candidate['model'])
+                    if suffix and candidate['effort'] != suffix.group(1):
+                        raise SelectionError('Unlisted model effort disagrees with its observed model identifier')
+                    if not catalog_supports_candidate(catalog, candidate):
+                        raise SelectionError('Unlisted model/effort is absent from a supported successful catalog shape')
+                    # Evidence files for these provider-specific facts must contain
+                    # an explicit candidate-bound observation and a separately
+                    # pinned raw source. A filename or bare host label is not a fact.
+                    for field, claim, value in (
+                        ('support_evidence', 'supported', candidate['supported']),
+                        ('auth_evidence', 'authenticated', candidate['authenticated']),
+                        ('tools_evidence', 'tools', candidate['tools']),
+                        ('billing_evidence', 'billing', candidate['billing']),
+                    ):
+                        evidence_ref = runtime[field]
+                        observation = json.loads((self.base / self.refs[evidence_ref]['file']).read_text())
+                        if (not isinstance(observation, dict) or observation.get('format') != 'company-runtime-observation/v1'
+                                or identity(observation.get('candidate')) != identity(candidate)
+                                or observation.get('agent') != runtime['agent']
+                                or observation.get('host') != runtime['host']
+                                or observation.get('claim') != claim or observation.get('value') != value):
+                            raise SelectionError('Unlisted ' + claim + ' observation is missing or mismatched')
+                        source_ref = observation.get('source_evidence')
+                        raw = self.refs.get(source_ref) if isinstance(source_ref, str) else None
+                        if (source_ref == evidence_ref or not isinstance(raw, dict) or raw.get('kind') != 'host'
+                                or raw.get('host') != runtime['host']
+                                or not isinstance(raw.get('file'), str) or not isinstance(raw.get('sha256'), str)):
+                            raise SelectionError('Unlisted ' + claim + ' needs separate pinned host source evidence')
+                        observed = datetime.fromisoformat(raw['observed_at'].replace('Z', '+00:00'))
+                        valid_until = datetime.fromisoformat(raw['valid_until'].replace('Z', '+00:00'))
+                        if (observed.tzinfo is None or valid_until.tzinfo is None or observed > valid_until
+                                or (prelaunch and not observed <= datetime.now(timezone.utc) <= valid_until)):
+                            raise SelectionError('Unlisted ' + claim + ' raw source freshness is expired or unknown')
             if recorded_prelaunch and label != 'synthetic':
                 previous = checked['price_selection']
                 if (previous['candidate_table_sha256'] != result['candidate_table_sha256'] or
@@ -417,12 +498,19 @@ class Checker:
                 self.error(path + '.tokens', 'token_basis', 'Unknown token basis cannot carry counts')
             if tokens.get('basis') == 'observed' and tokens.get('input') is None and tokens.get('output') is None:
                 self.error(path + '.tokens', 'token_basis', 'Observed token basis needs a count')
-        if prelaunch and pinned is None and 'price_selection' not in decision:
+        selection = decision.get('price_selection')
+        legacy_record = (require_receipt and not prelaunch and
+                         (not isinstance(selection, dict) or 'inventory_evidence' not in selection))
+        unlisted = selected.get('route') != 'codex' and not legacy_record
+        if unlisted and decision.get('selected_reason') == 'price_informed':
+            self.error(path + '.selected_reason', 'unknown_price_basis', 'An unlisted model with unknown price is not a price-informed selection')
+        if prelaunch and (pinned is None or unlisted) and 'price_selection' not in decision:
             self.error(path + '.price_selection', 'price_selection_required', 'Fresh unpinned assignment requires a candidate comparison')
         if 'price_selection' in decision or decision.get('selected_reason') == 'price_informed':
             recorded_prelaunch = (not prelaunch and require_receipt and isinstance(decision.get('price_selection'), dict)
                                   and 'inventory_evidence' in decision['price_selection'])
-            result = self.price_selection(decision, path + '.price_selection', prelaunch=prelaunch, pinned=pinned is not None, recorded_prelaunch=recorded_prelaunch)
+            result = self.price_selection(decision, path + '.price_selection', prelaunch=prelaunch, pinned=pinned is not None,
+                                          recorded_prelaunch=recorded_prelaunch, legacy_record=legacy_record)
             if result and result['status'] == 'selected':
                 if identity(result['selected']) != identity(selected) and not ((prelaunch or recorded_prelaunch) and pinned is not None):
                     self.error(path + '.selected', 'price_selection_mismatch',

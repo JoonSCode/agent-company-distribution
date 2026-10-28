@@ -1,6 +1,6 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-10-27.routing-prelaunch-r1",
+  "revision": "2026-10-28.routing-cache-no-bytecode-r1",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
@@ -65,7 +65,7 @@
     },
     {
       "path": "references/model-routing.md",
-      "sha256": "e8f79d57f22ca17055683840be97facbb40f24672a2966c531d13ef59f86f557"
+      "sha256": "d62a3de2f70c48bd467cf6785be57e9d655754b8d22c963196d9b1bd32131b1b"
     },
     {
       "path": "references/orca-contract.md",
@@ -73,7 +73,7 @@
     },
     {
       "path": "references/record-contract.md",
-      "sha256": "604142d01a1ee9e4ad4380f8751a0520ef55da2f6950d113ab109f6f6ef8a131"
+      "sha256": "2413e1b519a2f5fca1c7188748ea7d7c0715ea494a4b28c9f6193e0b2bc84381"
     },
     {
       "path": "references/resource-policy.md",
@@ -89,7 +89,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "09d7b768fc7f95b2e00d2e75c49d177694d80d02856531b8ccaab2a9cde1256b"
+      "sha256": "c613142c8e792a3e05d123aa2389fc96a2c5610467446157d52ff5c230014701"
     },
     {
       "path": "references/fleet-policy.md",
@@ -269,11 +269,11 @@
     },
     {
       "path": "scripts/route_select.py",
-      "sha256": "1206d5dd5f994e5e0b9eff56251d65599ff1deb62dfc066aa176e53ac48df84f"
+      "sha256": "d8e79197a5f71298fca01dc929b8c6320bea4aec5101550dca26ee7f559fba9f"
     },
     {
       "path": "scripts/test_route_select.py",
-      "sha256": "5000430b9bffb9de5657e3fd2eae1f04372196c03adf6a74bb9cfa7e1a94ef1b"
+      "sha256": "3a1a3863f78847eb60d2dba88acdf1687360ef9b9818c4d1e1317e548a24f859"
     },
     {
       "path": "scripts/routing_launch.py",
@@ -281,7 +281,7 @@
     },
     {
       "path": "scripts/routing_hook.py",
-      "sha256": "c495c3375c02354961c0f741be32af7d172f990090a2d19e2ff95e030bb78938"
+      "sha256": "981251fd6a5010d6cf6e579ccd392e19743ad981cd616b05e45ee6153274343d"
     },
     {
       "path": "scripts/test_routing_launch.py",
@@ -293,7 +293,11 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "533d0402f9bbee6a7c5ec9f375092e3d2460eb33cbfcd25a53f2ba05d413506a"
+      "sha256": "4398023af05f145d758fb47a7adb0e234f9b6b38d72bca22e31d4be0ea6def4d"
+    },
+    {
+      "path": "scripts/test_unlisted_routes.py",
+      "sha256": "8f8470bf331456da1ac1bb756d311edd52c277d89f5b52a69e0bce6d5b242837"
     }
   ],
   "adoptions": [

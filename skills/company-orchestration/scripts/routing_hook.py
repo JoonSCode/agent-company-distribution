@@ -10,6 +10,8 @@ import re
 import shlex
 import sys
 
+# A direct bind or hook invocation must not create caches in the managed skill.
+sys.dont_write_bytecode = True
 from completion_hook import state_parent
 from record_check import check_record, check_routing, read_json_snapshot
 
