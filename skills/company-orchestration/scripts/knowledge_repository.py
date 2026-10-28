@@ -11,6 +11,13 @@ import subprocess
 import sys
 import tempfile
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 import research_cache as cache
 
 FORMAT = "company-knowledge-migration/v1"

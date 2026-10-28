@@ -9,6 +9,13 @@ from pathlib import Path
 import re
 import sys
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 FIELDS = {
     'run_id', 'scope', 'revision', 'actor', 'requested_by', 'executed_by',
     'accountable_owner', 'team_id', 'decision_id', 'task_id', 'dispatch_id',

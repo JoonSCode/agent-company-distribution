@@ -16,6 +16,13 @@ import subprocess
 import sys
 import uuid
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 sys.dont_write_bytecode = True
 from record_check import check_record, unique_object, invalid_constant
 

@@ -1,6 +1,6 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-10-28.routing-cache-no-bytecode-r1",
+  "revision": "2026-10-28.company-cache-prefix-r1",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
@@ -85,11 +85,11 @@
     },
     {
       "path": "scripts/orca_contract.py",
-      "sha256": "3912abf8dda81a7d88514a4535ebe604dedd1b79d4dd044946961b1554a49f77"
+      "sha256": "6d7dadbe1db8fa3a54fa32d5575aee91a608526796aaa3744bbd75eff747150b"
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "c613142c8e792a3e05d123aa2389fc96a2c5610467446157d52ff5c230014701"
+      "sha256": "05d3ce81c3d1dd6a24d8e0f6fc0b1b0fefaa4273ce8fc036c16b2c51f529c171"
     },
     {
       "path": "references/fleet-policy.md",
@@ -97,7 +97,7 @@
     },
     {
       "path": "scripts/policy_version.py",
-      "sha256": "2f9c02b2146f92fd4ce22eeae4f37d9cedbf0e00e4f096a1bab6c92863db085c"
+      "sha256": "6d41c6f8bde37d87995dbbba291b9b5327d0a9ab48459f0f4973299ed73bffe1"
     },
     {
       "path": "references/completion-retention.md",
@@ -105,11 +105,11 @@
     },
     {
       "path": "scripts/run_completion.py",
-      "sha256": "a5e8eae339dc3aa9b91bee559518b9cc54fe712b651314859981a89612d6008e"
+      "sha256": "5c84c4ce95faacb1742f33127a8e8d54bff83f62bd74024bcc65c54c35e5bb19"
     },
     {
       "path": "scripts/completion_hook.py",
-      "sha256": "228383b887bb71aae53ad7bafbea4212076ae5dfb48b52f46cf7009ffe4afd38"
+      "sha256": "bbbf4e9231ff0626c6c0c2f5c4b466074748f4fc7090f134a188d5073f9b9fab"
     },
     {
       "path": "scripts/test_run_completion.py",
@@ -133,7 +133,7 @@
     },
     {
       "path": "scripts/research_cache.py",
-      "sha256": "8731fa6d2609ef46fd4489bdac1e45a4ffb6a1d4eb6c8e9c90d23a64f71206c2"
+      "sha256": "1531123e808f07ee24c1e42831b2ee8e096e16461a375677a6f43311efe05d5d"
     },
     {
       "path": "scripts/test_research_cache.py",
@@ -149,11 +149,11 @@
     },
     {
       "path": "scripts/continuity.py",
-      "sha256": "4a54945d182aa8dc9a22ce3c5f0a8b5a9ea0b13efa7a0a985eeb6509dcaa8cb6"
+      "sha256": "2c2d9b378b0aab68bae0a92399d7100260fc8aa095440e5aa7d5e2f5c4c93c16"
     },
     {
       "path": "scripts/knowledge_repository.py",
-      "sha256": "6569b78d41b68b36983b5352e0d94fc3023e184ab45bcb50b44c84fecf31dbd2"
+      "sha256": "c0f1239b61c413fe852841bb2425a5b1b3ef9316555d90153e5fbbea6911228c"
     },
     {
       "path": "scripts/test_continuity.py",
@@ -169,7 +169,7 @@
     },
     {
       "path": "scripts/org_audit.py",
-      "sha256": "3f77056c09dc519ea658e78c4efb5dd7193daf6217d6a076221bfb542267994b"
+      "sha256": "ef8d47c2b1dbd2185374da24ee464738d74d2cd07064dd8d7edd6444b0b6c472"
     },
     {
       "path": "scripts/test_org_audit.py",
@@ -193,7 +193,7 @@
     },
     {
       "path": "references/configuration.md",
-      "sha256": "4c43a1d107c1911d3314b91a354629cd19ea2be99e892975332f0477025befc2"
+      "sha256": "c3c501dc6e77c454c4da92f7ad451df2b52b8abb0d69169a7ea0bd2cdd2e2afd"
     },
     {
       "path": "scripts/company_config.py",
@@ -205,11 +205,11 @@
     },
     {
       "path": "scripts/outcome_eval.py",
-      "sha256": "048a8b8d3eaa2165df85588d4a01d4c836dea7eacd37e6b24ed7e8aae0624386"
+      "sha256": "814406f7cd995f8724565a90c19dc63aabc2a35fc62c29a48fafc853cb70c7f4"
     },
     {
       "path": "scripts/record_projection.py",
-      "sha256": "704cfe68dace8b1b82738447de798c8263bc1649349e1a2bc1a3499cb829ad59"
+      "sha256": "6d2cb36c5f1577b9e1d0eb3e14e77df8b178e9943c212237aefb4dc413104328"
     },
     {
       "path": "references/outcome-evaluation.md",
@@ -233,7 +233,7 @@
     },
     {
       "path": "scripts/provider_usage.py",
-      "sha256": "fc35632a0a5ac84af9fa9430c2e73d45b70313e3a464ab8cff5cf865bb1c3296"
+      "sha256": "b2b105a057f5c1514894e00f3ebb166b1af61f66a03a59ec4f6d15f0e157658a"
     },
     {
       "path": "references/provider-usage.md",
@@ -241,7 +241,7 @@
     },
     {
       "path": "scripts/status_view.py",
-      "sha256": "c6329542ee8942ac013856f26ede385ad7d20af5b84c0d3d91a72df4196afb18"
+      "sha256": "541963180538c1048ac3b43295efeb965648f698dcee9c2e7b9b5cdecd04ac38"
     },
     {
       "path": "references/status-view.md",
@@ -257,7 +257,7 @@
     },
     {
       "path": "scripts/launch_readiness.py",
-      "sha256": "1875302a53c85c76b49cb574593475f821a4d71dfcf224a0b82073e2ac673f7d"
+      "sha256": "53bae61b0f83ec1f52c3fc99876d9a10ea0d683093f112a94ded05bcb5be27bf"
     },
     {
       "path": "scripts/test_launch_readiness.py",
@@ -277,11 +277,11 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "94ffd1787de2001d30b55174cf710116f6d7d42cd956972259ca75177a979221"
+      "sha256": "3b957e74de6f7838097eeb06c7bd6b89979e98ab5017e9b2e1d565a273648a1e"
     },
     {
       "path": "scripts/routing_hook.py",
-      "sha256": "981251fd6a5010d6cf6e579ccd392e19743ad981cd616b05e45ee6153274343d"
+      "sha256": "ef43b9f50693686a770fe7520f3086bb46ce4ec4923a8dd454b0cad6f716a329"
     },
     {
       "path": "scripts/test_routing_launch.py",

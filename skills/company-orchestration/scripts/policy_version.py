@@ -7,6 +7,13 @@ from pathlib import Path
 import re
 import sys
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 # Importing a helper must not create bytecode inside managed installed skills.
 sys.dont_write_bytecode = True
 from orca_contract import decode, digest, load_package, require

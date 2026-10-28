@@ -22,6 +22,13 @@ import sys
 from pathlib import Path
 from typing import assert_never
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 from agent_company_deps import JsonValue
 from agent_company_handoff_parser import (
     FORMAT,

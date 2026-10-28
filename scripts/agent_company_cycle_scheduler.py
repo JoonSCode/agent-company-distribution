@@ -13,6 +13,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 from agent_company_cycle_models import CycleError, JsonObject, TickRequest, canonical_time
 from agent_company_cycle_policy import tick
 from agent_company_cycle_store import mutate_state, read_state

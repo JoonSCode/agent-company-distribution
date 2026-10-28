@@ -10,6 +10,13 @@ import re
 import shlex
 import sys
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 # A direct bind or hook invocation must not create caches in the managed skill.
 sys.dont_write_bytecode = True
 from completion_hook import state_parent

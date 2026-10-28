@@ -20,6 +20,13 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Final, Literal
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 from agent_company_config import ConfigError
 from agent_company_bootstrap_sources import (
     BootstrapError, CommandRequest, SourceSpec, checked, managed_container,
@@ -45,6 +52,7 @@ def install_environment(config: BootstrapConfig) -> dict[str, str]:
     env = os.environ.copy()
     env["CODEX_HOME"] = str(config.codex_home)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONPYCACHEPREFIX"] = str(Path.home() / ".cache/agent-company/python")
     return env
 
 

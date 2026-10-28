@@ -9,6 +9,13 @@ import hashlib
 import json
 from pathlib import Path
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 FIELDS = ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens',
           'output_tokens', 'reasoning_output_tokens', 'total_tokens')
 

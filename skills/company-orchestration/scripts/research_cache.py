@@ -12,6 +12,13 @@ import re
 import stat
 import sys
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 FORMAT = "company-research-record/v1"
 KNOWLEDGE_FORMAT = "company-knowledge-record/v2"
 INDEX_FORMAT = "company-research-index/v1"

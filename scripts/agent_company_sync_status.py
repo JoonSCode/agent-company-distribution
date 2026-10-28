@@ -8,6 +8,14 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 from agent_company_sync_report import sync_status
 
 

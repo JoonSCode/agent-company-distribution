@@ -140,3 +140,24 @@ are process-local inputs, not global setting changes. The checker validates
 configuration gates and existing evidence/Task bindings; it is not a scheduler,
 provider authentication verifier or live launch intercept. Synthetic receipts
 prove only their own bounded structure and never authorize account execution.
+
+## Python bytecode cache
+
+Company's current configuration, setup, installer, updater, Doctor, sync,
+recovery, role compiler, handoff, cycle-state, expertise manifest/example,
+review-verdict and orchestration-script entrypoints select Python's
+normal bytecode-cache prefix at `~/.cache/agent-company/python` before their
+first Company import. The path belongs to the current user, is outside managed
+skills and snapshots, and can be regenerated from the source. Company Python
+children receive the same `PYTHONPYCACHEPREFIX`; the isolated Doctor probe uses
+Python's equivalent `-X pycache_prefix` because `-I` ignores environment flags.
+The prefix changes the current process only, not shell or other application
+settings. `-B` still prevents cache writes when requested; the prefix also keeps
+reads away from old caches in managed trees. Arbitrary Python imports performed
+by another application are outside this entrypoint contract. Documented legacy
+compatibility projections, historical evaluation tooling and developer-only
+test/audit/benchmark scripts are also outside this current workflow contract;
+their documentation or continued availability does not establish cache isolation.
+Existing managed
+files, including unexpected caches, remain subject to full integrity checking;
+this setting does not repair or authorize removing them.

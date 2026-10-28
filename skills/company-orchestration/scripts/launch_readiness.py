@@ -13,6 +13,13 @@ import secrets
 import sys
 import time
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 sys.dont_write_bytecode = True
 from record_check import unique_object, invalid_constant
 

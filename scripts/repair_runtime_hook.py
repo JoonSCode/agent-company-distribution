@@ -18,6 +18,13 @@ import re
 import tomllib
 import uuid
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 import agent_company_completion_hook_install as hook
 import agent_company_routing_hook_install as routing_hook
 from agent_company_hook_probe import list_hooks

@@ -14,6 +14,13 @@ import shutil
 from pathlib import Path
 import sys
 
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
+
 from agent_company_config import ConfigError, resolve, readiness, user_path, read_document, save_document, restore_document, encode
 from company_config import SERVICES, validate
 from agent_company_bootstrap import BootstrapConfig, bootstrap

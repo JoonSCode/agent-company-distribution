@@ -64,8 +64,10 @@ def probe_python(entry: dict, home: Path, *, resolve_home: bool = True, prefix: 
         code += ("sys.path.insert(0," + repr(str(helper.parent)) + "); "
                  "import run_completion; result['sejong_home']=str(run_completion.default_home()); ")
     code += "print(json.dumps(result))"
-    result = subprocess.run([str(python), "-I", "-S", "-B", "-c", code],
-        env=dict(os.environ, CODEX_HOME=str(home), PYTHONDONTWRITEBYTECODE="1"),
+    cache_prefix = str(Path.home() / ".cache/agent-company/python")
+    # -I ignores PYTHONPYCACHEPREFIX, so use Python's equivalent -X switch.
+    result = subprocess.run([str(python), "-I", "-S", "-B", "-X", f"pycache_prefix={cache_prefix}", "-c", code],
+        env=dict(os.environ, CODEX_HOME=str(home), PYTHONDONTWRITEBYTECODE="1", PYTHONPYCACHEPREFIX=cache_prefix),
         capture_output=True, text=True, timeout=8)
     if result.returncode != 0:
         raise ValueError(f"registered Python/lifecycle read-only probe failed: {python}")

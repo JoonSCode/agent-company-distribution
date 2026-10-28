@@ -13,12 +13,20 @@
 from __future__ import annotations
 
 import subprocess
+import os
 import sys
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final, Protocol
+
+# Select Python's normal cache prefix before importing Company modules.
+# Restrict this to the CLI process; callers importing a module are unchanged.
+if __name__ == "__main__":
+    import os as _os
+    import sys as _sys
+    _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
 
 from agent_company_install_io import install_paths
 from agent_company_update_receipts import UpdateAttempt, UpdateReceiptError, UpdateResult
@@ -62,7 +70,8 @@ class CommandResult:
 class SystemProcess:
     def run(self, argv: tuple[str, ...]) -> CommandResult:
         try:
-            completed = subprocess.run(argv, text=True, capture_output=True, check=False)
+            env = dict(os.environ, PYTHONPYCACHEPREFIX=str(Path.home() / ".cache/agent-company/python"))
+            completed = subprocess.run(argv, env=env, text=True, capture_output=True, check=False)
         except OSError as exc:
             return CommandResult(127, "", f"update process failed: {exc}")
         return CommandResult(completed.returncode, completed.stdout, completed.stderr)
