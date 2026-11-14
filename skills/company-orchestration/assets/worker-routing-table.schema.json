@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "worker-routing-table.schema.json",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "vocabulary_version": {
+      "const": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "enum": [
+              "general",
+              "language",
+              "structured_data",
+              "reasoning",
+              "code",
+              "research",
+              "visual",
+              "design",
+              "media_generation",
+              "tool_use"
+            ]
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "easy",
+              "medium",
+              "hard"
+            ]
+          },
+          "candidates": {
+            "type": "array",
+            "maxItems": 3,
+            "description": "Local primary plus at most two backups, sorted by priority then identity; shared default is separate.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "identity": {
+                  "type": "object",
+                  "properties": {
+                    "route": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "model": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "effort": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "low",
+                        "medium",
+                        "high",
+                        "xhigh",
+                        "max"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "route",
+                    "model",
+                    "effort"
+                  ],
+                  "additionalProperties": false
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "input_modalities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "code",
+                      "image",
+                      "audio",
+                      "video",
+                      "structured_data"
+                    ]
+                  },
+                  "uniqueItems": true,
+                  "minItems": 0
+                },
+                "output_modalities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "code",
+                      "image",
+                      "audio",
+                      "video",
+                      "structured_data"
+                    ]
+                  },
+                  "uniqueItems": true,
+                  "minItems": 0
+                },
+                "capabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "general.execute",
+                      "text.summarize",
+                      "text.rewrite",
+                      "text.translate",
+                      "data.lookup",
+                      "data.transform",
+                      "logical.reason",
+                      "quantitative.reason",
+                      "code.reason",
+                      "repository.edit",
+                      "frontend.code",
+                      "framework.react",
+                      "evidence.synthesize",
+                      "citation.ground",
+                      "vision.read",
+                      "vision.ocr",
+                      "multimodal.reason",
+                      "screenshot_to_code",
+                      "ui.design",
+                      "ux.judgment",
+                      "design.aesthetic_judgment",
+                      "image.generate",
+                      "image.edit",
+                      "tool.call"
+                    ]
+                  },
+                  "uniqueItems": true,
+                  "minItems": 0
+                },
+                "tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true,
+                  "minItems": 0
+                },
+                "context_limit": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "constraints": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true,
+                  "minItems": 0
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true,
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "identity",
+                "priority",
+                "enabled",
+                "input_modalities",
+                "output_modalities",
+                "capabilities",
+                "tools",
+                "context_limit",
+                "constraints",
+                "evidence"
+              ],
+              "additionalProperties": false
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          }
+        },
+        "required": [
+          "family",
+          "difficulty",
+          "candidates"
+        ],
+        "additionalProperties": false
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "common_default": {
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "object",
+          "properties": {
+            "route": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effort": {
+              "type": "string",
+              "enum": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max"
+              ]
+            }
+          },
+          "required": [
+            "route",
+            "model",
+            "effort"
+          ],
+          "additionalProperties": false
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "input_modalities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "text",
+              "code",
+              "image",
+              "audio",
+              "video",
+              "structured_data"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "output_modalities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "text",
+              "code",
+              "image",
+              "audio",
+              "video",
+              "structured_data"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "general.execute",
+              "text.summarize",
+              "text.rewrite",
+              "text.translate",
+              "data.lookup",
+              "data.transform",
+              "logical.reason",
+              "quantitative.reason",
+              "code.reason",
+              "repository.edit",
+              "frontend.code",
+              "framework.react",
+              "evidence.synthesize",
+              "citation.ground",
+              "vision.read",
+              "vision.ocr",
+              "multimodal.reason",
+              "screenshot_to_code",
+              "ui.design",
+              "ux.judgment",
+              "design.aesthetic_judgment",
+              "image.generate",
+              "image.edit",
+              "tool.call"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "context_limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 0
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "identity",
+        "enabled",
+        "input_modalities",
+        "output_modalities",
+        "capabilities",
+        "tools",
+        "context_limit",
+        "constraints",
+        "evidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "vocabulary_version",
+    "source",
+    "entries",
+    "common_default"
+  ],
+  "additionalProperties": false
+}

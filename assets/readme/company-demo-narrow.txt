@@ -1,0 +1,19 @@
+map 1/1
+> Plan a small app -------------------+
+| reasoning | Task review passed      |
+| Assigned: demo-planner              |
+| Specialist unknown                  |
++-[build] Development-----------------+
+  |
+  v
++ Build the first slice --------------+
+| code | Task review passed           |
+| Assigned: demo-builder              |
+| Specialist unknown                  |
++-[build] Development-----------------+
+
+
+
+
+SYNTHETIC | PART LINKS | NO LIVE
+q exit n/p j/k b l s

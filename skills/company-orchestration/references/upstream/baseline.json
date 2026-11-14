@@ -1,6 +1,6 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-10-28.company-cache-prefix-r1",
+  "revision": "2026-11-09.semantic-settings-r1",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
@@ -48,8 +48,96 @@
   },
   "policy_files": [
     {
+      "path": "scripts/status_tui_wide.py",
+      "sha256": "869415e0cfb3f1c77d3bfc5313da8fb82592c200b2ef6b8cecb49e6c645d5a92"
+    },
+    {
+      "path": "scripts/status_tui_navigation.py",
+      "sha256": "44e06121ebc2d4fa570c89b4b6516182627ff23958a44a7757b452f4926c323f"
+    },
+    {
+      "path": "scripts/status_tui_graph.py",
+      "sha256": "42290e8a3a6dcd94db5c6fadcea8e4d7b1725bbf38ea22255929cd9350ec8efe"
+    },
+    {
+      "path": "scripts/status_tui_context.py",
+      "sha256": "113c1bd03c877d6e7f90238f72421ba11ee27ce94766a3436389fc766d47a5de"
+    },
+    {
+      "path": "scripts/status_tui_input.py",
+      "sha256": "b643c81310dd9a644c85a3f73681867be1dcfaa35f3009886971b5519e6a1bf6"
+    },
+    {
+      "path": "references/native-operations.md",
+      "sha256": "5b25207c73f3f2d72225548982f6007e0cf145077d67e9b664d96c0dfc465e6f"
+    },
+    {
+      "path": "references/status-tui.md",
+      "sha256": "cc366ebf54b5529f427ec7367e74af5cd5ddf7cae1f012cb3cc2fe850e0c1631"
+    },
+    {
+      "path": "scripts/native_operations.py",
+      "sha256": "4f77168593cbb69dfdd30835c6a2b38e6a2ba9ccdb0b8b96aa01044e1638ea00"
+    },
+    {
+      "path": "scripts/native_reasoning.py",
+      "sha256": "fcd0298e78f3c1891b137822b23247dcac91550402f65fcccdbc69adc9b76200"
+    },
+    {
+      "path": "scripts/native_storage.py",
+      "sha256": "9f09a556ffa3316e16e6fd8d984a1c63e3866c6faab66cb196fb84c26a8b76c3"
+    },
+    {
+      "path": "scripts/native_usage.py",
+      "sha256": "d56495af244a63934258689f2fad0480ebc3a097937d24f63f6055d057b1ae70"
+    },
+    {
+      "path": "scripts/status_tui.py",
+      "sha256": "3c67a2330f2a05c453b2d575209f7cd3b63814389280ebb0a6e9ad17f643d0f8"
+    },
+    {
+      "path": "scripts/status_tui_data.py",
+      "sha256": "d5db21e1e9fef7d0a17a91c690f37689e94a688e9f822aefa3b6bc8642bf21b7"
+    },
+    {
+      "path": "scripts/record_integrity.py",
+      "sha256": "c519f742bbb627052f6dbd5dc3f039fd3b175725563c8746c74c6d3b9b22434c"
+    },
+    {
+      "path": "scripts/routing_explain.py",
+      "sha256": "4d74077a75f541b01ce7e4d1119520a89033305491ac23997a2780f69c8220d3"
+    },
+    {
+      "path": "scripts/routing_prepare.py",
+      "sha256": "39d57585e30167a3198c7bf4eacf6f0b25b60884acb0373c299406e3f8465146"
+    },
+    {
+      "path": "scripts/policy_manifest.py",
+      "sha256": "5c39ecd2e0a4e8db72a9507cf55905e779aa313ab25f963cb0986e674486b1d0"
+    },
+    {
+      "path": "references/getting-started.md",
+      "sha256": "043c9c8b1268b9e84a97af7a3ccf78c1424b826e2da77d7b9d4f95b99bb979fa"
+    },
+    {
+      "path": "references/host-model-catalog.md",
+      "sha256": "e8315acd330a72328beff23e4325d9470fd0bb6ec87074a6e22a5d73d1961d81"
+    },
+    {
+      "path": "scripts/host_model_catalog.cjs",
+      "sha256": "66b7ee67991aba2afb5be90cf0315d8add9e26786f077ff7bd878ac47545e8fb"
+    },
+    {
+      "path": "scripts/host_model_catalog.py",
+      "sha256": "364d4581de9e686921c226c7f9c85927fc75c579e03ca668ffa63e2cece89902"
+    },
+    {
+      "path": "references/worker-routing-evidence.md",
+      "sha256": "d38c9dbc29947d7dbec9c4cd2bbb88ff88f8f513a5a3f4d115221c3e5ecb3102"
+    },
+    {
       "path": "SKILL.md",
-      "sha256": "6dfb87154f48ebd4c62263bf7fd734edf59742e433dfeab3feb70596bfd19a2a"
+      "sha256": "26983a22a41ebad9c07c02548bcce0eb32faed4fb9c262e5475e6a79c0175f61"
     },
     {
       "path": "assets/record-cases.json",
@@ -69,11 +157,11 @@
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "95bde81708b970eef6676ead151a71069d2620447b32ef6f09f201e7632beef7"
+      "sha256": "5fc8252d9a245b6ed43226305ff3efe869ae8dcd6b0386c58310bc689ef348c9"
     },
     {
       "path": "references/record-contract.md",
-      "sha256": "2413e1b519a2f5fca1c7188748ea7d7c0715ea494a4b28c9f6193e0b2bc84381"
+      "sha256": "9eaea4bd27605ca2fd94bad1211abe3c6d0cd02960151140b9cc025afb6b450c"
     },
     {
       "path": "references/resource-policy.md",
@@ -89,7 +177,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "05d3ce81c3d1dd6a24d8e0f6fc0b1b0fefaa4273ce8fc036c16b2c51f529c171"
+      "sha256": "93b1281692e2f87120b8758f1f03ced3635e4022ff1d9cf8aaf71bb7e25dd2cc"
     },
     {
       "path": "references/fleet-policy.md",
@@ -101,11 +189,11 @@
     },
     {
       "path": "references/completion-retention.md",
-      "sha256": "9701d5e33bbf4935f58f6fee6147ff85506b3133e141cf9395abdd96876f2c1b"
+      "sha256": "437bec4469fb4cd1df087e5aa40610c5163e7c625517603702cfa02018f3b820"
     },
     {
       "path": "scripts/run_completion.py",
-      "sha256": "5c84c4ce95faacb1742f33127a8e8d54bff83f62bd74024bcc65c54c35e5bb19"
+      "sha256": "32325a0db94c014313467495248ea10e8b1d6a947c2aae4ca493c6131e136053"
     },
     {
       "path": "scripts/completion_hook.py",
@@ -113,7 +201,7 @@
     },
     {
       "path": "scripts/test_run_completion.py",
-      "sha256": "07a153485656a7c7b491fe3595bc45be657ce9dd191613aee1739fb5aa63848d"
+      "sha256": "1e3ed757b558d05410471ceb400c52b730e5006e015bde568727257769d437ac"
     },
     {
       "path": "references/model-candidates.md",
@@ -197,7 +285,7 @@
     },
     {
       "path": "scripts/company_config.py",
-      "sha256": "40201768709a77bd09bba5c7625c2859fc62d4c62851602fc3e4ff93a31c99e7"
+      "sha256": "00c4826cd4070d7c373e0f59fa9b8df9d71029615877c820077e6f61e2a20af9"
     },
     {
       "path": "assets/claude-entry.md",
@@ -205,7 +293,7 @@
     },
     {
       "path": "scripts/outcome_eval.py",
-      "sha256": "814406f7cd995f8724565a90c19dc63aabc2a35fc62c29a48fafc853cb70c7f4"
+      "sha256": "abb8435bc47a463e2720f68c93e9c53897656d149a85f2a63560eac59b8c78a3"
     },
     {
       "path": "scripts/record_projection.py",
@@ -213,7 +301,7 @@
     },
     {
       "path": "references/outcome-evaluation.md",
-      "sha256": "0fbced1efd786dce6f84c5f0f0e48178a14d4fa499daa489aba8c6e6d7ef15cd"
+      "sha256": "53386a076916e68052b6f0b5eab43a33fd4ebafeaf46cd4c7bbf63648ab4381b"
     },
     {
       "path": "references/record-projection.md",
@@ -233,19 +321,19 @@
     },
     {
       "path": "scripts/provider_usage.py",
-      "sha256": "b2b105a057f5c1514894e00f3ebb166b1af61f66a03a59ec4f6d15f0e157658a"
+      "sha256": "178d51c8e3cd52061b6ea49f393b8db6b0168e6cc6bacd8f28c929d7d38159aa"
     },
     {
       "path": "references/provider-usage.md",
-      "sha256": "526c4c0bcea52a1b4c654faa649c297cfc6099a5beb37bf3accc257c680185bd"
+      "sha256": "929a5e1cab5b49e0d42369f144e1b3aec2b64106171c2b01cb35ea407d53d5fc"
     },
     {
       "path": "scripts/status_view.py",
-      "sha256": "541963180538c1048ac3b43295efeb965648f698dcee9c2e7b9b5cdecd04ac38"
+      "sha256": "5b45ad6d83ebca453fdbe40002a49d3fd6a0e5f011536856253a350a76d630f4"
     },
     {
       "path": "references/status-view.md",
-      "sha256": "b4827c6aaccf4b57ac90d676b4237788551aeb3c2f1af2920a8569a7d0b67d64"
+      "sha256": "d67b445e93ef0022effea8651a23bfaa4131bd48dacb213f159d4ddbbf4a6f6e"
     },
     {
       "path": "assets/status-view-cases.json",
@@ -277,7 +365,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "3b957e74de6f7838097eeb06c7bd6b89979e98ab5017e9b2e1d565a273648a1e"
+      "sha256": "f8c17ed0444ab74e8a37d20f9a9eefe2190ff5ba64878e473c1c01877347196e"
     },
     {
       "path": "scripts/routing_hook.py",
@@ -285,19 +373,99 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "86e32fa61e8eb7f2c6b78307ce93b8c4799daa6cccd8d80b83a35a2ebf0fdadc"
+      "sha256": "85ef3934290f8c5d88717ceb23288ec1427f04c7196df2c327a31490c2439c01"
     },
     {
       "path": "scripts/test_routing_hook.py",
-      "sha256": "35c66e947461334cc324b90fcd24a164c3e43d7a27017b908b8b210222418786"
+      "sha256": "61834daa5c170c8b30f2cf85cc4e775c73d13af0ba9a10c96842502538bc6a57"
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "4398023af05f145d758fb47a7adb0e234f9b6b38d72bca22e31d4be0ea6def4d"
+      "sha256": "946eaac7f9af7467331e50e8caaf11dbc02b82bc6ec6ecd576b5428f19942982"
     },
     {
       "path": "scripts/test_unlisted_routes.py",
       "sha256": "8f8470bf331456da1ac1bb756d311edd52c277d89f5b52a69e0bce6d5b242837"
+    },
+    {
+      "path": "scripts/test_measurement_gate.py",
+      "sha256": "f77471bd8c8dd180beddf81c242de46848a22bf2319fba6392b2602d6055aaa2"
+    },
+    {
+      "path": "references/experiment-spec-example.json",
+      "sha256": "c9bcaacc75da556ef8ebd7fcf22daa926298a2c61bfb811947e6aa1e2d82e911"
+    },
+    {
+      "path": "references/offline-experiment-resource-protocol.md",
+      "sha256": "64a0d54ef08665c71d98200b70b5093b725ce5914e504fbb1a11c28d5ba19656"
+    },
+    {
+      "path": "references/resource-manifest-example.json",
+      "sha256": "f21aaa76a4cb9d27c123bde41de68f60b32fe7622c83a1663aa338057922679e"
+    },
+    {
+      "path": "scripts/experiment_spec.py",
+      "sha256": "a9706648f1cb933849909c23372bde13bfe94a1cab2ed49369a9911eb9279289"
+    },
+    {
+      "path": "scripts/goal_evidence.py",
+      "sha256": "d0d26b12c4b381d14edf234cde7cf6b4e7f1b60985019a1f2072d2bc6c50ae1d"
+    },
+    {
+      "path": "scripts/offline_sidecar.py",
+      "sha256": "56054c897a086b86528a81838fbf54c1e9796425583edda333229bd13af4722c"
+    },
+    {
+      "path": "scripts/resource_manifest.py",
+      "sha256": "bfea1eadabc4ec568f3b3a3eeffbf44e1a154251d79892299448111e84ea6786"
+    },
+    {
+      "path": "scripts/worker_profile.py",
+      "sha256": "51de8adf9cc0c6d2cef0cc5e1c2ed818b20c0d271d01846b28bed9a1db59540a"
+    },
+    {
+      "path": "scripts/worker_route.py",
+      "sha256": "7d411147861d3667c42366e1d2069d98cf235eba96548e7c0a7376b48df57d3d"
+    },
+    {
+      "path": "assets/worker-profile.schema.json",
+      "sha256": "f8b3b627b009e2f668be28932a3083ee27e0d6c073b5a9b0dbde771da0d1136d"
+    },
+    {
+      "path": "assets/worker-routing-table.schema.json",
+      "sha256": "946dc8f42fa8e3932de29e5b81059daf99ce1b3ebb6b6ad18f47fbcf18127cff"
+    },
+    {
+      "path": "assets/worker-routing-table.json",
+      "sha256": "ac0026345a5ad20ccab3aebffbc61b32094fbfb5128536312242955954964838"
+    },
+    {
+      "path": "assets/worker-profile-example.json",
+      "sha256": "049eb75a1d3d060e0ca2b604ac75096da8fea716b5a5c7bfd77046b7100879d8"
+    },
+    {
+      "path": "scripts/measurement_lifecycle.py",
+      "sha256": "a4eee7ad1d6cd31575345ee811003dcffdcc2cfcb8d0171c6b6296345d93aaee"
+    },
+    {
+      "path": "scripts/measurement_canary.py",
+      "sha256": "ae2ada09978db9d9534c5532c0adb53476560c25064be6322c664d5481a87762"
+    },
+    {
+      "path": "references/measurement-lifecycle.md",
+      "sha256": "c0136fe8ada7c72e734156cc0a0101f558081d32877c5159e4755d37045d72f0"
+    },
+    {
+      "path": "assets/measurement-canary.json",
+      "sha256": "0aabfe65f642e0a70bbbf7076392fb04f483bf75120c4902a9af7e9ef2013d52"
+    },
+    {
+      "path": "assets/orca-terminal-source-contract.json",
+      "sha256": "8867124e265403b68f4943c96c9369d245edd983afac35271822023454c1f281"
+    },
+    {
+      "path": "scripts/semantic_settings.py",
+      "sha256": "65da5f642b3d9c7eb74fa3c5bc0bde32fd13a4a6a0e1710bef7b3f150a45ef46"
     }
   ],
   "adoptions": [

@@ -4,9 +4,10 @@ Private skill contracts are installed under `${CODEX_HOME}/skills` only when
 the managed ownership marker and digest agree. An existing user-owned skill
 with the same name blocks installation instead of being overwritten.
 
-See the [Expertise Orchestration v1 operating runbook](../docs/expertise-orchestration-v1.md)
-for task-pack selection, specialist eligibility, knowledge receipts, evaluation,
-and demotion procedures.
+See the shipped [Company operating policy](company-orchestration/SKILL.md) and
+[planning hierarchy](agent-company/references/planning-hierarchy.md) for goal,
+role, task-pack, specialist and evidence boundaries. Development evaluation
+runbooks are not part of this public runtime package.
 
 The main `agent-company` skill remains the explicit app-studio front door.
 In this Orca fork it routes to [company-orchestration](company-orchestration/SKILL.md):
@@ -70,11 +71,17 @@ default and returns unresolved material evidence to the assigning lead;
 `problem-discovery`, `commercial-fit`, and `problem-business-loop` preserve
 their separate discovery, validation, and loop contracts.
 
-Validate the installed skill shapes without mutating user state:
+Validate a **public checkout** from its repository root without credentials,
+model calls or user-state changes (Python 3.13 and Git required):
 
 ```bash
-# docs-audit: execute expected-exit=0
-python3 scripts/test_qa_release_operating_system.py --case complete-matching-surface
-# docs-audit: execute expected-exit=0
-uv run scripts/test_agent_company_policy_suite.py --case existing-and-front-door
+python3.13 -B scripts/check_public_distribution.py
 ```
+
+This checks the public inventory, Python imports and local Markdown links,
+executes every bundled orchestration `test_*.py`, checks the policy manifest,
+and compares the no-model demo against the shipped captures in an isolated HOME.
+The same command is configured in the public repository's offline CI. It does
+not prove provider authentication, live Orca execution or product acceptance.
+Development-only role/evaluation suites remain in the canonical source; they
+are not commands available in this public package.

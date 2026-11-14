@@ -1,0 +1,9 @@
+{
+  "format": "company-resource-manifest/v1",
+  "resources": [{
+    "service": "codex", "approval_ref": "approval-example", "auth": "authenticated",
+    "hosts": ["example-host"], "models": ["example-model"], "efforts": ["high"],
+    "tools": ["local-read"], "billing": "subscription", "quota": "available",
+    "spending_ceiling": 0, "observed_at": "2026-01-01T00:00:00Z", "valid_until": "2027-01-01T00:00:00Z"
+  }]
+}

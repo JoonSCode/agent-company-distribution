@@ -1,5 +1,21 @@
 # Release notes
 
+## v0.2.1 — 2026-11-14
+
+- Product-first English README with original terminal captures, a demo-first
+  quickstart and clearer installation, first-task and recovery boundaries.
+- Bundled no-model demo uses the shipped strict record loader and terminal UI.
+  It can print a read-only frame or open the resident viewer without an Orca
+  connection, credentials, installation or model workers. English ASCII is the
+  default; the original Unicode/Korean view remains available explicitly.
+- Public policy projection keeps runtime hash bindings consistent while omitting
+  excluded development tests and documentation sections. Private-path detection
+  retains URI/nested-path coverage; no scanner bypass is required for the demo.
+
+The synthetic demo proves the actual record-validation/rendering path, not live
+staffing, authentication, model execution or user acceptance. Package installation
+and independent release verification remain distinct from runtime readiness.
+
 ## v0.2.0 — 2026-10-25
 
 - Standalone Orca Company uses Orca Task/Dispatch without a King Sejong Core

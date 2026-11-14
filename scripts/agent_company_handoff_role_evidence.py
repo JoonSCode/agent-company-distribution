@@ -2,6 +2,7 @@ from __future__ import annotations
 
 # pyright: reportImplicitRelativeImport=false
 from typing import assert_never, override
+import warnings
 
 from agent_company_deps import JsonValue
 from agent_company_design_review_common import DesignReviewContractError
@@ -181,11 +182,17 @@ def validate_role_evidence(
         elif role == "design":
             validate_design_role_evidence(payload, binding)
         elif role == "development":
-            validate_development_task_evidence(
+            evidence_status = validate_development_task_evidence(
                 payload,
                 task_type=context.task_type,
                 task_pack_id=context.task_pack_id,
             )
+            if evidence_status is not None and receipt_ingress:
+                warnings.warn(
+                    "architecture evidence is structural_only; reference existence, digest match, "
+                    "issuer authenticity and independence are unknown",
+                    UserWarning, stacklevel=2,
+                )
         else:
             raise RoleEvidenceError(f"unsupported role evidence role: {role}")
     except (

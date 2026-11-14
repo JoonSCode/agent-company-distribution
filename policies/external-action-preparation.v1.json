@@ -1,0 +1,17 @@
+{
+  "format": "agent-company.external-action-preparation/v1",
+  "policy_owner": "orca-company",
+  "historical_policy": "policies/external-action-policy.json",
+  "boundary": "Classification of job preparation only; not host execution authorization or interception. Approval issuer authenticity is unknown.",
+  "default_decision": "deny",
+  "actions": {
+    "read-local": "local-reversible",
+    "edit-scoped-local": "local-reversible",
+    "run-local-tests": "local-reversible",
+    "draft-unsent": "external-draft-only",
+    "read-external": "external-read-only",
+    "mutate-external": "mutation",
+    "publish": "mutation",
+    "spend": "mutation"
+  }
+}

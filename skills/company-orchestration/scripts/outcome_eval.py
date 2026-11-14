@@ -583,6 +583,9 @@ def summarize(plan, plan_sha256, actual):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    spec_parser = commands.add_parser("validate-spec", help="Validate an offline preregistration declaration only")
+    spec_parser.add_argument("--root", type=Path, required=True)
+    spec_parser.add_argument("--spec", required=True, help="Relative path under --root")
     freeze_parser = commands.add_parser("freeze", help="Create a new hash-anchored feasibility bundle")
     for name in ("spec", "baseline", "candidate", "context", "out"):
         freeze_parser.add_argument("--" + name, type=Path, required=True)
@@ -608,10 +611,14 @@ def main(argv=None):
                                help="Execute saved trusted Python task artifacts in a temporary cwd; not a sandbox")
     args = parser.parse_args(argv)
     try:
-        result = {"freeze": freeze, "prepare": prepare, "collect": collect, "score": score}[args.command](args)
+        if args.command == "validate-spec":
+            from experiment_spec import validate
+            result = validate(args.root, args.spec)
+        else:
+            result = {"freeze": freeze, "prepare": prepare, "collect": collect, "score": score}[args.command](args)
         print(encode(result), end="")
         return 0
-    except (Invalid, OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+    except (Invalid, OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError) as exc:
         print(encode({"format": VERSION, "status": "invalid", "error": str(exc)}), end="")
         return 2
 

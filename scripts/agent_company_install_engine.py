@@ -25,7 +25,7 @@ from agent_company_install_faults import before_phase, midpoint, race_staged_tar
 from agent_company_install_integrity import verify_all_staged_targets
 from agent_company_install_io import read_json, write_json
 from agent_company_install_managed_fs import hash_managed, remove_managed
-from agent_company_install_source import ROOT, snapshot_identity, stage_generation
+from agent_company_install_source import ROOT, SourceIdentity, snapshot_identity, stage_generation
 from agent_company_install_state import load_index, write_index
 from agent_company_install_transaction import begin, capture, cleanup_success, phase, preserve_rollback, restore_transaction
 from agent_company_install_types import ApplyBatch, GenerationCommit, InstallError, InstallPaths, InstallTarget, ManagedIndex, TransactionSpec
@@ -155,6 +155,24 @@ def update_runtime_metadata(paths: InstallPaths) -> None:
     write_json(status_path, status)
 
 
+def same_generation(paths: InstallPaths, identity: SourceIdentity) -> bool:
+    """Compare full verified identity under the installer lock, after verify_prior.
+
+    Runtime configuration is not source identity: reapply it without retiring
+    the previous source generation. Directory names contain truncated hashes.
+    """
+    active = active_payload(paths)
+    if active is None or active.get("snapshot_id") != identity.snapshot_id:
+        return False
+    manifest = read_json(paths.snapshots / identity.snapshot_id / "manifest.json")
+    return (
+        active.get("agent_company_ref") == identity.agent_ref
+        and manifest.get("snapshot_id") == identity.snapshot_id
+        and manifest.get("agent_company_commit") == identity.agent_ref
+        and manifest.get("source_content_sha256") == identity.source_hash
+    )
+
+
 def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]:
     prior = load_index(paths)
     verify_prior(paths, prior)
@@ -164,6 +182,7 @@ def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]
     if wants_claude or has_claude:
         claude_entry.preflight(paths.codex_home)
     identity = snapshot_identity()
+    retain_rollback = same_generation(paths, identity)
     if (ROOT / HOOK_SCRIPT).is_file() or (paths.codex_home / HOOK_REGISTRY).exists():
         preflight_hook(paths, enabled=(ROOT / HOOK_SCRIPT).is_file())
     if (ROOT / routing_hook.SCRIPT).is_file() or (paths.codex_home / routing_hook.REGISTRY).exists():
@@ -237,13 +256,13 @@ def execute_generation(paths: InstallPaths, action: str) -> dict[str, JsonValue]
         phase(paths, "commit_active_hashes")
         before_phase("cleanup")
         phase(paths, "cleanup")
-        preserve_rollback(paths, transaction_id)
+        preserve_rollback(paths, transaction_id, retain_current=retain_rollback)
         cleanup_success(paths, transaction_id)
     except (DepsError, InstallError, NativeAgentError, SkillInstallError, OSError, ValueError):
         restore_transaction(paths, transaction_id)
         raise
     update_runtime_metadata(paths)
-    return {"status": "ok", "action": action, "snapshot_id": snapshot_id, "agents": 6}
+    return {"status": "ok", "action": action, "snapshot_id": snapshot_id, "agents": 6, "rollback_preserved": retain_rollback}
 
 
 def uninstall(paths: InstallPaths) -> dict[str, JsonValue]:

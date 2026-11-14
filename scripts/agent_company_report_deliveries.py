@@ -74,6 +74,8 @@ def project_deliveries(
             )
             if terminal_status is status.TerminalStatus.COMPLETED:
                 handoff = validate_worker_handoff(assignment, receipt)
+                if handoff.architecture_evidence_status is not None:
+                    risks.append(f"Architecture evidence for {worker_id} is structural_only; reference existence, digest match, issuer authenticity and independence are unknown.")
                 if not handoff.valid:
                     delivery_state = "unverified"
                     summary = (

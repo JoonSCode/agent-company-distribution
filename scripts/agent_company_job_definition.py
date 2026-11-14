@@ -16,6 +16,7 @@ import json
 from collections.abc import Iterable
 from contextlib import suppress
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Final
@@ -58,6 +59,51 @@ class JobRequest:
         "external mutation, publication, and spend require explicit CEO approval",
         "independent matching-surface verification is required",
     )
+
+
+def classify_job_preparation(action: str, target: str, arguments: list[str], *,
+                             now: datetime, authorized_read: bool = False,
+                             approval: dict[str, JsonValue] | None = None) -> dict[str, str]:
+    """Classify only named preparation operations; this does not authorize host execution.
+
+    Approvals are untrusted declarations: matching scope is necessary, not proof
+    of an authenticated approver. The caller supplies its clock.
+    """
+    result = {"decision": "deny", "scope": "preparation_only",
+              "issuer_authenticity": "unknown"}
+    if not isinstance(action, str) or not isinstance(target, str) or not target.strip():
+        return result
+    if not isinstance(arguments, list) or any(not isinstance(x, str) for x in arguments):
+        return result
+    if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+        return result
+    policy = read_object(ROOT / "policies" / "external-action-preparation.v1.json")
+    classes = policy.get("actions")
+    if not isinstance(classes, dict):
+        return result
+    kind = classes.get(action)
+    if kind in ("local-reversible", "external-draft-only"):
+        result["decision"] = "prepare"
+    elif kind == "external-read-only" and authorized_read is True:
+        result["decision"] = "prepare"
+    elif kind == "mutation" and isinstance(approval, dict):
+        if set(approval) != {"action", "target", "arguments", "expires_at", "decision", "issuer"}:
+            return result
+        expiry = approval.get("expires_at")
+        issuer = approval.get("issuer")
+        if not isinstance(expiry, str) or not isinstance(issuer, str) or not issuer.strip():
+            return result
+        try:
+            expires = datetime.fromisoformat(expiry.replace("Z", "+00:00"))
+            if expires.tzinfo is None or expires.utcoffset() is None:
+                return result
+            if (approval.get("decision") == "approved" and approval.get("action") == action
+                    and approval.get("target") == target and approval.get("arguments") == arguments
+                    and expires.astimezone(timezone.utc) > now.astimezone(timezone.utc)):
+                result["decision"] = "prepare"
+        except (ValueError, OverflowError):
+            return result
+    return result
 
 
 def read_object(path: Path) -> dict[str, JsonValue]:
@@ -259,7 +305,7 @@ def build_job(request: JobRequest) -> dict[str, JsonValue]:
         "objective": objective, "source_request": source_request,
         "selected_recipe_id": recipe_id, "selected_roles": _json_array(selected),
         "workflow_ref": workflow_ref,
-        "policy_refs": _json_array(("policies/company-charter.json", "policies/company-state.schema.json", "policies/job-catalog.json", "policies/squad-recipes.json", workflow_ref, "policies/specialist-request.schema.json", "policies/uigwe-decision.schema.json", "policies/external-action-policy.json", "policies/ceo-report.schema.json")),
+        "policy_refs": _json_array(("policies/company-charter.json", "policies/company-state.schema.json", "policies/job-catalog.json", "policies/squad-recipes.json", workflow_ref, "policies/specialist-request.schema.json", "policies/uigwe-decision.schema.json", "policies/external-action-policy.json", "policies/external-action-preparation.v1.json", "policies/ceo-report.schema.json")),
         "company_context": company_context,
         "default_budget": budget,
         "kickoff": {

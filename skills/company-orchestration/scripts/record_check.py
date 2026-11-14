@@ -18,6 +18,8 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from company_config import ConfigError, canonical_home, resolve, route_errors
 from route_select import SelectionError, load_table, select as select_by_price
+from worker_profile import ASSETS, ProfileError, validate_profile_document
+from worker_route import prepare as prepare_profile, digest as profile_digest
 
 ROUTES = ('agy', 'antigravity', 'claude-code', 'claude', 'grok', 'codex', 'cursor', 'other')
 FAMILIES = ('flash', 'claude', 'grok', 'luna', 'terra', 'sol', 'astra', 'other', 'excluded_pro')
@@ -263,24 +265,35 @@ class Checker:
                 inventory = self.refs.get(inventory_ref, {}) if isinstance(inventory_ref, str) else {}
                 if isinstance(inventory, dict) and isinstance(inventory.get('file'), str):
                     inventory_path = (self.base / inventory['file']).resolve()
-                    if inventory_path != (canonical_home() / 'models_cache.json').resolve():
+                    if inventory.get('source') == 'orca_model_catalog':
+                        from host_model_catalog import bound_catalog
+                        host_models = bound_catalog(decision, self.base, config)['models']
+                    elif inventory_path != (canonical_home() / 'models_cache.json').resolve():
                         raise SelectionError('Codex inventory must reference this host canonical models_cache.json')
-                    inventory_bytes = inventory_path.read_bytes()
-                    if hashlib.sha256(inventory_bytes).hexdigest() != inventory.get('sha256'):
-                        raise SelectionError('Candidate inventory hash changed before comparison')
-                    contents = json.loads(inventory_bytes)
-                    if not isinstance(contents, dict) or not isinstance(contents.get('models'), list):
-                        raise SelectionError('Pinned Codex inventory must contain the host models array')
-                    observed = datetime.fromisoformat(inventory['observed_at'].replace('Z', '+00:00'))
-                    valid_until = datetime.fromisoformat(inventory['valid_until'].replace('Z', '+00:00'))
-                    if observed.tzinfo is None or valid_until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= valid_until:
-                        raise SelectionError('Host model inventory freshness is expired or unknown')
-                    host_models = contents['models']
+                    if host_models is None:
+                        inventory_bytes = inventory_path.read_bytes()
+                        if hashlib.sha256(inventory_bytes).hexdigest() != inventory.get('sha256'):
+                            raise SelectionError('Candidate inventory hash changed before comparison')
+                        contents = json.loads(inventory_bytes)
+                        if not isinstance(contents, dict) or not isinstance(contents.get('models'), list):
+                            raise SelectionError('Pinned Codex inventory must contain the host models array')
+                        observed = datetime.fromisoformat(inventory['observed_at'].replace('Z', '+00:00'))
+                        valid_until = datetime.fromisoformat(inventory['valid_until'].replace('Z', '+00:00'))
+                        if observed.tzinfo is None or valid_until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= valid_until:
+                            raise SelectionError('Host model inventory freshness is expired or unknown')
+                        host_models = contents['models']
             elif recorded_prelaunch and label != 'synthetic' and isinstance(selection, dict):
                 inventory = self.refs.get(selection.get('inventory_evidence'), {})
                 inventory_path = (self.base / inventory['file']).resolve()
-                contents = json.loads(inventory_path.read_bytes())
-                host_models = contents['models']
+                if inventory.get('source') == 'orca_model_catalog':
+                    from host_model_catalog import bound_catalog
+                    from record_integrity import catalog_capture_time, pinned_json
+                    _, manifest = pinned_json(inventory, self.base)
+                    host_models = bound_catalog(decision, self.base, config,
+                        now=catalog_capture_time(manifest))['models']
+                else:
+                    contents = json.loads(inventory_path.read_bytes())
+                    host_models = contents['models']
                 receipt_ref = self.refs[decision['receipt_evidence']]
                 receipt = json.loads((self.base / receipt_ref['file']).read_bytes())
                 checked = receipt['receipt']
@@ -569,7 +582,195 @@ class Checker:
                 self.error(path + '.alternatives', 'missing_comparison',
                            'Fallback requires an evidence-backed task-fit comparison; no fixed model mapping')
 
-    def check(self, record, require_routing=False):
+    def measurement_binding(self, record):
+        m = record['measurement']
+        participants = m.get('participants') if isinstance(m.get('participants'), list) else []
+        sample_fields = ('actor', 'provider', 'session', 'source', 'turns', 'prefix_bytes', 'prefix_sha256')
+        def digest(ref):
+            evidence = self.refs.get(ref) if isinstance(ref, str) else None
+            return evidence.get('sha256') if isinstance(evidence, dict) else None
+        return {'version': 1, 'goal_binding': m.get('goal_binding'),
+                'plan_sha256': digest(record['goal'].get('plan')),
+                'objective': m.get('objective'), 'objective_sha256': digest(m.get('objective')),
+                'criteria': m.get('criteria'), 'criteria_sha256': digest(m.get('criteria')),
+                'boundary': m.get('boundary'), 'expected_actors': m.get('expected_actors'),
+                'participants': [{field: item.get(field) for field in sample_fields}
+                                 for item in participants if isinstance(item, dict)]}
+
+    def measurement(self, record, final):
+        if record.get('measurement', {}).get('version') == 2:
+            from measurement_lifecycle import validate
+            try:
+                self.measurement_result = validate(record, self.base, final=final)
+            except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+                self.error('$.measurement', 'measurement_lifecycle',
+                           'Measurement evidence rejected: ' + str(exc))
+            return
+        from provider_usage import read_usage
+
+        path = '$.measurement'
+        m = self.obj(record.get('measurement'), path,
+                     ['mode', 'goal_binding', 'objective', 'criteria', 'boundary', 'expected_actors', 'participants'])
+        goal = record.get('goal') if isinstance(record.get('goal'), dict) else {}
+        binding = self.obj(m.get('goal_binding'), path + '.goal_binding', ['id', 'revision', 'scope', 'plan'])
+        for field in ('id', 'revision', 'scope', 'plan'):
+            if not isinstance(goal.get(field), str) or binding.get(field) != goal.get(field):
+                self.error(path + '.goal_binding.' + field, 'measurement_goal', 'Must match the current goal and plan')
+        for field, ref in [('plan', goal.get('plan')), ('objective', m.get('objective')), ('criteria', m.get('criteria'))]:
+            ref_path = '$.goal.plan' if field == 'plan' else path + '.' + field
+            self.evidence(ref, ref_path, True)
+            evidence = self.refs.get(ref) if isinstance(ref, str) else None
+            if not isinstance(evidence, dict) or not isinstance(evidence.get('file'), str) or not isinstance(evidence.get('sha256'), str):
+                self.error(ref_path, 'measurement_freeze', 'Plan, objective and criteria require readable hash-pinned files')
+        boundary = self.obj(m.get('boundary'), path + '.boundary', ['start', 'end', 'shared_costs'])
+        for field in ('start', 'end', 'shared_costs'):
+            self.string(boundary.get(field), path + '.boundary.' + field)
+
+        expected_actors = self.seq(m.get('expected_actors'), path + '.expected_actors')
+        expected = set()
+        for actor in expected_actors:
+            if self.string(actor, path + '.expected_actors'):
+                if actor in expected:
+                    self.error(path + '.expected_actors', 'measurement_overlap', 'Expected participant identity must be unique')
+                expected.add(actor)
+        actors, scopes, observed = set(), set(), {}
+        participants = self.seq(m.get('participants'), path + '.participants')
+        if not participants:
+            self.error(path + '.participants', 'measurement_participants', 'At least the coordinator must be included')
+        for i, value in enumerate(participants):
+            p = path + '.participants[%d]' % i
+            participant = self.obj(value, p, ['actor', 'provider', 'session', 'source', 'turns', 'prefix_bytes', 'prefix_sha256'])
+            actor, session = participant.get('actor'), participant.get('session')
+            valid = True
+            for field in ('actor', 'provider', 'session', 'source'):
+                valid = self.string(participant.get(field), p + '.' + field) and valid
+            if isinstance(actor, str):
+                if actor in actors:
+                    self.error(p + '.actor', 'measurement_overlap', 'Participant identity must be unique')
+                actors.add(actor)
+            if participant.get('provider') != 'codex':
+                self.error(p + '.provider', 'measurement_provider', 'Only the observed Codex source format is supported')
+                valid = False
+            if (type(participant.get('prefix_bytes')) is not int or participant['prefix_bytes'] <= 0 or
+                    not isinstance(participant.get('prefix_sha256'), str) or
+                    not re.fullmatch(r'[0-9a-f]{64}', participant['prefix_sha256'])):
+                self.error(p, 'measurement_source', 'A nonempty exact source prefix and SHA-256 are required')
+                valid = False
+            turns = self.seq(participant.get('turns'), p + '.turns')
+            if not turns:
+                self.error(p + '.turns', 'measurement_turn', 'Observed turn identities are required')
+            seen_turns = set()
+            for turn in turns:
+                if not isinstance(turn, str) or not turn.strip():
+                    self.error(p + '.turns', 'measurement_turn', 'Turn identity must be nonempty')
+                    continue
+                if not isinstance(session, str):
+                    continue
+                key = (session, turn)
+                if turn in seen_turns or key in scopes:
+                    self.error(p + '.turns', 'measurement_overlap', 'Session and turn may be counted only once')
+                seen_turns.add(turn)
+                scopes.add(key)
+            source = participant.get('source')
+            if not valid or not seen_turns:
+                continue
+            source = self.base / source
+            if not final:
+                try:
+                    closed = set()
+                    with source.open('rb') as stream:
+                        for line in stream:
+                            if not line.endswith(b'\n'):
+                                break
+                            row = json.loads(line, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+                            payload = row.get('payload', {})
+                            if (row.get('type') == 'event_msg' and isinstance(payload, dict) and
+                                    payload.get('type') == 'task_complete' and payload.get('turn_id') in seen_turns):
+                                closed.add(payload['turn_id'])
+                    if seen_turns.issubset(closed):
+                        raise ValueError('all selected turns already completed')
+                except (OSError, ValueError, TypeError, KeyError, AttributeError):
+                    self.error(p, 'measurement_not_live', 'Preflight needs an observed selected turn still open in the actual source')
+            for turn in seen_turns:
+                try:
+                    sample = read_usage(source, participant.get('prefix_sha256'), 'participant:' + actor,
+                                        turn, prefix_bytes=participant.get('prefix_bytes'))
+                    provenance = sample['provenance']
+                    reasons = set(provenance['coverage_reasons'])
+                    if (provenance['session_id'] != session or provenance['start_line'] is None or
+                            not provenance['responses'] or sample['usage']['raw_total'] is None or
+                            reasons - {'missing selected turn start or completion'}):
+                        raise ValueError('sample does not establish source, start and usage')
+                    if final:
+                        final_bytes = participant.get('final_bytes')
+                        if (type(final_bytes) is not int or type(participant.get('prefix_bytes')) is not int or
+                                final_bytes < participant['prefix_bytes']):
+                            raise ValueError('final snapshot precedes sample')
+                        result = read_usage(source, participant.get('final_sha256'), 'participant:' + actor,
+                                            turn, prefix_bytes=final_bytes)
+                        provenance = result['provenance']
+                        if provenance['session_id'] != session or result['usage']['coverage'] != 'complete':
+                            raise ValueError('selected turn is not complete')
+                        for response in provenance['responses']:
+                            key = 'codex/request/' + response['response_id']
+                            if key in observed:
+                                raise ValueError('overlapping response')
+                            observed[key] = (session, response['usage'])
+                except (OSError, ValueError, TypeError, KeyError, AttributeError):
+                    self.error(p, 'measurement_source', 'Source, pinned prefix, observed turn or usage is missing, changed, incomplete or mismatched')
+
+        owner = goal.get('current_owner')
+        required = {owner} if isinstance(owner, str) else {None}
+        tasks = record.get('tasks') if isinstance(record.get('tasks'), list) else []
+        for task in tasks:
+            if isinstance(task, dict):
+                for field in ('execution', 'technical', 'parent_integration'):
+                    if isinstance(task.get(field), dict):
+                        actor = task[field].get('actor')
+                        required.add(actor if isinstance(actor, str) else None)
+        assessment = goal.get('assessment')
+        if isinstance(assessment, dict) and assessment.get('basis') == 'independent':
+            actor = assessment.get('actor')
+            required.add(actor if isinstance(actor, str) else None)
+        if None in required or not required.issubset(expected) or expected != actors:
+            self.error(path + '.participants', 'measurement_participants', 'Expected participants must include the coordinator, recorded executors and reviewers, each with a source binding')
+
+        if final:
+            ref = m.get('preflight')
+            self.evidence(ref, path + '.preflight', True)
+            evidence = self.refs.get(ref) if isinstance(ref, str) else None
+            try:
+                if not isinstance(evidence, dict) or not isinstance(evidence.get('file'), str) or not isinstance(evidence.get('sha256'), str):
+                    raise ValueError('unpinned preflight')
+                receipt, error = read_json(self.base / evidence['file'])
+                if error or receipt.get('ok') is not True or receipt.get('measurement_preflight') != self.measurement_binding(record):
+                    raise ValueError('preflight differs from final binding')
+            except (OSError, ValueError, TypeError, KeyError, AttributeError):
+                self.error(path + '.preflight', 'measurement_preflight', 'Final success requires the hash-pinned matching preflight result')
+            usage = record.get('usage') if isinstance(record.get('usage'), dict) else {}
+            entries = usage.get('entries') if isinstance(usage.get('entries'), list) else []
+            actual = {}
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                key = '/'.join(str(entry.get(field)) for field in ('provider', 'kind', 'id'))
+                if key in actual:
+                    self.error('$.usage.entries', 'measurement_overlap', 'Usage response may be counted only once')
+                actual[key] = entry
+            expected = usage.get('expected') if isinstance(usage.get('expected'), list) else []
+            expected_keys = {item for item in expected if isinstance(item, str)}
+            if (usage.get('coverage') != 'complete' or not observed or set(actual) != set(observed) or
+                    expected_keys != set(observed)):
+                self.error('$.usage', 'measurement_incomplete', 'Complete measured success requires every observed response exactly once')
+            for key in set(actual) & set(observed):
+                entry = actual[key]
+                session, counts = observed[key]
+                if (entry.get('session') != session or any(entry.get(field) != counts[source_field] for field, source_field in
+                        [('input', 'input_tokens'), ('output', 'output_tokens'), ('cached_input', 'cached_input_tokens'),
+                         ('reasoning', 'reasoning_output_tokens')])):
+                    self.error('$.usage.entries', 'measurement_mismatch', 'Recorded usage differs from the selected provider responses')
+
+    def check(self, record, require_routing=False, measurement_preflight=False):
         r = self.obj(record, '$', ['version', 'label', 'evidence', 'goal', 'ownership', 'tasks', 'usage'])
         if type(r.get('version')) is not int or r.get('version') != 1:
             self.error('$.version', 'version', 'Only integer version 1 is supported')
@@ -579,6 +780,11 @@ class Checker:
             self.enum(r['resource_accounting'], '$.resource_accounting', ['required'])
         if 'routing_accounting' in r:
             self.enum(r['routing_accounting'], '$.routing_accounting', ['required'])
+        if 'measurement' in r:
+            m = self.obj(r['measurement'], '$.measurement', ['mode'])
+            self.enum(m.get('mode'), '$.measurement.mode', ['required'])
+        elif measurement_preflight:
+            self.error('$.measurement', 'measurement_required', 'Explicit required measurement mode is missing')
         self.evidence_map(r.get('evidence'), '$.evidence', r.get('label'))
         routing_required = require_routing or r.get('routing_accounting') == 'required'
         g = self.obj(r.get('goal'), '$.goal', ['id', 'revision', 'scope', 'plan', 'status', 'known_failure', 'assessment', 'current_owner', 'owner_acceptance'])
@@ -689,6 +895,8 @@ class Checker:
                         'task': t.get('id'), 'scope': g.get('scope'), 'revision': g.get('revision'),
                         'attempt': t.get('current_dispatch'),
                         'model': t.get('model') if isinstance(t.get('model'), dict) else {}}, True)
+                    if isinstance(t.get('routing_decision'), dict):
+                        check_profile_binding(self, t['routing_decision'], p + '.routing_decision')
         usage = self.obj(r.get('usage'), '$.usage', ['coverage', 'expected', 'entries'])
         self.enum(usage.get('coverage'), '$.usage.coverage', ['unknown', 'partial', 'complete'])
         expected = []
@@ -755,7 +963,22 @@ class Checker:
             complete = False
         elif not complete:
             self.error('$.usage.coverage', 'incomplete_coverage', 'Complete claim requires every expected unit exactly once and all input/output counts')
-        return {'ok': not self.errors, 'label': r.get('label'), 'errors': self.errors, 'usage': {'coverage': usage.get('coverage'), 'observed_subtotals': subtotals, 'total_raw_tokens': sum(s['input'] + s['output'] for s in subtotals.values()) if complete and not self.errors else None, 'tokenizer_note': 'Provider/tokenizer groups retain distinct counting conventions; subtotal fields contain observed counts only.'}}
+        if measurement_preflight and g.get('status') != 'active':
+            self.error('$.goal.status', 'measurement_phase', 'Measurement preflight requires the active goal')
+        m = r.get('measurement')
+        if isinstance(m, dict) and (type(m.get('version', 1)) is not int or m.get('version', 1) not in (1, 2)):
+            self.error('$.measurement.version', 'measurement_version', 'Unsupported measurement version')
+        if isinstance(m, dict) and m.get('mode') == 'required' and (measurement_preflight or g.get('status') == 'succeeded' or m.get('version') == 2):
+            self.measurement(r, final=g.get('status') == 'succeeded' or (m.get('version') == 2 and 'settlement_sha256' in m))
+            if m.get('version') == 2 and 'settlement_sha256' not in m:
+                complete = False
+        result = {'ok': not self.errors, 'label': r.get('label'), 'errors': self.errors, 'usage': {'coverage': usage.get('coverage'), 'observed_subtotals': subtotals, 'total_raw_tokens': sum(s['input'] + s['output'] for s in subtotals.values()) if complete and not self.errors else None, 'tokenizer_note': 'Provider/tokenizer groups retain distinct counting conventions; subtotal fields contain observed counts only.'}}
+        if measurement_preflight and result['ok']:
+            result['measurement_preflight'] = ({'version': 2, 'prepare_sha256': m['prepare_sha256']}
+                                               if isinstance(m, dict) and m.get('version') == 2 else self.measurement_binding(r))
+        if result['ok'] and hasattr(self, 'measurement_result'):
+            result['measurement'] = self.measurement_result
+        return result
 
 
 def unique_object(pairs):
@@ -784,17 +1007,73 @@ def read_json_snapshot(path):
         return None, {'path': str(path), 'code': 'input_read', 'message': str(exc)}, None
 
 
-def check_record(record, base, require_routing=False):
-    return Checker(base).check(record, require_routing=require_routing)
+def check_record(record, base, require_routing=False, measurement_preflight=False, *, goal_evidence=None):
+    from goal_evidence import evaluate
+    checker = Checker(base)
+    result = checker.check(record, require_routing=require_routing, measurement_preflight=measurement_preflight)
+    result['goal_evidence'], errors = evaluate(record, base, goal_evidence)
+    result['errors'].extend(errors)
+    if errors:
+        result['ok'] = False
+        result['usage']['total_raw_tokens'] = None
+    from record_integrity import evaluate as integrity_report
+    result.update(integrity_report(record, base, checker.configuration, legacy_ok=result['ok']))
+    return result
+
+
+def make_profile_binding(profile, table, unit, pins=None):
+    pins = {} if pins is None else pins
+    proposal = prepare_profile(profile, table, pins)
+    matches = [row for row in proposal['results'] if row['unit_id'] == unit]
+    if len(matches) != 1 or matches[0]['status'] != 'MATCH':
+        raise ProfileError('NO_MATCH', 'The requested unit has no eligible candidate')
+    return {'version': 3, 'unit_id': unit, 'profile': profile, 'table': table, 'pins': pins,
+            'profile_sha256': proposal['profile_sha256'], 'table_sha256': proposal['table_sha256'],
+            'source_sha256': proposal['source_sha256'], 'pins_sha256': proposal['pins_sha256'],
+            'selected': matches[0]['selected'],
+            **{key: matches[0][key] for key in ('eligible_chain', 'fallback_index', 'selection_reasons', 'selected_source', 'default_provenance')}}
+
+
+def check_profile_binding(checker, decision, path):
+    if 'profile_binding' not in decision:
+        return
+    p = path + '.profile_binding'
+    value = decision['profile_binding']
+    fields = {'version', 'unit_id', 'profile', 'table', 'pins', 'profile_sha256', 'table_sha256', 'source_sha256', 'pins_sha256', 'selected'}
+    try:
+        fields |= {'eligible_chain', 'fallback_index', 'selection_reasons', 'selected_source', 'default_provenance'}
+        if not isinstance(value, dict) or set(value) != fields or type(value['version']) is not int or value['version'] != 3:
+            raise ValueError('Invalid profile binding shape or version')
+        binding = decision.get('binding', {})
+        if not isinstance(binding, dict) or value['unit_id'] != binding.get('task'):
+            raise ValueError('Profile unit must match the decision task')
+        pins = value['pins']
+        selected = decision.get('selected', {})
+        if not isinstance(selected, dict):
+            raise ValueError('Missing selected identity')
+        ident = {k: selected.get(k) for k in ('route', 'model', 'effort')}
+        if pins and (decision.get('selected_reason') != 'user_pin' or pins != {value['unit_id']: ident} or not checker.pin_bound(selected)):
+            raise ValueError('Profile pins require the exact evidence-bound current-task user pin')
+        if decision.get('selected_reason') == 'user_pin' and pins != {value['unit_id']: ident}:
+            raise ValueError('Explicit user pin must be applied during profile preparation')
+        expected = make_profile_binding(value['profile'], value['table'], value['unit_id'], pins)
+        if profile_digest(expected) != profile_digest(value) or value['selected'] != ident:
+            raise ValueError('Profile, table, digest or selected identity mismatch')
+    except (ProfileError, ValueError, TypeError, KeyError, OSError, RecursionError) as exc:
+        checker.error(p, 'profile_binding_invalid', str(exc))
 
 
 def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaunch=False):
     checker = Checker(base)
     expected = None
     if record is not NO_RECORD:
-        current = check_record(record, base if record_base is None else record_base)
+        current = check_record(record, base if record_base is None else record_base,
+                               measurement_preflight=prelaunch and isinstance(record, dict) and isinstance(record.get('measurement'), dict) and record['measurement'].get('mode') == 'required')
         checker.errors.extend({**error, 'path': '$.record' + error['path'][1:]}
                               for error in current['errors'])
+        if prelaunch and isinstance(record, dict) and isinstance(record.get('measurement'), dict) and record['measurement'].get('mode') == 'required' and record['measurement'].get('version') != 2:
+            checker.error('$.record.measurement', 'measurement_future_unbound',
+                          'This launcher cannot observe the future worker turn before starting it')
         if current['ok']:
             goal = record['goal']
             expected = {'scope': goal['scope'], 'revision': goal['revision']}
@@ -815,6 +1094,7 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaun
         if expected is not None and 'label' not in decision:
             checker.error('$.label', 'required', 'Missing field')
         checker.routing(decision, '$', expected, False, prelaunch=prelaunch)
+        check_profile_binding(checker, decision, '$')
     return {'ok': not checker.errors, 'label': label, 'errors': checker.errors,
             'receipt': checker.routing_receipt(decision)}
 
@@ -877,19 +1157,52 @@ def main(argv=None):
             item.add_argument('--require-resources', action='store_true', help='Reject records without resource accounting')
             item.add_argument('--require-routing', action='store_true',
                               help='Require a routing decision on every task even if the record omits routing_accounting')
+            item.add_argument('--goal-evidence', help='Required sidecar path relative to the record directory')
+            item.add_argument('--measurement-preflight', action='store_true',
+                              help='Check actual source bindings for an explicitly measurement-required record')
         elif command == 'routing-check':
             item.add_argument('--record', type=Path,
                               help='Validate against the current supplementary record and goal/task binding')
+    for command in ('profile-prepare', 'profile-validate'):
+        item = sub.add_parser(command)
+        item.add_argument('path', type=Path)
+        item.add_argument('--json', action='store_true')
+        if command == 'profile-prepare':
+            item.add_argument('--table', type=Path, default=ASSETS / 'worker-routing-table.json')
+            item.add_argument('--pins', type=Path)
+            item.add_argument('--unit', required=True)
     args = parser.parse_args(argv)
+    if args.command in ('profile-prepare', 'profile-validate'):
+        try:
+            profile, error, _ = read_json_snapshot(args.path)
+            if error: raise ValueError(error['message'])
+            if args.command == 'profile-validate':
+                validate_profile_document(profile)
+                result = {'ok': True, 'status': 'valid'}
+            else:
+                table, error, _ = read_json_snapshot(args.table)
+                if error: raise ValueError(error['message'])
+                pins, error, _ = read_json_snapshot(args.pins) if args.pins else ({}, None, None)
+                if error: raise ValueError(error['message'])
+                result = {'ok': True, 'profile_binding': make_profile_binding(profile, table, args.unit, pins),
+                          'limits': 'Proposal only; table evidence is unverified and existing routing checks remain mandatory.'}
+            code = 0
+        except (ProfileError, ValueError, TypeError, KeyError, OSError, RecursionError) as exc:
+            result = {'ok': False, 'errors': [{'code': getattr(exc, 'code', 'INVALID_INPUT'), 'message': str(exc)}]}
+            code = 1
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return code
     value, error, decision_sha256 = read_json_snapshot(args.path)
     if error:
         result, code = {'ok': False, 'errors': [error]}, 2
     elif args.command == 'check':
-        result = check_record(value, args.path.parent, require_routing=args.require_routing)
+        result = check_record(value, args.path.parent, require_routing=args.require_routing,
+                              measurement_preflight=args.measurement_preflight, goal_evidence=args.goal_evidence)
         if args.require_resources and (not isinstance(value, dict) or value.get('resource_accounting') != 'required'):
             result['errors'].append({'path': '$.resource_accounting', 'code': 'resource_accounting', 'message': 'Resource accounting is required for this invocation'})
             result['ok'] = False
             result['usage']['total_raw_tokens'] = None
+            result['current_readiness'].update(status='blocked', legacy_record_ok=False)
         code = 0 if result['ok'] else 1
     elif args.command == 'routing-select':
         result = selection_advice(value, args.path.parent)

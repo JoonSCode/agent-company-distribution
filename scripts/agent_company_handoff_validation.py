@@ -58,6 +58,7 @@ EVIDENCE_FIELDS: Final[tuple[str, ...]] = ("known", "inferred", "unknown", "acti
 @dataclass(frozen=True, slots=True)
 class HandoffValidation(BaseHandoffValidation):
     model_routing_receipt: ModelRoutingHandoffEvidence | None = None
+    architecture_evidence_status: dict[str, str] | None = None
 
 
 def _object(value: JsonValue, label: str) -> dict[str, JsonValue]:
@@ -274,6 +275,14 @@ def validate_worker_handoff(
             None,
             False,
         )
+    role_evidence = artifact.payload.get('role_evidence')
+    architecture_status = None
+    if (artifact.payload.get('role') == 'development' and isinstance(role_evidence, dict)
+            and role_evidence.get('task_type') == 'architecture-risk'
+            and role_evidence.get('disposition') == 'completed'):
+        architecture_status = {'status': 'structural_only', 'reference_existence': 'unknown',
+                               'digest_match': 'unknown', 'issuer_authenticity': 'unknown',
+                               'independence': 'unknown'}
     return HandoffValidation(
         True,
         output_ref,
@@ -284,4 +293,5 @@ def validate_worker_handoff(
         outcome,
         assignment_bound,
         routing_receipt,
+        architecture_status,
     )

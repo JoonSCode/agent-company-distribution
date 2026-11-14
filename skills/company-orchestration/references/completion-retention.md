@@ -9,6 +9,11 @@ wakeup. It never supplies an acceptance decision.
 
 ## Ordinary producer and callback
 
+For [measurement v2](measurement-lifecycle.md), completion additionally requires
+the `measurement-v2` settled consumer and every prepare/event/source snapshot in
+the manifest's preserved files. Keep the ledger inside the retained Run. An open
+coordinator or missing/partial/changed usage blocks acceptance and cleanup.
+
 For each fresh Company Run, the lead creates its small directory under the
 same record home used by `run_completion.py` and the installed Stop callback,
 then calls `init` once. Explicit `SEJONG_HOME` or `--sejong-home` takes priority.

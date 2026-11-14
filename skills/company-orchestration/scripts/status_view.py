@@ -1037,10 +1037,11 @@ def build_view(
     generated_at=None,
     require_routing=False,
     require_resources=False,
+    goal_evidence=None,
 ):
     """Build a deterministic status view dict from one supplementary record and its check_record result."""
     resolved_base = Path(base) if base is not None else (Path(record_path).parent if record_path is not None else Path.cwd())
-    actual_check = record_check.check_record(record, resolved_base, require_routing=require_routing)
+    actual_check = record_check.check_record(record, resolved_base, require_routing=require_routing, goal_evidence=goal_evidence)
     if require_resources and (not isinstance(record, dict) or record.get('resource_accounting') != 'required'):
         actual_check['errors'].append({
             'path': '$.resource_accounting',
@@ -1049,6 +1050,7 @@ def build_view(
         })
         actual_check['ok'] = False
         actual_check['usage']['total_raw_tokens'] = None
+        actual_check['current_readiness'].update(status='blocked', legacy_record_ok=False)
 
     merged_errors = list(actual_check.get('errors', []))
     seen_err_keys = {(e.get('path'), e.get('code'), e.get('message')) for e in merged_errors}
@@ -1198,6 +1200,7 @@ def build_view(
 
     return {
         'format': 'company-status-view/v1',
+        'goal_evidence': actual_check['goal_evidence'],
         'snapshot': {
             'label': label,
             'label_badge': (
@@ -1213,6 +1216,9 @@ def build_view(
             'live_host_note': LIVE_HOST_NOTE,
             'resource_accounting': record.get('resource_accounting') if isinstance(record, dict) else None,
             'routing_accounting': record.get('routing_accounting') if isinstance(record, dict) else None,
+            # Fresh checker diagnostics, never a supplied/cached success claim.
+            'historical_integrity': actual_check['historical_integrity'],
+            'current_readiness': actual_check['current_readiness'],
             'consistency_check': {
                 'ok': consistency_ok,
                 'error_count': len(merged_errors),
@@ -1747,6 +1753,8 @@ def render_html(view):
           <dt>레코드 SHA-256</dt><dd><code>{_esc(snap.get('record_sha256'), '미상')}</code></dd>
           <dt>캡처 시각 (제공 시)</dt><dd><code>{captured_display}</code></dd>
           <dt>스냅샷 생성 시각</dt><dd><code>{_esc(snap.get('generated_at'))}</code></dd>
+          <dt>과거 catalog/receipt 무결성</dt><dd><code>{_esc(snap.get('historical_integrity', {}).get('status'), 'unknown')}</code></dd>
+          <dt>현재 catalog 입력 준비도</dt><dd><code>{_esc(snap.get('current_readiness', {}).get('status'), 'unknown')}</code> (실시간 호스트 미상 · 실행/완료 승인 아님)</dd>
         </dl>
       </div>
       <div class="card">
@@ -1927,6 +1935,7 @@ def _build_parser():
     render_p.add_argument('--json', action='store_true', help='Print compact JSON view to stdout')
     render_p.add_argument('--captured-at', help='Optional captured timestamp (reported only when supplied)')
     render_p.add_argument('--generated-at', help='Optional generation timestamp override')
+    render_p.add_argument('--goal-evidence', help='Required sidecar path relative to the record directory')
     render_p.add_argument('--require-routing', action='store_true', help='Require a routing decision on every task')
     render_p.add_argument('--require-resources', action='store_true', help='Require resource_accounting="required"')
 
@@ -1976,6 +1985,7 @@ def main(argv=None):
         generated_at=args.generated_at,
         require_routing=args.require_routing,
         require_resources=args.require_resources,
+        goal_evidence=args.goal_evidence,
     )
     html_text = render_html(view)
     json_text = json.dumps(view, ensure_ascii=False, indent=2) + '\n'

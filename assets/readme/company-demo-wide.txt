@@ -1,0 +1,39 @@
+Company [combined] Goal: pending | User: unobserved
+map/wide | all selected [build] Development | page:1/1 | o/f/c n/p j/k x focus w wide v overview
+> Plan a small app ---------------------------------------------------------------------------------------------------+
+| reasoning | Task review passed                                                                                      |
+| Assigned: demo-planner                                                                                              |
+| Specialist unknown                                                                                                  |
++-[build] Development-------------------------------------------------------------------------------------------------+
+  |
+  v
++ Build the first slice ----------------------------------------------------------------------------------------------+
+| code | Task review passed                                                                                           |
+| Assigned: demo-builder                                                                                              |
+| Specialist unknown                                                                                                  |
++-[build] Development-------------------------------------------------------------------------------------------------+
+  |
+  v
++ Review the result --------------------------------------------------------------------------------------------------+
+| code | Task review passed                                                                                           |
+| Assigned: demo-reviewer                                                                                             |
+| Specialist unknown                                                                                                  |
++-[review] Independent QA---------------------------------------------------------------------------------------------+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hidden 0 tasks/0 links; q exit l links s source t team r region b back
+SYNTHETIC DEMO | Partial links | No live observation

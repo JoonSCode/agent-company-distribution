@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "turn_deadline_seconds": 120,
+  "hard_provider_deadline": false,
+  "purpose": "New bounded lifecycle demonstration, not whole development-session efficiency",
+  "actors": ["worker", "independent-reviewer", "coordinator"],
+  "order": ["worker", "independent-reviewer", "coordinator"],
+  "expected_outputs": {
+    "worker": "CANARY_SUM=5",
+    "independent-reviewer": "CANARY_REVIEW=PASS",
+    "coordinator": "CANARY_ACCEPT=PASS"
+  },
+  "prompts": {
+    "worker": "Synthetic I05 canary. Check the sum of 2 and 3. Your final answer must be exactly CANARY_SUM=5. Before that final answer, perform only the required owned Orca lifecycle: use functions.exec with tools.exec_command({cmd: <exact command>, login: false, yield_time_ms: 30000}) solely for the preamble's orchestration check (and returned delivery acknowledgement if needed), then its orchestration send --type worker_done exactly once with --outcome succeeded. Copy the exact executable, own --from/--terminal handle, --task-id, --dispatch-id and any capability flag from your live preamble; never invent a worker_done tool or command. Use subject CANARY_SUM=5 and body 'I checked the canary sum. CANARY_SUM=5 is correct. No work remains.' Omit files-modified/report-path. If the tool is unavailable, ownership is fenced, or reporting fails or is uncertain, stop without retrying or claiming success. After the report, emit only the fixed final answer and idle. No unrelated tools, shell commands, files, network, private data, business actions, nested agents or additional model work; only required lifecycle tool roundtrips in this same native turn are allowed.",
+    "independent-reviewer": "Synthetic I05 canary independent review. Verify that CANARY_SUM=5 correctly states the sum of 2 and 3. Your final answer must be exactly CANARY_REVIEW=PASS if correct. Before that final answer, perform only the required owned Orca lifecycle: use functions.exec with tools.exec_command({cmd: <exact command>, login: false, yield_time_ms: 30000}) solely for the preamble's orchestration check (and returned delivery acknowledgement if needed), then its orchestration send --type worker_done exactly once with --outcome succeeded. Copy the exact executable, own --from/--terminal handle, --task-id, --dispatch-id and any capability flag from your live preamble; never invent a worker_done tool or command. Use subject CANARY_REVIEW=PASS and body 'I independently checked the proposed sum. CANARY_REVIEW=PASS is the verdict. No work remains.' Omit files-modified/report-path. If the tool is unavailable, ownership is fenced, or reporting fails or is uncertain, stop without retrying or claiming success. After the report, emit only the fixed final answer and idle. No unrelated tools, shell commands, files, network, private data, business actions, nested agents or additional model work; only required lifecycle tool roundtrips in this same native turn are allowed.",
+    "coordinator": "Synthetic I05 canary final integration. Independently check proposed CANARY_SUM=5 and CANARY_REVIEW=PASS against 2+3. Your final answer must be exactly CANARY_ACCEPT=PASS if both are correct. Before that final answer, perform only the required owned Orca lifecycle: use functions.exec with tools.exec_command({cmd: <exact command>, login: false, yield_time_ms: 30000}) solely for the preamble's orchestration check (and returned delivery acknowledgement if needed), then its orchestration send --type worker_done exactly once with --outcome succeeded. Copy the exact executable, own --from/--terminal handle, --task-id, --dispatch-id and any capability flag from your live preamble; never invent a worker_done tool or command. Use subject CANARY_ACCEPT=PASS and body 'I checked the proposed artifact and verdict. CANARY_ACCEPT=PASS is the result. No work remains.' Omit files-modified/report-path. If the tool is unavailable, ownership is fenced, or reporting fails or is uncertain, stop without retrying or claiming success. After the report, emit only the fixed final answer and idle. No unrelated tools, shell commands, files, network, private data, business actions, nested agents or additional model work; only required lifecycle tool roundtrips in this same native turn are allowed."
+  },
+  "limits": {
+    "max_attempts": 3,
+    "concurrency": 1,
+    "paid_fallback": false,
+    "max_raw_tokens": 250000,
+    "deadline_seconds": 600
+  },
+  "boundary": {
+    "start": "Persist prepare before first canary worker-start",
+    "end": "Deterministic settlement after all three native turns and host dispatches complete",
+    "shared_costs": "Include worker, independent reviewer and final coordinator integration. Outer development, human preparation and read-only readiness probe are outside this new experiment and are not measured or claimed zero. Any additional in-boundary model work blocks complete accounting."
+  }
+}

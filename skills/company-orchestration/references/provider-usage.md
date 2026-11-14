@@ -1,5 +1,10 @@
 # Optional saved Codex usage reader
 
+The [v2 lifecycle](measurement-lifecycle.md) reuses this parser without changing
+its accounting rules. It supplies exact host-bound session/turn identities and
+private snapshots. Preparation does not demand future responses; final settlement
+does. This parser alone remains neither launch authorization nor host identity.
+
 `../scripts/provider_usage.py` reads only an explicitly supplied local JSONL file.
 It does not launch providers, discover sessions, write files, or certify identity.
 It supports the observed Codex `token_usage_record` schema, not a generic provider
@@ -27,6 +32,13 @@ turn's unique response IDs, never the entire session cumulative total. Identical
 response records are counted once; conflicting duplicates are invalid. Cumulative
 turn/thread counts and `token_count` mirrors are checks, not extra tokens.
 Cached/cache-write input and reasoning output are included subsets, not additions.
+When a selected turn has at least two matching response mirrors, a nonnegative
+thread-cumulative offset is accepted only if it is exactly constant across all
+of those mirrors; the offset is reported in provenance and is never charged.
+Changing offsets and an unproven single-response offset are rejected. For an
+explicitly selected turn, unrelated turns' context-only `token_count` events are
+not used as its mirrors. This handles an observed long-session format without
+claiming why its cumulative baselines differ.
 Missing counts do not become zero. Only the exact observed six numeric fields
 are supported; a changed provider schema requires review.
 
@@ -42,6 +54,8 @@ inside the selected turn boundaries must identify that turn. A trailing
 `response_item`, `agent_message`, or `item_completed` carrying an `AgentMessage`
 without subsequent response usage makes the selected subtotal partial. These are
 checks of the observed event formats, not proof of coverage for unknown formats.
+Known `function_call_output` and `custom_tool_call_output` response items are tool
+results, not model responses; any subsequent model response still needs usage.
 
 The declared scope is caller-owned. Verify its Task/Dispatch and turn binding
 against raw launch/done receipts before aggregation. For multiple reports,

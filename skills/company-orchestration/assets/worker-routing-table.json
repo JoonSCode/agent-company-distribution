@@ -1,0 +1,3217 @@
+{
+  "version": 2,
+  "vocabulary_version": 1,
+  "source": "Company editorial task-fit priors plus 2026-11-07 narrow CLI smoke; references/worker-routing-evidence.md separates policy from observation; not a measured ranking or launch authorization",
+  "entries": [
+    {
+      "family": "general",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "general",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "general",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "general.execute"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "language",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "language",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "language",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "text.summarize",
+            "text.rewrite",
+            "text.translate"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "structured_data",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "structured_data",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "structured_data",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "data.lookup",
+            "data.transform"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "reasoning",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "reasoning",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "reasoning",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "logical.reason",
+            "quantitative.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "code",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "code",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "code",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "code.reason",
+            "frontend.code",
+            "framework.react",
+            "screenshot_to_code"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "research",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "research",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "research",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "evidence.synthesize",
+            "citation.ground"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "visual",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "visual",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "visual",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "vision.read",
+            "vision.ocr",
+            "multimodal.reason"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "design",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "design",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "design",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "ui.design",
+            "ux.judgment",
+            "design.aesthetic_judgment"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "media_generation",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "media_generation",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "media_generation",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": false,
+          "input_modalities": [],
+          "output_modalities": [],
+          "capabilities": [],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "tool_use",
+      "difficulty": "easy",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "low"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-luna",
+            "effort": "low"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "low"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "tool_use",
+      "difficulty": "medium",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "medium"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "medium"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "tool_use",
+      "difficulty": "hard",
+      "candidates": [
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-sol",
+            "effort": "high"
+          },
+          "priority": 0,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6-astra",
+            "effort": "high"
+          },
+          "priority": 1,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        },
+        {
+          "identity": {
+            "route": "codex",
+            "model": "gpt-6.1-terra",
+            "effort": "high"
+          },
+          "priority": 2,
+          "enabled": true,
+          "input_modalities": [
+            "text",
+            "code",
+            "structured_data",
+            "image"
+          ],
+          "output_modalities": [
+            "text",
+            "code",
+            "structured_data"
+          ],
+          "capabilities": [
+            "tool.call"
+          ],
+          "tools": [],
+          "context_limit": 0,
+          "constraints": [],
+          "evidence": [
+            "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
+            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+          ]
+        }
+      ]
+    }
+  ],
+  "common_default": {
+    "identity": {
+      "route": "codex",
+      "model": "gpt-6.1-terra",
+      "effort": "medium"
+    },
+    "enabled": true,
+    "input_modalities": [
+      "text",
+      "code",
+      "structured_data",
+      "image"
+    ],
+    "output_modalities": [
+      "text",
+      "code",
+      "structured_data"
+    ],
+    "capabilities": [
+      "citation.ground",
+      "code.reason",
+      "data.lookup",
+      "data.transform",
+      "design.aesthetic_judgment",
+      "evidence.synthesize",
+      "framework.react",
+      "frontend.code",
+      "general.execute",
+      "logical.reason",
+      "multimodal.reason",
+      "quantitative.reason",
+      "screenshot_to_code",
+      "text.rewrite",
+      "text.summarize",
+      "text.translate",
+      "tool.call",
+      "ui.design",
+      "ux.judgment",
+      "vision.ocr",
+      "vision.read"
+    ],
+    "tools": [],
+    "context_limit": 0,
+    "constraints": [],
+    "evidence": [
+      "editorial_prior: references/worker-routing-evidence.md#shared-default; union of existing non-generation Terra task-fit assertions, not certification",
+      "identity: codex/gpt-6.1-terra/medium; explicit shared final default, not a third row backup",
+      "observed_smoke: references/worker-routing-evidence.md; narrow medium-effort pilot only, design strict fail retained; backend identity/effort unverified",
+      "modalities_and_runner: text/image input, text representations output only; tools/context/constraints remain unasserted"
+    ]
+  }
+}

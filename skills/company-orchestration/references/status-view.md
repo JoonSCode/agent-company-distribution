@@ -83,3 +83,5 @@ counterexamples (execution success with overall pending, wrong candidate/Dispatc
 unknown usage, missing proof, scope mismatch, hostile text, and unapproved owner
 inference). They do not establish human usability, which requires independent
 browser inspection.
+
+The JSON view exposes `goal_evidence.status`: `not_evaluated` for legacy records, `invalid` for a rejected required sidecar, or `structurally_valid` for matching declared bindings and an acyclic graph. The latter is not authenticated evidence of independent review or real host execution. A record's `goal_evidence` declaration is consumed by both status and completion; `render --goal-evidence PATH` can additionally require a record-relative sidecar for that invocation.

@@ -243,3 +243,5 @@ Original kernel and the three selected conditional references are kept under
 `upstream/` only for source comparison. Read them when relevant to a discrepancy;
 do not inject all of them into every worker. New remote/legacy/topology behavior
 requires its current host-provided conditional reference and matching evidence.
+
+The checked routing launcher resolves one executable using this same precedence and reuses it for every probe and worker start. Values are executable names or paths, not shell command lines. This chooses a local executable; it does not authenticate a host. A missing selection fails without fallback.

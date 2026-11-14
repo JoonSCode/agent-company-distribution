@@ -1,0 +1,19 @@
+{
+  "synthetic": true,
+  "scope": "approved-scope",
+  "revision": "r1",
+  "dependencies": [
+    {
+      "task": "t2",
+      "needs": [
+        "t1"
+      ]
+    },
+    {
+      "task": "t3",
+      "needs": [
+        "t2"
+      ]
+    }
+  ]
+}

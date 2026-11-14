@@ -21,7 +21,7 @@ from agent_company_install_state import load_index, parse_entries
 from agent_company_install_types import BackupEntry, InstallError, InstallPaths, JsonValue, TransactionSpec
 
 
-COMPLETED_RECOVERY: Final[re.Pattern[str]] = re.compile(r"^recovery-[0-9a-f]{32}$")
+COMPLETED_RECOVERY: Final[re.Pattern[str]] = re.compile(r"^(?:recovery|reapply)-[0-9a-f]{32}$")
 
 
 def restore_transaction(paths: InstallPaths, transaction_id: str) -> None:
@@ -32,7 +32,7 @@ def restore_transaction(paths: InstallPaths, transaction_id: str) -> None:
     if directory != transaction:
         copy_managed(
             paths,
-            "agent-company/rollback/current",
+            str(directory.relative_to(paths.codex_home)),
             f"agent-company/state/transactions/{transaction_id}",
         )
         directory = transaction
@@ -51,8 +51,16 @@ def recover(paths: InstallPaths) -> dict[str, JsonValue]:
     return {"status": "ok", "action": "recover", "recovered": True, "transaction_id": spec.transaction_id}
 
 
-def preserve_rollback(paths: InstallPaths, transaction_id: str) -> None:
+def preserve_rollback(paths: InstallPaths, transaction_id: str, *, retain_current: bool = False) -> None:
     ensure_managed_dir(paths, "agent-company/rollback")
+    if retain_current:
+        # Keep a journal-bound recovery payload across transaction cleanup.
+        # This is not a previous-generation rollback: never replace current.
+        copy_managed(paths, f"agent-company/state/transactions/{transaction_id}",
+                     f"agent-company/rollback/reapply-{transaction_id}")
+        midpoint("cleanup_rollback")
+        midpoint("preserve_rollback_after_prior_delete")
+        return
     current, next_generation = "agent-company/rollback/current", f"agent-company/rollback/next-{transaction_id}"
     previous = f"agent-company/rollback/previous-{transaction_id}"
     retained = f"agent-company/rollback/recovery-{transaction_id}"

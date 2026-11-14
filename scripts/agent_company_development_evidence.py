@@ -142,8 +142,8 @@ def validate_development_task_evidence(
     *,
     task_type: str,
     task_pack_id: str,
-) -> None:
-    """Validate the task-specific Development evidence selected by context."""
+) -> dict[str, str] | None:
+    """Validate selected evidence; architecture provenance remains unverified."""
     if task_type == "feature-implementation":
         expected_pack = "task-pack:development:feature-implementation"
         validator = _validate_feature
@@ -162,6 +162,11 @@ def validate_development_task_evidence(
             f"Development task pack mismatch: expected {expected_pack}"
         )
     validator(value)
+    if task_type == "architecture-risk":
+        return {"status": "structural_only", "reference_existence": "unknown",
+                "digest_match": "unknown", "issuer_authenticity": "unknown",
+                "independence": "unknown"}
+    return None
 
 
 __all__ = [

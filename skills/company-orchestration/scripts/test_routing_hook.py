@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -12,6 +13,21 @@ import test_route_select
 
 
 class HookTests(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        home = root / 'home'
+        home.mkdir()
+        config = root / 'user.md'
+        config.write_text('---\nschema_version: 1\npreset: single\nservices: ["codex"]\napi_paid: false\n---\n')
+        env = dict(os.environ)
+        env.update(HOME=str(home), CODEX_HOME=str(root / 'codex'), AGENT_COMPANY_CONFIG=str(config))
+        env.pop('AGENT_COMPANY_TASK_CONFIG', None)
+        scope = patch.dict(os.environ, env, clear=True)
+        scope.start()
+        self.addCleanup(scope.stop)
+
     def test_session_binding_is_exclusive(self):
         with tempfile.TemporaryDirectory() as temp:
             home = Path(temp).resolve()
@@ -60,6 +76,11 @@ class HookTests(unittest.TestCase):
             self.assertEqual(guard(bad, str(scope))['hookSpecificOutput']['permissionDecision'], 'deny')
             bad = {**event, 'tool_input': {**event['tool_input'], 'message': 'different'}}
             self.assertEqual(guard(bad, str(scope))['hookSpecificOutput']['permissionDecision'], 'deny')
+            no_config = dict(os.environ)
+            no_config.pop('AGENT_COMPANY_CONFIG', None)
+            no_config.pop('AGENT_COMPANY_TASK_CONFIG', None)
+            with patch.dict(os.environ, no_config, clear=True):
+                self.assertEqual(guard(event, str(scope))['hookSpecificOutput']['permissionDecision'], 'deny')
             self.assertEqual(guard(event, str(scope)), {})
             self.assertTrue((root / 'tool-1.json').exists())
             raw = {**event, 'tool_name': 'Bash', 'tool_input': {'command': 'orca orchestration worker-start --model other'}}

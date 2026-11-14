@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from agent_company_install_fs import ensure_regular_tree, sha256_tree
+from agent_company_install_fs import anchored_parent, ensure_regular_tree, sha256_tree
 from agent_company_install_io import read_json
 from agent_company_install_types import InstallError, InstallTarget, JsonValue, ManagedIndex
 
@@ -100,14 +100,18 @@ def plan_skills(
     ownership: SkillOwnership,
 ) -> tuple[tuple[InstallTarget, ...], tuple[InstallTarget, ...]]:
     root = codex_home / "skills"
-    if root.exists():
-        ensure_regular_tree(root)
+    if root.exists() or root.is_symlink():
+        # The shared namespace is not Company-owned. Validate its directory
+        # chain without traversing unrelated user skills or their symlinks.
+        with anchored_parent(codex_home, "skills/.agent-company-probe", create=False):
+            pass
     prior_hashes = {} if ownership.prior is None else ownership.prior.skills
     desired_names = {Path(target.relative).name for target in desired}
     for target in desired:
         path = codex_home / target.relative
-        if not path.exists():
+        if not path.exists() and not path.is_symlink():
             continue
+        ensure_regular_tree(path)
         name = path.name
         expected = prior_hashes.get(name)
         if expected is not None and sha256_tree(path) == expected:

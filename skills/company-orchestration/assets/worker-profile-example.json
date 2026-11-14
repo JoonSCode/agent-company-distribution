@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "units": [
+    {
+      "id": "one",
+      "objective": "Prepare a concise response",
+      "inputs": [
+        "user request"
+      ],
+      "deliverables": [
+        "response"
+      ],
+      "done_when": [
+        "response addresses request"
+      ],
+      "depends_on": [],
+      "profile": {
+        "version": 1,
+        "vocabulary_version": 1,
+        "family": "general",
+        "difficulty": "easy",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "text"
+        ],
+        "required_capabilities": [
+          "general.execute"
+        ],
+        "required_tools": [],
+        "context_requirement": "not_applicable",
+        "hard_constraints": [],
+        "uncertainties": []
+      }
+    }
+  ]
+}

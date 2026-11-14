@@ -65,6 +65,140 @@ depth**. Root 0 → lead 1 → member 2 needs at least **2**. Setup does not ins
 change that setting. Provider-native helpers depend on actual host tools and
 remain internal to their existing Orca owner.
 
+## First worker task: opt-in local catalog
+
+Use **one** installed entry: Codex `$agent-company` **or** Claude Code direct
+`/agent-company`, according to the current agent. Entry availability is separate
+from worker routing: the checked catalog launcher below starts Codex workers only.
+A short first request is enough:
+
+> Read this repository's README and write a five-item onboarding checklist to a
+> new file. Have a separate reviewer check it against the README. Do not change
+> code, publish, install, switch accounts or enable paid API use. Stop if the
+> required launch evidence is missing; report acceptance separately from worker completion.
+
+The lead confirms the output path and bounded execution budget before launch.
+Use the existing exact host-listed worktree on **local Orca 1.4.245**, with a
+fresh **non-measurement** `--spec` attempt. This is an explicit opt-in, not the
+default route, a new-worktree path or an end-to-end preparation command.
+
+From the reviewed checkout, inspect options without starting workers:
+
+```sh
+uv run --offline --no-python-downloads --no-project --python 3.13 python -B scripts/doctor.py --help
+uv run --offline --no-python-downloads --no-project --python 3.13 python -B scripts/sync-status.py --help
+uv run --offline --no-python-downloads --no-project --python 3.13 python -B scripts/agent_company_config.py explain --help
+```
+
+Use the [health checks below](#health-update-and-uninstall) with the actual
+installation home, and inspect resolved configuration with `explain`. Keep private
+configuration output local. Diagnostics do not grant worker authority.
+
+The lead uses the [catalog preparation reference](host-model-catalog.md) in this order:
+
+1. Collect fresh metadata for the exact host-listed worktree; use the semantic
+   settings helper for the actual active profile. Preserve original observations.
+2. Prepare the real record and decision: current Run/session ownership, resources,
+   exact spec, profile/selection, configuration, authentication, tools, billing and
+   support evidence remain required. The collector/helper do not fill these in.
+   Optionally use the [nonlaunching private bundle](host-model-catalog.md#nonlaunching-preparation-bundle)
+   via `routing_prepare.py prepare`, then `check`, from those existing inputs.
+   Preserve its unused private output directory; a missing/partial manifest or
+   `missing_fields` means stop, not permission to launch. Profile preparation,
+   measurement capture and completion registration remain separate; no authority
+   or observation is invented by the bundle.
+3. Run `record_check.py routing-check DECISION --record RECORD --json`, then the
+   existing checked `routing_launch.py` with the same worktree and actual sender,
+   spec, decision/record and unused receipt/result paths. See [routing prelaunch](routing-prelaunch.md).
+4. Read back exact Task/Dispatch and effective model/effort, review the actual
+   artifact independently, then settle owned resources. Worker success is not
+   acceptance of the artifact. Give the reviewer a separately prepared decision.
+
+Stop on missing/changed authority, unsupported host/settings, selection mismatch,
+unknown start, timeout or incomplete readback. Preserve receipts and reconcile;
+never retry under a new filename, weaken evidence or use raw `worker-start` to
+bypass denial. Model-list presence grants neither authentication nor billing;
+there is no paid-API switch or automatic fallback. Measurement-required work
+keeps its separate [lifecycle gates](measurement-lifecycle.md).
+
+### Candidate versus installed evidence
+
+At the 2026-11-09 pre-release handoff, this source candidate had an observed live
+writer → separate Company reviewer flow; the reviewer returned **HOLD** on ambiguous
+entry wording in the original checklist. This guide makes the two entries
+alternatives; it does not rewrite or retrospectively accept that original local
+acceptance evidence. The installed package was still `3fdb97` until the new
+release installation. Candidate observations are not proof that an installed
+session loaded this change: require the release's installed identity, Doctor/sync
+and independent runtime verification before claiming the update is active.
+
+## Organization/work panel and native operations
+
+Read the [organization/work panel guide](status-tui.md) for `status_tui.py` and
+the [Company-native operations guide](native-operations.md) for
+`native_operations.py`. Both are in this package's `scripts` directory, need only
+Python 3.13+ and can be inspected with `--help`. In a reviewed source checkout
+their paths are `skills/company-orchestration/scripts/status_tui.py` and
+`skills/company-orchestration/scripts/native_operations.py`; for installed use,
+resolve the exact installed package path in the chosen execution home rather
+than assuming a development checkout or changing existing sessions.
+
+The panel's default combined view links company/team lead/member labels to
+team-grouped tasks by explicit IDs; task dependency arrows never mean reporting
+relationships. Start `status_tui.py --record /private/run/record.json --mode combined`
+in the caller-owned PTY, or add `--once --json` for a read-only snapshot. This
+directly refreshes the explicitly selected ordinary supplementary record as it
+changes; basic use needs no manifest generation or manual SHA re-pin. Missing
+task title, classification, organization, specialist and dependency metadata stay
+unknown rather than being inferred from roles or registry entries.
+
+For explicit enriched organization/task labels, use optional
+`--metadata /private/run/view.json` with `--record`, or the existing
+`--manifest /private/run/view.json` mode. That immutable metadata still pins the
+exact record path/SHA/scope/revision and referenced sources. A stale attachment
+rejects the whole candidate (ERROR plus last-good while resident); the owner
+must explicitly supply refreshed metadata, not expect automatic re-pinning or
+mixing old organization with a newer record.
+
+For normal enriched state refresh, first use existing valid planning metadata:
+
+```sh
+python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --metadata /private/run/view.json --capture-context /private/view/context.json
+python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --context /private/view/context.json
+```
+
+The output must be new; its parent must already be private and caller-owned.
+Capture writes only that mode0600 file, not records or metadata. Keep the original
+metadata and all pinned sources. The read-only context consumer preserves declared
+title/classification/team/model/actual-specialist/explicit-needs through
+ACCEPTED→SUBMITTED→ACCEPTED without hash edits. It freezes exact goal/scope/revision,
+Task order/IDs and current Dispatch/actor/model/routing assignment. Changed
+assignment or planning source rejects the whole candidate (ERROR plus last-good),
+requiring explicit new metadata/context; no silent re-pin or partial stale merge.
+Absent fields remain unknown. Captured organization acceptance is unknown, not
+current consent or live execution. Original `--manifest`/`--metadata` stale guards
+are unchanged. There is no automatic metadata producer, actual Run selection or
+staffed-run capture. Synthetic fixtures do not prove actual staffing.
+The program neither discovers private sessions nor creates
+a lower Orca pane. Host targeting/placement and upper input/log preservation
+require separate approved host work.
+
+`native_operations.py storage report|plan --request ...` is read-only for exact
+Company-owned Run roots. Explicit `storage apply` is destructive and requires
+separate authorization, exact plan hash and unchanged completion guards; do not
+use test fixtures as user cleanup authority. `usage report --request ...` unions
+bound Codex response receipts and preserves unknown coverage, not account costs.
+`reasoning prepare --request ... --output ...` and `reasoning check --bundle ...`
+prepare/check the next unchanged Codex checked-launch inputs. Deep/ultrathink is
+intent, not an automatic effort increase or current-turn switch: an approved low
+effort remains low. Prepared resource/budget authorization is unknown/not supplied;
+where required the next launcher still needs `--require-resource-manifest`,
+`--resource-manifest`, `--declared-host`, `--declared-tool`, `--declared-billing`
+and `--declared-spend`, plus actual sender and unused receipt/result paths.
+Follow the exact spec-content and original request/decision bindings in the
+native guide. No tool here calls Claude, launches a real model automatically,
+changes global defaults or supplies missing permission.
+
 ## Configure
 
 Private choices default to `~/.codex/agent-company/user.md` under the existing host

@@ -25,6 +25,12 @@ def build_parser() -> argparse.ArgumentParser:
         "classify", help="Classify one app-studio request",
     )
     classify_parser.add_argument("--request", required=True)
+    prepare = commands.add_parser("prepare-action", help="Classify one declared action for preparation only")
+    prepare.add_argument("--action", required=True)
+    prepare.add_argument("--target", required=True)
+    prepare.add_argument("--argument", action="append", default=[])
+    prepare.add_argument("--authorized-read", action="store_true")
+    prepare.add_argument("--approval", type=Path)
     create = commands.add_parser(
         "create-job", help="Create a private company job projection",
     )

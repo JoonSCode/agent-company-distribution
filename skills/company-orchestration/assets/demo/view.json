@@ -1,0 +1,189 @@
+{
+  "schema": "company-status-tui-input/v1",
+  "version": 1,
+  "binding": {
+    "goal_id": "demo-app-launch",
+    "scope": "approved-scope",
+    "revision": "r1",
+    "record_sha256": "e8e960bd16e5ddf4acb0afdc1714546fb11040993ef0bb01e3804021a214dc94"
+  },
+  "sources": [
+    {
+      "id": "record",
+      "path": "record.json",
+      "sha256": "e8e960bd16e5ddf4acb0afdc1714546fb11040993ef0bb01e3804021a214dc94",
+      "kind": "record"
+    },
+    {
+      "id": "claims",
+      "path": "claims.json",
+      "sha256": "c5aca5c9133b1e71ac16f81e1d36ed7c763882881bf7d99dc9292731a3374120",
+      "kind": "claims"
+    },
+    {
+      "id": "plan",
+      "path": "plan.json",
+      "sha256": "a9029009e4ba266a0411679911cd30753b1e496160913c175426bd42d5792619",
+      "kind": "plan"
+    }
+  ],
+  "record": "record",
+  "organization": {
+    "head": {
+      "actor": "coordinator",
+      "evidence": [
+        {
+          "source": "claims",
+          "pointer": "/head"
+        }
+      ]
+    },
+    "teams": [
+      {
+        "id": "build",
+        "label": "Development",
+        "lead": {
+          "actor": "build-lead",
+          "evidence": [
+            {
+              "source": "claims",
+              "pointer": "/teams/0/lead"
+            }
+          ]
+        },
+        "members": [
+          {
+            "actor": "builder",
+            "evidence": [
+              {
+                "source": "claims",
+                "pointer": "/teams/0/members/0"
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "source": "claims",
+            "pointer": "/teams/0"
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "label": "Independent QA",
+        "lead": {
+          "actor": "qa-lead",
+          "evidence": [
+            {
+              "source": "claims",
+              "pointer": "/teams/1/lead"
+            }
+          ]
+        },
+        "members": [
+          {
+            "actor": "reviewer",
+            "evidence": [
+              {
+                "source": "claims",
+                "pointer": "/teams/1/members/0"
+              }
+            ]
+          }
+        ],
+        "evidence": [
+          {
+            "source": "claims",
+            "pointer": "/teams/1"
+          }
+        ]
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Plan a small app",
+      "classification": "reasoning",
+      "team_id": "build",
+      "actor": "builder",
+      "assigned_model": "demo-planner",
+      "specialist": {
+        "status": "unknown",
+        "id": null,
+        "evidence": []
+      },
+      "evidence": [
+        {
+          "source": "record",
+          "pointer": "/tasks/0"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "title": "Build the first slice",
+      "classification": "code",
+      "team_id": "build",
+      "actor": "builder",
+      "assigned_model": "demo-builder",
+      "specialist": {
+        "status": "unknown",
+        "id": null,
+        "evidence": []
+      },
+      "evidence": [
+        {
+          "source": "record",
+          "pointer": "/tasks/1"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "title": "Review the result",
+      "classification": "code",
+      "team_id": "review",
+      "actor": "reviewer",
+      "assigned_model": "demo-reviewer",
+      "specialist": {
+        "status": "unknown",
+        "id": null,
+        "evidence": []
+      },
+      "evidence": [
+        {
+          "source": "record",
+          "pointer": "/tasks/2"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "task": "t2",
+      "needs": [
+        "t1"
+      ],
+      "evidence": [
+        {
+          "source": "plan",
+          "pointer": "/dependencies/0"
+        }
+      ]
+    },
+    {
+      "task": "t3",
+      "needs": [
+        "t2"
+      ],
+      "evidence": [
+        {
+          "source": "plan",
+          "pointer": "/dependencies/1"
+        }
+      ]
+    }
+  ]
+}

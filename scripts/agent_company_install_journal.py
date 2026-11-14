@@ -68,7 +68,10 @@ def load_journal(paths: InstallPaths) -> tuple[dict[str, JsonValue], Transaction
         raise InstallError("corrupt_recovery", "backup digest is malformed")
     transaction_relative = f"agent-company/state/transactions/{transaction_id}"
     if not managed_exists(paths, transaction_relative):
-        if phase_name != "cleanup" or not managed_exists(paths, "agent-company/rollback/current"):
+        if phase_name != "cleanup" or not (
+            managed_exists(paths, f"agent-company/rollback/reapply-{transaction_id}")
+            or managed_exists(paths, "agent-company/rollback/current")
+        ):
             raise InstallError("corrupt_recovery", "transaction payload and committed rollback are missing")
     return payload, TransactionSpec(transaction_id, action, snapshot_id)
 
@@ -109,8 +112,10 @@ def verified_entries(paths: InstallPaths, transaction_id: str) -> tuple[Path, tu
         directory = transaction_dir(paths, transaction_id)
         backup_relative = f"{transaction_relative}/backup.json"
     else:
-        directory = paths.rollback / "current"
-        backup_relative = "agent-company/rollback/current/backup.json"
+        retained = f"agent-company/rollback/reapply-{transaction_id}"
+        relative = retained if managed_exists(paths, retained) else "agent-company/rollback/current"
+        directory = paths.codex_home / relative
+        backup_relative = f"{relative}/backup.json"
     backup = directory / "backup.json"
     if not managed_exists(paths, backup_relative):
         if digest:

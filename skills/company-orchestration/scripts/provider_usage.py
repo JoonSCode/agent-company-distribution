@@ -48,8 +48,16 @@ def counts(value):
     return value
 
 
-def read_usage(path, expected_sha256, scope, turn_id=None):
-    data = Path(path).read_bytes()
+def read_usage(path, expected_sha256, scope, turn_id=None, *, prefix_bytes=None):
+    if prefix_bytes is None:
+        data = Path(path).read_bytes()
+    else:
+        if type(prefix_bytes) is not int or prefix_bytes <= 0:
+            raise Invalid('invalid source prefix length')
+        with Path(path).open('rb') as source:
+            data = source.read(prefix_bytes)
+        if len(data) != prefix_bytes or not data.endswith(b'\n'):
+            raise Invalid('source prefix truncated or not at a record boundary')
     digest = hashlib.sha256(data).hexdigest()
     if digest != expected_sha256:
         raise Invalid('source hash mismatch')
@@ -65,9 +73,10 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
         raise Invalid('exactly one session_meta required')
     session = sessions[0]
     turns = set()
-    records, starts, ends, mirrors = {}, {}, {}, {}
+    records, starts, ends, mirrors, mirror_offsets = {}, {}, {}, {}, {}
     contexts, model_items = [], []
     previous = None
+    current_turn = None
     thread_prefix = dict.fromkeys(FIELDS, 0)
     last_thread = dict.fromkeys(FIELDS, 0)
     for line, row in enumerate(rows, 1):
@@ -77,7 +86,7 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
             if not isinstance(t, str) or not t:
                 raise Invalid('turn context missing identity')
             contexts.append((line, t))
-        if row.get('type') == 'response_item':
+        if row.get('type') == 'response_item' and p.get('type') not in ('function_call_output', 'custom_tool_call_output'):
             model_items.append(line)
         if row.get('type') == 'event_msg':
             if p.get('type') == 'agent_message':
@@ -97,6 +106,10 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
             if t in target:
                 raise Invalid('duplicate turn boundary')
             target[t] = line
+            if p['type'] == 'task_started':
+                current_turn = t
+            elif current_turn == t:
+                current_turn = None
         if row.get('type') == 'token_usage_record':
             for key in ('thread_id', 'session_id', 'turn_id', 'root_turn_id', 'response_id'):
                 if not isinstance(p.get(key), str) or not p[key]:
@@ -125,12 +138,23 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
                 records[rid] = {'line': line, 'value': identity}
             previous = identity
         if row.get('type') == 'event_msg' and p.get('type') == 'token_count' and p.get('info') is not None:
+            # Older turns may contain context-only token_count events with a
+            # different shape. They are not mirrors for the selected turn.
+            if turn_id is not None and current_turn != turn_id:
+                continue
             info = p['info']
             total = counts(info.get('total_token_usage'))
             last = counts(info.get('last_token_usage'))
-            if previous is None or total != previous['thread_token_usage'] or last != previous['usage']:
+            if previous is None or last != previous['usage']:
                 raise Invalid('cumulative mirror does not match response record')
+            offset = tuple(previous['thread_token_usage'][k] - total[k] for k in FIELDS)
+            if any(value < 0 for value in offset):
+                raise Invalid('cumulative mirror exceeds response thread total')
+            counts(dict(zip(FIELDS, offset)))
+            if previous['response_id'] in mirror_offsets and mirror_offsets[previous['response_id']] != offset:
+                raise Invalid('conflicting cumulative mirrors for response')
             mirrors[previous['response_id']] = line
+            mirror_offsets[previous['response_id']] = offset
     if turn_id is None:
         if len(turns) != 1:
             raise Invalid('explicit --turn-id required for reused or ambiguous session')
@@ -141,6 +165,10 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
     if any(start < line < end and context_turn != turn_id for line, context_turn in contexts):
         raise Invalid('context identity contradicts selected turn boundaries')
     selected = [v for v in records.values() if v['value']['turn_id'] == turn_id]
+    offsets = [mirror_offsets[r['value']['response_id']] for r in selected
+               if r['value']['response_id'] in mirror_offsets]
+    if any(any(offset) for offset in offsets) and (len(offsets) < 2 or len(set(offsets)) != 1):
+        raise Invalid('cumulative mirror offset is unproven or changes within selected turn')
     totals = {k: sum(r['value']['usage'][k] for r in selected) for k in FIELDS}
     reasons = []
     if not data.endswith(b'\n'):
@@ -178,6 +206,8 @@ def read_usage(path, expected_sha256, scope, turn_id=None):
              'scope': scope, 'source': f'sha256:{digest};session:{session};turn:{turn_id}'}
     return {'format': 'company-codex-usage/v1', 'usage': usage,
             'provenance': {'trace_sha256': digest, 'session_id': session, 'turn_id': turn_id,
+                           'start_line': starts.get(turn_id), 'end_line': ends.get(turn_id),
+                           'cumulative_mirror_offset': dict(zip(FIELDS, offsets[0])) if offsets and any(offsets[0]) else None,
                            'scope': scope, 'coverage_reasons': sorted(set(reasons)),
                            'coverage_boundary': 'captured selected turn only; not whole Company run',
                            'totals': totals if selected else None,

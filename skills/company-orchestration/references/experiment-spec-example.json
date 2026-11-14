@@ -1,0 +1,14 @@
+{
+  "format": "company-experiment-spec/v1",
+  "population": {"description": "Synthetic held-out software tasks", "development_tasks": ["dev-1"]},
+  "holdout": {"tasks": ["holdout-1"], "independent": true, "selection_ref": "holdout-selection-v1"},
+  "assignment": {"frozen_ref": "assignment-v1", "orders": [
+    {"task": "holdout-1", "repeat": 1, "order": ["baseline", "candidate"]},
+    {"task": "holdout-1", "repeat": 2, "order": ["candidate", "baseline"]}
+  ]},
+  "evaluator": {"executor": "worker-a", "assessor": "reviewer-b", "oracle_ref": "oracle-v1", "separation": true},
+  "stopping": {"rule_ref": "stopping-v1", "denominator": "all_planned_including_failures_aborted_missing_unknown"},
+  "measurement": {"coverage": ["lead", "worker", "review", "integration", "retry"], "provenance": "attributable_receipts", "missing": "unknown"},
+  "metrics": ["wall_time", "quality", "user_burden"],
+  "approval_gates": ["execution_authority", "resource_authority", "measurement_authority"]
+}

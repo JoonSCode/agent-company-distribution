@@ -229,18 +229,43 @@ def pins(fd, ref=None):
 
 
 def probe_activity(root, exact=None):
+    # Fixed OS-owned paths only: never discover a replacement through PATH.
+    executable = {'darwin': '/usr/sbin/lsof', 'linux': '/usr/bin/lsof'}.get(sys.platform)
+    if executable is None:
+        raise ValueError('open-file observation unsupported platform: ' + sys.platform)
     scope = [str(exact)] if exact is not None else ['+D', str(root)]
-    result = subprocess.run(['/usr/sbin/lsof', '-nP', '-Fpn', *scope],
+    result = subprocess.run([executable, '-nP', '-Fpn', *scope],
                             capture_output=True, text=True, timeout=30)
     require(result.returncode in (0, 1) and not result.stderr.strip(),
             'open-file observation failed: ' + result.stderr.strip())
+    # lsof may return 1 even with own directory fields; parse both valid exits.
+    # Empty success or malformed output must never become quiescence.
+    require((result.returncode == 1 and result.stdout == '') or
+            (bool(result.stdout) and result.stdout.endswith('\n')),
+            'malformed open-file observation')
     # This process holds only the Run/ancestor directories and own lock.
     current = None
-    for line in result.stdout.splitlines():
+    observed_name = False
+    pending_file = False
+    for line in result.stdout.split('\n')[:-1]:
+        require(bool(line) and '\x00' not in line, 'malformed open-file observation field')
         if line.startswith('p'):
+            require((current is None or observed_name) and line[1:].isascii() and
+                    line[1:].isdecimal() and int(line[1:]) > 0,
+                    'malformed open-file observation process')
             current = line[1:]
+            observed_name = False
+        elif line.startswith('f'):
+            # lsof emits file-set delimiters even when only -Fpn is requested.
+            require(current is not None and bool(line[1:]) and not pending_file,
+                    'malformed open-file observation file')
+            pending_file = True
+            observed_name = False
         elif line.startswith('n'):
             name = line[1:]
+            require(current is not None and bool(name), 'malformed open-file observation name')
+            observed_name = True
+            pending_file = False
             own_directory = False
             try:
                 Path(name).relative_to(root)
@@ -249,6 +274,9 @@ def probe_activity(root, exact=None):
                 pass
             require(current == str(os.getpid()) and (name == str(root / LOCK) or own_directory),
                     'open activity: ' + line)
+        else:
+            raise ValueError('malformed open-file observation field')
+    require(not result.stdout or observed_name, 'malformed open-file observation missing name')
     return {'tool': 'lsof exact file' if exact is not None else 'lsof scoped +D',
             'status': 'no external open paths'}
 
@@ -256,6 +284,10 @@ def probe_activity(root, exact=None):
 def validate_acceptance(record, record_path, manifest, manifest_hash, require_routing=False):
     checked = check_record(record, record_path.parent, require_routing=require_routing)
     require(checked['ok'], 'record contradictions: ' + json.dumps(checked['errors']))
+    policy = checked.get('measurement', {}).get('policy')
+    require(policy is None or policy['success_eligible'],
+            'accounting complete but success-only completion refused: ' +
+            (policy['verdict'] if policy else 'unknown'))
     require(record.get('label') == 'real' and record.get('resource_accounting') == 'required',
             'real resource-accounted record required')
     goal = record['goal']
@@ -281,6 +313,16 @@ def validate_acceptance(record, record_path, manifest, manifest_hash, require_ro
             'stale/missing retention acceptance binding')
     require(contract.get('consumers') == [{'id': c, 'state': 'settled'} for c in manifest['consumers']],
             'consumer settlement mismatch')
+    if record.get('measurement', {}).get('version') == 2:
+        from measurement_lifecycle import retained_files
+        require('measurement-v2' in manifest['consumers'], 'measurement retention consumer required')
+        preserved = {item['path']: item['sha256'] for item in manifest['preserve']}
+        for path, sha256 in retained_files(record, record_path.parent):
+            try:
+                relative = path.relative_to(record_path.parent.resolve()).as_posix()
+            except ValueError:
+                raise ValueError('measurement ledger must be inside retained Run')
+            require(preserved.get(relative) == sha256, 'measurement evidence not preserved: ' + relative)
     return checked
 
 
@@ -471,7 +513,7 @@ def validate_saved_oracle(outcome, task, artifacts, saved):
 
 def validate_receipt(previous, manifest, manifest_hash, record_binding):
     require(set(previous) <= {'format', 'run_id', 'manifest_sha256', 'status', 'removed',
-                              'errors', 'record', 'activity', 'pending'} and
+                              'errors', 'record', 'activity', 'pending', 'record_validation'} and
             previous.get('format') == 'company-run-completion/v1' and
             previous.get('run_id') == manifest['run_id'] and
             previous.get('status') in ('blocked', 'completed') and
@@ -499,11 +541,19 @@ def complete(root, fd, manifest, manifest_hash, record_ref, probe=probe_activity
                 'Run/layout identity mismatch')
         record_data, record_binding = read_file(fd, record_ref)
         record = decode(record_data)
-        validate_acceptance(record, root / record_ref, manifest, manifest_hash,
+        checked = validate_acceptance(record, root / record_ref, manifest, manifest_hash,
                             require_routing=manifest.get('routing_accounting') == 'required')
+        # An annotation on an already accepted record, not an acceptance shortcut.
+        # Older receipts without this optional field remain readable.
+        result['record_validation'] = {key: checked[key] for key in
+                                       ('historical_integrity', 'current_readiness')}
         result['record'] = record_binding
         require(manifest['preserve'], 'compact evidence declaration required')
         protected = {x['path'] for x in manifest['preserve']} | {record_ref}
+        declaration = record.get('goal_evidence')
+        if declaration is not None:
+            sidecar = (Path(record_ref).parent / declaration['path']).as_posix()
+            protected.add(sidecar)
         # Every local evidence file is protected, whether or not explicitly registered.
         for item in record['evidence'].values():
             if item.get('file'):

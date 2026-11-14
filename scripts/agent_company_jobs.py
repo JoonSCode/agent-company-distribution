@@ -20,6 +20,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 from agent_company_deps import JsonValue
@@ -101,6 +102,13 @@ def publish_report_pair(
 def run(args: argparse.Namespace) -> dict[str, JsonValue]:
     if args.command == "classify":
         return {"format": "agent-company.classification/v0.1", "job_type": classify(args.request)}
+    if args.command == "prepare-action":
+        from agent_company_job_definition import classify_job_preparation
+        result = classify_job_preparation(args.action, args.target, args.argument,
+            now=datetime.now(timezone.utc), authorized_read=args.authorized_read,
+            approval=read_object(args.approval) if args.approval else None)
+        return {"format": "agent-company.action-preparation-result/v1", **result,
+                "status": "ok" if result['decision'] == 'prepare' else 'blocked'}
     if args.command == "create-job":
         job_type = args.job_type or classify(args.source_request)
         job = build_job(JobRequest(

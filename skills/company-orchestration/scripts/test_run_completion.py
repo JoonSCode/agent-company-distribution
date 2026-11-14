@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Destructive-boundary tests using only small owned /private/tmp fixtures."""
+"""Destructive-boundary tests using only small owned TMPDIR fixtures."""
 import contextlib
 import argparse
 import copy
@@ -39,7 +39,7 @@ def ordinary_routing():
 
 class CompletionTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir='/private/tmp', prefix='company-retention-test-')
+        self.temp = tempfile.TemporaryDirectory(prefix='company-retention-test-')
         self.addCleanup(self.temp.cleanup)
         config = Path(self.temp.name) / 'user.md'
         config.write_text('---\nschema_version: 1\npreset: single\nservices: ["antigravity"]\n---\n\n# Synthetic route intent\n')
@@ -114,10 +114,23 @@ class CompletionTests(unittest.TestCase):
     def test_success_and_idempotent_retry(self):
         first = self.finish()
         self.assertEqual(first['status'], 'completed', first)
+        self.assertEqual(first['record_validation']['historical_integrity']['status'], 'unknown')
+        self.assertFalse(first['record_validation']['current_readiness']['launch_authorized'])
         self.assertFalse((self.root / 'scratch/raw').exists())
         self.assertEqual(self.finish()['removed'], first['removed'])
         self.assertTrue((self.root / 'report.md').exists())
         self.assertTrue((self.root / 'acceptance.json').exists())
+
+    def test_old_completion_receipt_without_diagnostics_still_rechecks_acceptance(self):
+        first = self.finish()
+        self.assertEqual(first['status'], 'completed', first)
+        del first['record_validation']
+        (self.root / rc.RECEIPT).write_text(json.dumps(first))
+        self.assertEqual(self.finish()['status'], 'completed')
+        self.record['goal']['known_failure'] = True
+        self.record['historical_integrity'] = {'status': 'valid'}
+        self.save_record()
+        self.assertEqual(self.finish()['status'], 'blocked')
 
     def study(self, environment_failure=False, task_name='evidence-reconcile'):
         """Real-shaped, entirely fabricated receipts; no provider or real Run."""

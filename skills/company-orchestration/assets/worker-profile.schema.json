@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "worker-profile.schema.json",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objective": {
+            "type": "string",
+            "minLength": 1
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          },
+          "done_when": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "minItems": 0
+          },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "const": 1
+              },
+              "vocabulary_version": {
+                "const": 1
+              },
+              "family": {
+                "type": "string",
+                "enum": [
+                  "general",
+                  "language",
+                  "structured_data",
+                  "reasoning",
+                  "code",
+                  "research",
+                  "visual",
+                  "design",
+                  "media_generation",
+                  "tool_use"
+                ]
+              },
+              "difficulty": {
+                "type": "string",
+                "enum": [
+                  "easy",
+                  "medium",
+                  "hard"
+                ]
+              },
+              "input_modalities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "text",
+                    "code",
+                    "image",
+                    "audio",
+                    "video",
+                    "structured_data"
+                  ]
+                },
+                "uniqueItems": true,
+                "minItems": 1
+              },
+              "output_modalities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "text",
+                    "code",
+                    "image",
+                    "audio",
+                    "video",
+                    "structured_data"
+                  ]
+                },
+                "uniqueItems": true,
+                "minItems": 1
+              },
+              "required_capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general.execute",
+                    "text.summarize",
+                    "text.rewrite",
+                    "text.translate",
+                    "data.lookup",
+                    "data.transform",
+                    "logical.reason",
+                    "quantitative.reason",
+                    "code.reason",
+                    "repository.edit",
+                    "frontend.code",
+                    "framework.react",
+                    "evidence.synthesize",
+                    "citation.ground",
+                    "vision.read",
+                    "vision.ocr",
+                    "multimodal.reason",
+                    "screenshot_to_code",
+                    "ui.design",
+                    "ux.judgment",
+                    "design.aesthetic_judgment",
+                    "image.generate",
+                    "image.edit",
+                    "tool.call"
+                  ]
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              },
+              "required_tools": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              },
+              "context_requirement": {
+                "oneOf": [
+                  {
+                    "const": "not_applicable"
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                ]
+              },
+              "hard_constraints": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              },
+              "uncertainties": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "minItems": 0
+              }
+            },
+            "required": [
+              "version",
+              "vocabulary_version",
+              "family",
+              "difficulty",
+              "input_modalities",
+              "output_modalities",
+              "required_capabilities",
+              "required_tools",
+              "context_requirement",
+              "hard_constraints",
+              "uncertainties"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "objective",
+          "inputs",
+          "deliverables",
+          "done_when",
+          "depends_on",
+          "profile"
+        ],
+        "additionalProperties": false
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  },
+  "required": [
+    "version",
+    "units"
+  ],
+  "additionalProperties": false
+}

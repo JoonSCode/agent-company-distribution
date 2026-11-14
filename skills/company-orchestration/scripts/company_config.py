@@ -186,7 +186,22 @@ def route_errors(config: dict, *, route: str, model: str, effort: str | None, bi
     return errors
 
 
-def readiness(config: dict, observations: dict | None = None) -> list[dict]:
+def resource_manifest_check(config: dict, *, root: Path, name: str | None, required=False,
+                            service=None, host=None, model=None, effort=None, tools=None,
+                            billing=None, spend=None, now=None) -> dict:
+    """Offline declaration gate for one exact proposed route; no account/host probes."""
+    from resource_manifest import check
+    result = check(root, name, required=required, service=service, host=host, model=model,
+                   effort=effort, tools=tools, billing=billing, spend=spend, now=now)
+    if result['status'] == 'declared_ready':
+        errors = route_errors(config, route=service, model=model, effort=effort, billing=billing)
+        if errors:
+            result = {**result, 'status': 'denied', 'errors': errors}
+    return result
+
+
+def readiness(config: dict, observations: dict | None = None, *, manifest_root=None,
+              manifest_name=None, manifest_required=False, manifest_scope=None) -> list[dict]:
     """Read-only supplied host evidence, never infers auth from intent or executable presence."""
     observations = observations or {}
     result = []
@@ -196,7 +211,14 @@ def readiness(config: dict, observations: dict | None = None) -> list[dict]:
         ok = selected and obs.get('supported') is True and obs.get('authenticated') is True and obs.get('tools') is True and obs.get('billing') in {'subscription', 'paid_api'} and bool(obs.get('evidence')) and bool(obs.get('observed_at'))
         if obs.get('billing') == 'paid_api' and not config['values']['api_paid']:
             ok = False
+        scope = dict(manifest_scope or {})
+        scope['service'] = service
+        manifest = resource_manifest_check(config, root=manifest_root or Path('.'), name=manifest_name,
+                                           required=manifest_required, **scope)
+        if manifest_required or manifest_name is not None:
+            ok = ok and manifest['status'] == 'declared_ready'
         result.append({'service': service, 'selected': selected, 'executable': bool(ok),
+                       'resource_manifest': manifest,
                        'status': 'usable_from_supplied_evidence' if ok else ('verification_pending' if selected else 'not_selected'),
                        'observation': obs if selected else {},
                        'limit': 'Recheck evidence freshness and current task/model/effort/host support before launch.'})

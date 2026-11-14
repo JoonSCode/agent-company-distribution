@@ -255,3 +255,6 @@ In particular:
 
 The minimum-solution method adapts ideas from Ponytail under the MIT License;
 repository provenance is recorded in `THIRD_PARTY_NOTICES.md`.
+# Architecture evidence boundary
+
+The worker handoff receipt validator exposes `architecture_evidence_status` as structured data for completed architecture-risk evidence. `structural_only` leaves reference existence, actual digest match, issuer authenticity, and independence unknown; it is not proof of any of them. Warnings may be suppressed and are not the durable status.

@@ -1,0 +1,29 @@
+{
+  "method": "actual agent_company_demo CLI stdout, rasterized cell-for-cell",
+  "frames": [
+    {
+      "name": "company-demo",
+      "columns": 80,
+      "rows": 24,
+      "layout": "wide",
+      "stdout_sha256": "30d1d02f46539436cf2725f41793cbfba0c26fd786d7d57ade7e7398de402c5c",
+      "png_sha256": "da71b894c37e83a7a79c5f8598cda677bccc52c685e8da18ee5eb6e4e4bb62b0"
+    },
+    {
+      "name": "company-demo-narrow",
+      "columns": 40,
+      "rows": 20,
+      "layout": "focus",
+      "stdout_sha256": "328233ad7ef11a9e1b64f6f483f87f861e586cbbd6e01ef1ddfff0e18076be73",
+      "png_sha256": "d7a86c7711c0f1607ccb52ab95fdd690d469e52b1f9617216fd8376685ccea1e"
+    },
+    {
+      "name": "company-demo-wide",
+      "columns": 120,
+      "rows": 40,
+      "layout": "wide",
+      "stdout_sha256": "de15ef972c5956a6d05daa55ec3936f31b88ee60e34f73f0f37c8a8046b2bb22",
+      "png_sha256": "4305f22abd24ed07d723d268f29bf9db7d92844c7e0da8ec238f1d64f4a9c7a6"
+    }
+  ]
+}

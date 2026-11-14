@@ -25,6 +25,37 @@ errors use stderr). JSON input errors return structured `{ok:false, errors:[...]
 record errors have `path`, `code`, and `message`. JSON duplicate fields and non-JSON
 NaN/Infinity are rejected. Human output is brief; JSON includes usage subtotals.
 
+## Historical integrity versus current readiness
+
+`check` also emits fresh `historical_integrity` and `current_readiness` diagnostics.
+Both are scoped to **recorded host-catalog inputs**, not the validity or success of
+an entire historical Run. Historical `valid` means supplied pinned catalog/raw
+response and checked-prelaunch receipt bytes agree on selection, specification,
+configuration hash, runtime and worktree. It reuses the catalog validator at its
+recorded capture time without consulting today's configuration, observed external
+files or semantic settings DB. Missing files, bare references/pins, absent receipts
+or unsupported legacy history remain `unknown`; malformed bytes, hash or binding
+mismatches are `invalid`. No missing history is manufactured or upgraded.
+
+Current `ready` means only the bounded local catalog inputs pass the existing
+current resolver/observations/freshness checks and legacy record checks. It does
+not authenticate a provider or host, prove tools/billing, or replace the final
+checked launcher. No recorded catalog gives `unknown`; a current/legacy denial
+is `blocked`. Current time expiry can block readiness even while old record
+consistency still passes. Every diagnostic says `launch_authorized:false`.
+Historical effective configuration/authentication and provenance remain unproven.
+These are sequential observations, not an atomic snapshot against writers.
+
+Existing `ok`, error codes, token totals and exit behavior are unchanged. In
+particular, an unchanged T0 record can still fail the legacy check after a T1
+configuration or auth-policy edit. This change explains that safe refusal rather
+than accepting history automatically. Status JSON/HTML shows both fresh reports;
+success badges still use the old consistency/acceptance checks. Completion retains
+all its existing gates and adds optional `record_validation` diagnostics to new
+receipts only after record acceptance. Old completion receipts without that field
+remain readable; cached or forged reports never bypass acceptance. Supply trusted
+explicit evidence paths; this is not an archive importer or a launch/retry command.
+
 ## Shape
 
 `assets/record-cases.json` supplies full **synthetic** examples, positive and
@@ -423,3 +454,92 @@ model/effort unknown. Keep requested versus observed settings in the existing
 Task model fields, with fallback/readback provenance in the associated evidence.
 A launch flag or a passed synthetic check is not effective-setting proof, permission
 to spend, a model call, a session switch or evidence of actual savings.
+
+## Measurement-required comparisons
+
+This section describes the original version 1 observed-preflight contract.
+Explicit `measurement.version: 2` instead uses the separate
+[prepare, bind and settle contract](measurement-lifecycle.md). Old final evidence
+is not rewritten. Unsettled v2 usage cannot produce a raw total or final success.
+
+For a comparison or efficiency evaluation that needs end-to-end measurement,
+set `measurement.mode` to `required` in the current record before preflight.
+Do not add it to ordinary maintenance. Existing failed records remain readable;
+adding a mode later does not retroactively make a failed preflight pass.
+
+`measurement.goal_binding` contains the current goal's exact `id`, `revision`,
+`scope`, and `plan` reference. `objective` and `criteria` are evidence IDs for
+the original user objective and frozen evaluation criteria. The plan, objective,
+and criteria each need a readable, SHA-256-pinned file in `evidence`. The checker
+binds these bytes; an independent reviewer still determines whether the criteria
+answer the original objective. A successful ledger check or notification is not
+itself an efficiency result.
+
+`boundary` contains nonempty `start`, `end`, and `shared_costs` descriptions.
+`expected_actors` lists all participating actors, including the goal owner,
+workers, verification, integration, failed attempts and retries where applicable.
+`participants` must contain exactly one binding per expected actor; recorded Task
+executors, technical reviewers, parent integrators and any independent overall
+assessor must also be in that list. A human overall assessment does not require
+a provider session. Each binding has `actor`, `provider: "codex"`,
+`session`, `source`, `turns`, `prefix_bytes`, and `prefix_sha256`. Supply the
+actual local JSONL path and observed session and turn IDs, not a date-derived
+path, worker metadata, or planned resolver. The prefix must end at a newline and
+contain an observed turn start, real response usage, and matching cumulative
+mirrors for every listed turn. A live turn may be missing its completion marker.
+A preflight must also observe at least one selected turn per participant still
+open in the current source; a prefix cut before an already recorded completion
+cannot turn a post-hoc check into readiness. Earlier selected turns may be closed.
+An absent completion marker alone does not prove that the process is still live
+or that this actor owns the session; check the host evidence separately.
+A later append is allowed; a changed or truncated pinned prefix is rejected.
+Turn and response scopes must not overlap. Other providers are unsupported.
+
+For example, the following fragment names two expected actors. Replace every
+placeholder with observed values; this fragment alone is not a ready record.
+
+```json
+{
+  "mode": "required",
+  "goal_binding": {"id": "GOAL", "revision": "REV", "scope": "SCOPE", "plan": "plan"},
+  "objective": "original-objective",
+  "criteria": "frozen-criteria",
+  "boundary": {"start": "user request", "end": "integrated result", "shared_costs": "lead and worker, including review"},
+  "expected_actors": ["lead", "worker"],
+  "participants": [
+    {"actor": "lead", "provider": "codex", "session": "OBSERVED-SESSION", "source": "/private/lead.jsonl", "turns": ["OBSERVED-TURN"], "prefix_bytes": 123, "prefix_sha256": "OBSERVED-SHA256"},
+    {"actor": "worker", "provider": "codex", "session": "OBSERVED-SESSION-2", "source": "/private/worker.jsonl", "turns": ["OBSERVED-TURN-2"], "prefix_bytes": 456, "prefix_sha256": "OBSERVED-SHA256-2"}
+  ]
+}
+```
+
+For an active goal, run `record_check.py check RECORD --measurement-preflight
+--json`, preserving its successful output as a new private file. The output's
+`measurement_preflight` binds the exact goal, evidence hashes, boundaries,
+participants and source prefixes. In the final record, set `measurement.preflight`
+to the corresponding hash-pinned `evidence` ID, and add `final_bytes` and
+`final_sha256` to each participant. The final snapshot must extend the original
+prefix and contain complete selected turns. `usage.expected` and `usage.entries`
+must account for every selected Codex response exactly once, with matching
+session, input, output, cached input and reasoning counts. Partial, missing or
+mismatched usage prevents `goal.status: "succeeded"` and leaves the total null.
+Counts are provider-reported and cached/reasoning values are inclusive subsets.
+
+The receipt is a byte-bound consistency check, not an authenticated timestamp,
+proof of source origin, evidence that someone understood or approved a goal, or
+proof of comprehensive participant discovery. Preserve launch/done evidence and
+obtain independent review of chronology, participant completeness, original goal,
+and outcome. Do not treat a post-hoc preflight as evidence it happened before a
+launch. Actual quality, hidden answers and cross-candidate exposure, matched
+inputs, caches and environment, a numeric budget and its supported controls,
+failure, stopping, concurrency, retry and cleanup conditions remain decisions
+and observations outside this checker. A receipt is neither a hard token cap nor
+an operating-system or server-wide launch control.
+
+### Optional goal dependency evidence (v1)
+
+A record can require this check by adding `"goal_evidence": {"mode":"required", "path":"goal-evidence.json"}`. Paths are relative to the record directory; only bounded (1 MiB), regular, non-symlink files beneath that directory are read, with duplicate JSON keys rejected. `check --goal-evidence PATH` also explicitly requires the sidecar for that invocation; it must agree with any record declaration. Absent opt-in is `not_evaluated`, not verified. The declaration is needed for completion and the status CLI to enforce the same check without an extra flag.
+
+The exact sidecar object has `format` (`company-goal-evidence/v1`), `run_id` (the nonempty `record.run`, not goal ID), `goal` (`id`, `revision`, `scope` matching the record), and `tasks`. Each task object has exactly `task`, `dispatch`, `candidate`, `result_evidence`, `technical_evidence`, `integration_evidence`, and `predecessors`. It must cover every current record task exactly once, match the current dispatch/candidate and the evidence IDs in its result, technical review, and parent integration. Each predecessor is exactly `{"task":"TASK_ID", "handoff_evidence":"EVIDENCE_ID"}`. Every edge must have exactly one matching record `handoffs` entry containing `evidence`, `from_task`, `from_dispatch`, `from_candidate`, `to_task`, `to_dispatch`, `to_candidate`, matching both current task nodes; its evidence must exist, be unique to the edge, and differ from all result/review/integration IDs. Every declared record handoff must appear in the sidecar. Duplicate edges, missing handoffs, dangling references and cycles fail. The DAG is an explicit declaration; the checker cannot infer omitted real-world dependencies. `structurally_valid` means these bindings are consistent, not that issuers, independent review, handoff contents, host execution, or goal success are authenticated. Existing record validation and completion criteria remain in force.
+
+Optional routing decision `profile_binding` is the exact object emitted by `record_check.py profile-prepare`; see [routing prelaunch](routing-prelaunch.md). Its snapshots and digests are recomputed and checked against the selected identity and task. It does not replace the existing decision checks.

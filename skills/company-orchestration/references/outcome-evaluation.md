@@ -259,3 +259,5 @@ five-field `collect --usage` input and a separate private provenance record.
 Its `complete` coverage is limited to a selected captured turn, not the whole
 Company run. The evaluator's end-to-end token total remains unknown; capture
 and reconcile lead, verification, integration and retry scope separately.
+
+Offline preregistration and resource declarations: see [offline experiment and resource protocol](offline-experiment-resource-protocol.md). Validation does not execute a study or authenticate declarations.
