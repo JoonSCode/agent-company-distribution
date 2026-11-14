@@ -16,6 +16,14 @@ import test_route_select
 
 class LaunchTests(unittest.TestCase):
     def setUp(self):
+        # Timeout diagnostics intentionally reject *any* writable/symlinked ancestor.
+        # Linux /tmp (1777) is therefore not a positive diagnostic fixture, even
+        # below a private child. Keep the production descriptor walk unchanged.
+        fixtures = tempfile.TemporaryDirectory(prefix='.launch-tests-', dir=Path(__file__).resolve().parent)
+        self.addCleanup(fixtures.cleanup)
+        temporary_root = patch.object(tempfile, 'tempdir', fixtures.name)
+        temporary_root.start()
+        self.addCleanup(temporary_root.stop)
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
@@ -367,6 +375,30 @@ print(json.dumps({'ok': True, 'result': result}))
                         self.assertEqual(routing_launch.main(args), 1)
                         host.assert_not_called()
                 parent.chmod(0o700)
+
+    def test_timeout_writable_ancestor_preserves_pending_and_blocks_retry(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            ancestor = root / 'shared'
+            ancestor.mkdir()
+            ancestor.chmod(0o1777)
+            private = ancestor / 'private'
+            private.mkdir(mode=0o700)
+            result = private / 'result'
+            routing_launch.atomic_state(result, {'launch_state_version': 1, 'launch_state': 'invocation_pending'})
+            before = result.read_bytes()
+            with self.assertRaisesRegex(ValueError, 'unsafe diagnostic directory'):
+                routing_launch.write_timeout_state(result, {'launch_state': 'unknown'})
+            self.assertEqual(result.read_bytes(), before)
+            self.assertEqual(ancestor.stat().st_mode & 0o7777, 0o1777)
+            self.assertEqual(sorted(p.name for p in private.iterdir()), ['result'])
+            args = ['--decision', str(root/'decision'), '--record', str(root/'record'),
+                    '--receipt', str(root/'receipt'), '--result', str(result),
+                    '--from', 's', '--spec', 'x', '--worktree', 'current']
+            with patch('routing_launch.subprocess.run') as host:
+                self.assertEqual(routing_launch.main(args), 1)
+                host.assert_not_called()
+            self.assertEqual(result.read_bytes(), before)
 
     def test_start_oserror_stays_unknown_and_never_retries(self):
         import contextlib

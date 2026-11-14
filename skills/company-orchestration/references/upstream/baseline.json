@@ -225,7 +225,7 @@
     },
     {
       "path": "scripts/test_research_cache.py",
-      "sha256": "02f3b7789f8f392fceb0958ab5927d1a0302a65efc4312db5d6542ccd6a9fcc0"
+      "sha256": "5c021597b3a3dcf042cd707c68bf2855a83d7365d18f443004116f9393c400d8"
     },
     {
       "path": "references/session-continuity.md",
@@ -245,11 +245,11 @@
     },
     {
       "path": "scripts/test_continuity.py",
-      "sha256": "3f66f82629b3f298cffd66ad7fb173cbc8d566930d58ab49df68e20c57777bdc"
+      "sha256": "b21f69cedde51727a1b4dd3909bd564cf40695c355bba7ca47bcad15571c4957"
     },
     {
       "path": "scripts/test_knowledge_repository.py",
-      "sha256": "6627c5bffc3f09df1f86b370b4d1ac2c373af79ea8843e08c29f64487003d64f"
+      "sha256": "fdc0300da0374618394b4a1872d4ad78c09e8dcc0fd847183aa07d898d2b7cbc"
     },
     {
       "path": "references/organization-evidence.md",
@@ -373,11 +373,11 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "85ef3934290f8c5d88717ceb23288ec1427f04c7196df2c327a31490c2439c01"
+      "sha256": "03811ea9e963cdbe24930bf32ffea1b99dc9a7a524c6c8d5f114307f95f12d17"
     },
     {
       "path": "scripts/test_routing_hook.py",
-      "sha256": "61834daa5c170c8b30f2cf85cc4e775c73d13af0ba9a10c96842502538bc6a57"
+      "sha256": "93fea9ee19d5e26122aa5a694164950965981e6bcb9c77d13f8c3f139fa3b55e"
     },
     {
       "path": "references/routing-prelaunch.md",

@@ -72,7 +72,7 @@ default and returns unresolved material evidence to the assigning lead;
 their separate discovery, validation, and loop contracts.
 
 Validate a **public checkout** from its repository root without credentials,
-model calls or user-state changes (Python 3.13 and Git required):
+model calls or user-state changes (Python 3.13, Git and zsh required):
 
 ```bash
 python3.13 -B scripts/check_public_distribution.py
@@ -83,5 +83,9 @@ executes every bundled orchestration `test_*.py`, checks the policy manifest,
 and compares the no-model demo against the shipped captures in an isolated HOME.
 The same command is configured in the public repository's offline CI. It does
 not prove provider authentication, live Orca execution or product acceptance.
+Missing zsh or a skipped test fails the gate. Run from a writable checkout with
+trusted, non-symlinked ancestors: positive timeout-diagnostic fixtures must not
+be below a group/world-writable directory such as Linux `/tmp`. The runtime
+refusal for unsafe ancestors is unchanged and independently tested.
 Development-only role/evaluation suites remain in the canonical source; they
 are not commands available in this public package.

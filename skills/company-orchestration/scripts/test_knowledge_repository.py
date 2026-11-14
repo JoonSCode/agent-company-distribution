@@ -18,7 +18,7 @@ from test_research_cache import sample
 
 class RepositoryTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir="/private/tmp", prefix="knowledge-repository-")
+        self.temp = tempfile.TemporaryDirectory(prefix="knowledge-repository-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "research"
         self.store = cache.Store(self.root, True)

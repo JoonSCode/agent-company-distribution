@@ -20,6 +20,15 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# A successful unittest run with skipped cases is not a complete public gate.
+UNITTEST_PROGRAM = '''import sys, unittest
+suite = unittest.defaultTestLoader.discover('.', pattern='test_*.py')
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+if result.skipped:
+    print('public unit tests must not skip cases', file=sys.stderr)
+sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+'''
+
 
 class CheckError(Exception):
     pass
@@ -122,6 +131,8 @@ def import_closure(root: Path, files: list[str]) -> None:
 
 
 def run_checks(root: Path = ROOT) -> dict[str, object]:
+    if not Path('/bin/zsh').is_file():
+        raise CheckError('zsh is required for the controlled PTY test; install zsh before running the public checks')
     files = inventory_files(root)
     links = local_links(root, files)
     import_closure(root, files)
@@ -136,7 +147,7 @@ def run_checks(root: Path = ROOT) -> dict[str, object]:
                'LANG': 'C.UTF-8', 'TERM': 'xterm-256color'}
         script_dir = root / 'skills/company-orchestration/scripts'
         commands = [
-            ([sys.executable, '-E', '-s', '-B', '-m', 'unittest', 'discover', '-p', 'test_*.py', '-v'], script_dir),
+            ([sys.executable, '-E', '-s', '-B', '-c', UNITTEST_PROGRAM], script_dir),
             ([sys.executable, '-E', '-s', '-B', str(script_dir / 'policy_manifest.py'), 'check'], root),
         ]
         for command, cwd in commands:

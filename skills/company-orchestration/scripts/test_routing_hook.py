@@ -39,7 +39,7 @@ class HookTests(unittest.TestCase):
                 bind(home, 'session-1', '/tmp/other', '/tmp/record', home)
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
             bind(home, 'session-1', '/tmp/other', '/tmp/record', home, digest)
-            self.assertEqual(json.loads(path.read_text())['decision'], '/private/tmp/other')
+            self.assertEqual(json.loads(path.read_text())['decision'], str(Path('/tmp/other').resolve()))
             with self.assertRaises(FileExistsError):
                 bind(home, 'session-1', '/tmp/decision', '/tmp/record', home, digest)
 
