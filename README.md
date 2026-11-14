@@ -12,14 +12,18 @@ spending and publication.
 [Try the no-model demo](#try-it-before-you-install) · [Install](#install-in-orca) · [First real task](#your-first-real-task) · [Docs](#go-deeper)
 
 <picture>
-  <source media="(max-width: 600px)" srcset="assets/readme/company-demo-narrow.png">
-  <img src="assets/readme/company-demo.png" alt="Actual Company terminal renderer with synthetic app tasks: plan, build and independent review. Cards retain task class, illustrative assigned model IDs and unknown specialist evidence. The overall goal is pending; no live workers are observed." width="960">
+  <source media="(max-width: 600px)" srcset="assets/readme/company-native-narrow.png">
+  <img src="assets/readme/company-native.png" alt="Actual Orca terminal screenshot: eight Unicode task cards with native status colors and branching dependencies. Synthetic search-release tasks and illustrative demo model assignments, not live model execution; specialist evidence is unknown and one dependency is undrawn." width="1010">
 </picture>
 
-*Real shipped TUI, synthetic records, no model execution.* The narrow image shows
-part of the same paged map. [Text version](assets/readme/company-demo.txt) ·
-[Full-size view](assets/readme/company-demo-wide.png) ·
-[What this demo proves](skills/company-orchestration/assets/demo/README.md)
+**Actual Orca terminal screenshot — synthetic example tasks and illustrative
+assignments, not live model execution.** The unchanged shipped renderer uses its
+explicit dark palette. The wide map shows all eight cards and eight of nine
+recorded links; the narrow view shows four cards and one link on page 1 of 2,
+with clipped navigation kept as rendered. Unknown specialist evidence stays unknown.
+[Text version](assets/readme/company-native.txt) ·
+[Full-size screenshot](assets/readme/company-native.png) ·
+[Capture provenance and reproduction](assets/readme/NATIVE_CAPTURE.md)
 
 - **One goal, explicit owners.** Turn an unfinished idea into bounded contributions
   and observable completion criteria—not a mandatory cast of agents.

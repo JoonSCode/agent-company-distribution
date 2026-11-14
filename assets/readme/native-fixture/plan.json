@@ -1,0 +1,51 @@
+{
+  "synthetic": true,
+  "scope": "approved-scope",
+  "revision": "r1",
+  "dependencies": [
+    {
+      "task": "t2",
+      "needs": [
+        "t1"
+      ]
+    },
+    {
+      "task": "t3",
+      "needs": [
+        "t1"
+      ]
+    },
+    {
+      "task": "t4",
+      "needs": [
+        "t2"
+      ]
+    },
+    {
+      "task": "t5",
+      "needs": [
+        "t2"
+      ]
+    },
+    {
+      "task": "t6",
+      "needs": [
+        "t3"
+      ]
+    },
+    {
+      "task": "t7",
+      "needs": [
+        "t4",
+        "t5",
+        "t6"
+      ]
+    },
+    {
+      "task": "t8",
+      "needs": [
+        "t7"
+      ]
+    }
+  ]
+}

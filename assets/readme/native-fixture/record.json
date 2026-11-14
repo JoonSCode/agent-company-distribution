@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "label": "synthetic",
+  "evidence": {
+    "plan": {
+      "ref": "synthetic://plan",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "accept-a": {
+      "ref": "synthetic://accept-a",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "accept-b": {
+      "ref": "synthetic://accept-b",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "result": {
+      "ref": "synthetic://result",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "review": {
+      "ref": "synthetic://review",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "integration": {
+      "ref": "synthetic://integration",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "assessment": {
+      "ref": "synthetic://assessment",
+      "sha256": null,
+      "kind": "synthetic"
+    },
+    "usage": {
+      "ref": "synthetic://usage",
+      "sha256": null,
+      "kind": "synthetic"
+    }
+  },
+  "goal": {
+    "id": "synthetic-search-release",
+    "revision": "r1",
+    "scope": "approved-scope",
+    "plan": "plan",
+    "status": "active",
+    "known_failure": false,
+    "assessment": null,
+    "current_owner": "B",
+    "owner_acceptance": "accepted"
+  },
+  "ownership": [
+    {
+      "revision": "r1",
+      "scope": "approved-scope",
+      "from": null,
+      "to": "A",
+      "status": "accepted",
+      "accepted_by": "A",
+      "evidence": "accept-a"
+    },
+    {
+      "revision": "r1",
+      "scope": "approved-scope",
+      "from": "A",
+      "to": "B",
+      "status": "accepted",
+      "accepted_by": "B",
+      "evidence": "accept-b"
+    },
+    {
+      "revision": "r1",
+      "scope": "approved-scope",
+      "from": "B",
+      "to": "C",
+      "status": "proposed",
+      "accepted_by": null,
+      "evidence": null
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d1",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "settled",
+        "actor": "worker",
+        "result": {
+          "task": "t1",
+          "dispatch": "d1",
+          "candidate": "candidate-sha",
+          "evidence": "result",
+          "outcome": "succeeded"
+        }
+      },
+      "technical": {
+        "task": "t1",
+        "dispatch": "d1",
+        "candidate": "candidate-sha",
+        "evidence": "review",
+        "verdict": "passed",
+        "actor": "reviewer"
+      },
+      "parent_integration": {
+        "task": "t1",
+        "dispatch": "d1",
+        "candidate": "candidate-sha",
+        "evidence": "integration",
+        "verdict": "passed",
+        "actor": "B"
+      },
+      "model": {
+        "requested": "demo-planner",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t2",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d2",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "settled",
+        "actor": "worker",
+        "result": {
+          "task": "t2",
+          "dispatch": "d2",
+          "candidate": "candidate-sha",
+          "evidence": "result",
+          "outcome": "succeeded"
+        }
+      },
+      "technical": {
+        "task": "t2",
+        "dispatch": "d2",
+        "candidate": "candidate-sha",
+        "evidence": "review",
+        "verdict": "passed",
+        "actor": "reviewer"
+      },
+      "parent_integration": {
+        "task": "t2",
+        "dispatch": "d2",
+        "candidate": "candidate-sha",
+        "evidence": "integration",
+        "verdict": "passed",
+        "actor": "B"
+      },
+      "model": {
+        "requested": "demo-builder",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t3",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d3",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "settled",
+        "actor": "worker",
+        "result": {
+          "task": "t3",
+          "dispatch": "d3",
+          "candidate": "candidate-sha",
+          "evidence": "result",
+          "outcome": "succeeded"
+        }
+      },
+      "technical": {
+        "task": "t3",
+        "dispatch": "d3",
+        "candidate": "candidate-sha",
+        "evidence": "review",
+        "verdict": "passed",
+        "actor": "reviewer"
+      },
+      "parent_integration": {
+        "task": "t3",
+        "dispatch": "d3",
+        "candidate": "candidate-sha",
+        "evidence": "integration",
+        "verdict": "passed",
+        "actor": "B"
+      },
+      "model": {
+        "requested": "demo-builder",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t4",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d4",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "unknown",
+        "actor": "worker",
+        "result": null
+      },
+      "technical": null,
+      "parent_integration": null,
+      "model": {
+        "requested": "demo-builder",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t5",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d5",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "unknown",
+        "actor": "worker",
+        "result": null
+      },
+      "technical": null,
+      "parent_integration": null,
+      "model": {
+        "requested": "demo-reviewer",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t6",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d6",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "unknown",
+        "actor": "worker",
+        "result": null
+      },
+      "technical": null,
+      "parent_integration": null,
+      "model": {
+        "requested": "demo-reviewer",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t7",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d7",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "unknown",
+        "actor": "worker",
+        "result": null
+      },
+      "technical": null,
+      "parent_integration": null,
+      "model": {
+        "requested": "demo-builder",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    },
+    {
+      "id": "t8",
+      "goal_revision": "r1",
+      "goal_scope": "approved-scope",
+      "parent": "B",
+      "current_dispatch": "d8",
+      "candidate": "candidate-sha",
+      "execution": {
+        "state": "unknown",
+        "actor": "worker",
+        "result": null
+      },
+      "technical": null,
+      "parent_integration": null,
+      "model": {
+        "requested": "demo-reviewer",
+        "observed": null,
+        "effort_requested": null,
+        "effort_observed": null
+      },
+      "retry_claimed": false,
+      "another_writer_claimed": false
+    }
+  ],
+  "usage": {
+    "coverage": "unknown",
+    "expected": [
+      "vendor/request/req-1"
+    ],
+    "entries": []
+  }
+}

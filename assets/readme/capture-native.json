@@ -1,0 +1,169 @@
+{
+  "schema": "company-native-terminal-capture/v1",
+  "method": "actual Orca native window screenshot; lossless rectangular pane-only crop",
+  "synthetic": true,
+  "live_model_execution": false,
+  "renderer_sha256": "3c67a2330f2a05c453b2d575209f7cd3b63814389280ebb0a6e9ad17f643d0f8",
+  "environment": {
+    "TERM": "xterm-256color",
+    "COLORTERM": "truecolor",
+    "NO_COLOR": null,
+    "palette": "dark",
+    "layout": "wide",
+    "unicode": true
+  },
+  "frames": [
+    {
+      "name": "company-native",
+      "columns": 94,
+      "rows": 32,
+      "layout": "wide",
+      "palette": "dark",
+      "raw_sha256": "91e00ecbe26d2f95882a93326e9f3c4d28c4ffefc501c6cd88a187492b7cb16b",
+      "raw_dimensions": [
+        1456,
+        1294
+      ],
+      "crop_box": [
+        380,
+        51,
+        1390,
+        721
+      ],
+      "png_dimensions": [
+        1010,
+        670
+      ],
+      "png_sha256": "5d93b0dcf8bedaad5de79f0b5e5c1e45887b3162ba46cf78330e2d5ff58d0d78",
+      "decoded_crop_sha256": "ecc8103064d313f40590330c8fe69db86edef2b58232651fb426d487aca542eb",
+      "text_sha256": "761b574d294e730d380e3ea261eb764ac65612782c93886cddfb27e6e01112a7",
+      "visible_tasks": [
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+        "t5",
+        "t6",
+        "t7",
+        "t8"
+      ],
+      "hidden_tasks": 0,
+      "visible_edges": [
+        [
+          "t1",
+          "t3"
+        ],
+        [
+          "t2",
+          "t4"
+        ],
+        [
+          "t5",
+          "t7"
+        ],
+        [
+          "t1",
+          "t2"
+        ],
+        [
+          "t7",
+          "t8"
+        ],
+        [
+          "t3",
+          "t6"
+        ],
+        [
+          "t6",
+          "t7"
+        ],
+        [
+          "t4",
+          "t7"
+        ]
+      ],
+      "undrawn_edges": [
+        [
+          "t2",
+          "t5"
+        ]
+      ],
+      "pages": 1,
+      "page": 1
+    },
+    {
+      "name": "company-native-narrow",
+      "columns": 48,
+      "rows": 32,
+      "layout": "wide",
+      "palette": "dark",
+      "raw_sha256": "0f8481e48d50e08f2eeee1fa115e6851e59b959fe71a021a1f1dd7ccedd6cedb",
+      "raw_dimensions": [
+        1456,
+        1294
+      ],
+      "crop_box": [
+        380,
+        51,
+        891,
+        721
+      ],
+      "png_dimensions": [
+        511,
+        670
+      ],
+      "png_sha256": "85cd84ce2b5304294e38140ec6a27b2534bb51dade8fa31382e4a635cb5aab24",
+      "decoded_crop_sha256": "6a694182833fcff67bff651bcf592216514d33ca5e548a3d2bdbfca22ff1bf10",
+      "text_sha256": "82cd2d0fd1406ec15aed4eda6ef761cdbe567226ebca1b8b2464dd3f9b095b9f",
+      "visible_tasks": [
+        "t1",
+        "t2",
+        "t3",
+        "t4"
+      ],
+      "hidden_tasks": 4,
+      "visible_edges": [
+        [
+          "t1",
+          "t2"
+        ]
+      ],
+      "undrawn_edges": [
+        [
+          "t1",
+          "t3"
+        ],
+        [
+          "t2",
+          "t4"
+        ],
+        [
+          "t2",
+          "t5"
+        ],
+        [
+          "t3",
+          "t6"
+        ],
+        [
+          "t4",
+          "t7"
+        ],
+        [
+          "t5",
+          "t7"
+        ],
+        [
+          "t6",
+          "t7"
+        ],
+        [
+          "t7",
+          "t8"
+        ]
+      ],
+      "pages": 2,
+      "page": 1
+    }
+  ]
+}

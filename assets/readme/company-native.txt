@@ -1,0 +1,31 @@
+Company [combined] 전체 목표: 확인 대기 | 사용자 확인: 미관측
+넓은 지도 · 전체 선택 [build] Development | page:1/1 | o/f/c n/p j/k x 초점 w 넓게 v 개요
+◆ Define release scope ────────────────────╮    ╭ Build search interface ──────────────────╮
+│ 추론 · 작업 검토 통과                    │───▶│ 코드 · 작업 검토 통과                    │
+│ 할당: demo-planner                       │    │ 할당: demo-builder                       │
+│ 전문가 미확인                            │    │ 전문가 미확인                            │
+╰─[build] Development──────────────────────╯    ╰─[build] Development──────────────────────╯
+  │                                               │
+  ▼                                               ▼
+╭ Build filter endpoint ───────────────────╮    ╭ Add saved searches ──────────────────────╮
+│ 코드 · 작업 검토 통과                    │    │ 코드 · 상태 미확인                       │
+│ 할당: demo-builder                       │    │ 할당: demo-builder                       │
+│ 전문가 미확인                            │───┐│ 전문가 미확인                            │┐
+╰─[build] Development──────────────────────╯   │╰─[build] Development──────────────────────╯│
+                                               │                                            │
+                                               │                                            │
+╭ Test empty states ───────────────────────╮   │╭ Review accessibility ────────────────────╮│
+│ 코드 · 상태 미확인                       │   ▶│ 코드 · 상태 미확인                       ││
+│ 할당: demo-reviewer                      │    │ 할당: demo-reviewer                      ││
+│ 전문가 미확인                            │   ┌│ 전문가 미확인                            ││
+╰─[review] Independent QA──────────────────╯   │╰─[review] Independent QA──────────────────╯│
+  │                                            │                                            │
+  ▼                                      ▼─────┘                                            │
+╭ Integrate reviewed changes ──────────────╮    ╭ Verify release checks ───────────────────╮│
+│ 코드 · 선행 작업 대기                    │───▶│ 코드 · 선행 작업 대기                    ││
+│ 할당: demo-builder                       │    │ 할당: demo-reviewer                      ││
+│ 전문가 미확인                            │◀   │ 전문가 미확인                            ││
+╰─[build] Development──────────────────────╯│   ╰─[review] Independent QA──────────────────╯│
+                                            └───────────────────────────────────────────────┘
+미표시 0작업/1연결 · q 종료 l 연결 s 원문 t 팀 r 구간 b 뒤로
+합성 시연 | 연결 일부만 기록 | 실행 관측 없음

@@ -14,6 +14,8 @@ agents/founder.json
 agents/marketing.json
 agents/planning.json
 agents/qa-release.json
+assets/readme/NATIVE_CAPTURE.md
+assets/readme/capture-native.json
 assets/readme/capture.json
 assets/readme/company-demo-narrow.png
 assets/readme/company-demo-narrow.txt
@@ -21,6 +23,14 @@ assets/readme/company-demo-wide.png
 assets/readme/company-demo-wide.txt
 assets/readme/company-demo.png
 assets/readme/company-demo.txt
+assets/readme/company-native-narrow.png
+assets/readme/company-native-narrow.txt
+assets/readme/company-native.png
+assets/readme/company-native.txt
+assets/readme/native-fixture/claims.json
+assets/readme/native-fixture/plan.json
+assets/readme/native-fixture/record.json
+assets/readme/native-fixture/view.json
 install.sh
 launchd/local.agent-company.update.plist
 policies/automation-proposal.schema.json

@@ -1,0 +1,24 @@
+{
+  "synthetic": true,
+  "scope": "approved-scope",
+  "revision": "r1",
+  "head": "coordinator",
+  "teams": [
+    {
+      "id": "build",
+      "label": "Development",
+      "lead": "build-lead",
+      "members": [
+        "builder"
+      ]
+    },
+    {
+      "id": "review",
+      "label": "Independent QA",
+      "lead": "qa-lead",
+      "members": [
+        "reviewer"
+      ]
+    }
+  ]
+}

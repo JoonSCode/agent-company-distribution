@@ -1,0 +1,31 @@
+Company [combined] 전체 목표: 확인 대기 | 사용~
+넓은 지도 · 전체 선택 [build] Development | pa~
+◆ Define release scope ───────────────────────╮
+│ 추론 · 작업 검토 통과                       │
+│ 할당: demo-planner                          │
+│ 전문가 미확인                               │
+╰─[build] Development─────────────────────────╯
+  │
+  ▼
+╭ Build search interface ─────────────────────╮
+│ 코드 · 작업 검토 통과                       │
+│ 할당: demo-builder                          │
+│ 전문가 미확인                               │
+╰─[build] Development─────────────────────────╯
+
+
+╭ Build filter endpoint ──────────────────────╮
+│ 코드 · 작업 검토 통과                       │
+│ 할당: demo-builder                          │
+│ 전문가 미확인                               │
+╰─[build] Development─────────────────────────╯
+
+
+╭ Add saved searches ─────────────────────────╮
+│ 코드 · 상태 미확인                          │
+│ 할당: demo-builder                          │
+│ 전문가 미확인                               │
+╰─[build] Development─────────────────────────╯
+
+미표시 4작업/8연결 · q 종료 l 연결 s 원문 t 팀~
+합성 시연 | 연결 일부만 기록 | 실행 관측 없음
