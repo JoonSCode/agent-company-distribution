@@ -172,3 +172,13 @@ installable runtime projection: maintainers change the canonical source and
 regenerate it, rather than editing managed installed files.
 
 [MIT](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+### Optional Codex startup warning migration
+
+Only if you want to migrate recognized Codex startup settings, run
+`python3 scripts/migrate_codex_startup.py` from this checkout with Python 3.11
+or newer and the `codex` command on PATH. It inspects the
+current Codex feature list and version, preserves unrelated TOML, and saves a
+`config-before-warnings-*` backup in `CODEX_HOME` (default `~/.codex`) before
+writing changes. Unrecognized layouts stop without changing the config. Review
+the backup and migration result; installation and updates do not run this command.

@@ -6,7 +6,7 @@ selector, profile/pin checks and checked launcher. See the
 [first-task procedure](getting-started.md#first-worker-task-opt-in-local-catalog)
 for the short user request and stop rules. Source availability and candidate live
 observations do not establish publication or installed activation; check the
-release's installed identity separately. This path is local Orca 1.4.245 only.
+release's installed identity separately. This path is local Orca 1.4.245, 1.4.261 and 1.4.263 only.
 
 Preparation is collector → semantic helper → real record/decision →
 `record_check.py routing-check` → checked launcher. The helpers do not create

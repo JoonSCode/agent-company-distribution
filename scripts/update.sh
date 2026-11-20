@@ -18,4 +18,5 @@ if [[ -z "$uv_bin" || ! -x "$uv_bin" ]]; then
   exit 127
 fi
 
+export AGENT_COMPANY_UPDATER_PID=$$
 exec "$uv_bin" run --script "$script_dir/agent_company_update_status.py" "$@"

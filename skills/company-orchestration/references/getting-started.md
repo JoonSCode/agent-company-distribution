@@ -78,7 +78,7 @@ A short first request is enough:
 > required launch evidence is missing; report acceptance separately from worker completion.
 
 The lead confirms the output path and bounded execution budget before launch.
-Use the existing exact host-listed worktree on **local Orca 1.4.245**, with a
+Use the existing exact host-listed worktree on **local Orca 1.4.245, 1.4.261 or 1.4.263**, with a
 fresh **non-measurement** `--spec` attempt. This is an explicit opt-in, not the
 default route, a new-worktree path or an end-to-end preparation command.
 

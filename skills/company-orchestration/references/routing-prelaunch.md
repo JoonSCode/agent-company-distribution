@@ -10,7 +10,7 @@ referenced host evidence includes `candidate_inventory`, a list of route,
 family, model and effort objects. Legacy real evidence pins the current host's
 canonical Codex home's `models_cache.json`. The explicit
 [host-catalog opt-in](host-model-catalog.md) instead pins fresh exact-worktree
-metadata and semantic settings observations for local Orca 1.4.245, through the
+metadata and semantic settings observations for local Orca 1.4.245, 1.4.261 or 1.4.263, through the
 same checker and checked launcher; it does not depend on that shared cache. For an unpinned Codex selection, the checker
 independently intersects its models and supported efforts with the packaged
 table and requires each non-excluded known model at the selected effort and

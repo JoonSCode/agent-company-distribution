@@ -1,5 +1,15 @@
 # Release notes
 
+## v0.2.3
+
+- The opt-in Orca model catalog recognizes reviewed local versions 1.4.245,
+  1.4.261 and 1.4.263, including their package layouts.
+- Updater attempt markers include the launcher process ID when available.
+- An optional, explicitly invoked Codex startup warning migration preserves
+  unrelated configuration and saves a backup before changing recognized settings.
+
+These changes do not establish installation, live host readiness or model access.
+
 ## v0.2.1 — 2026-11-14
 
 - Product-first English README with original terminal captures, a demo-first
