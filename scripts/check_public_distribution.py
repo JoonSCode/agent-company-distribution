@@ -139,8 +139,8 @@ def run_checks(root: Path = ROOT) -> dict[str, object]:
     results = []
     # Never inherit credentials, private PYTHONPATH or provider configuration.
     with tempfile.TemporaryDirectory(prefix='company-public-check-') as raw:
-        home = Path(raw)
-        env = {'PATH': os.defpath, 'HOME': raw, 'TMPDIR': raw,
+        home = Path(raw).resolve(strict=True)
+        env = {'PATH': os.defpath, 'HOME': str(home), 'TMPDIR': str(home),
                'CODEX_HOME': str(home / 'codex'), 'CLAUDE_CONFIG_DIR': str(home / 'claude'),
                'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1',
                'UV_OFFLINE': '1', 'UV_PYTHON_DOWNLOADS': 'never', 'PIP_NO_INDEX': '1',
