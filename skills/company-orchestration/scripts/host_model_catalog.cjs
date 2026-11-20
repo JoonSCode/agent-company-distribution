@@ -17,7 +17,7 @@ function transport(call, save, now, receipts) {
 
 async function status(call) {
   const value = await call('status.get', {}, 'status.json');
-  if (value.ok !== true || value.result?.appVersion !== '1.4.245' ||
+  if (value.ok !== true || !['1.4.245', '1.4.261', '1.4.263'].includes(value.result?.appVersion) ||
       value.result.runtimeId !== value._meta?.runtimeId ||
       !value.result.capabilities?.includes('agent-session.coherent-model-catalog.v1')) {
     throw new Error('Unreviewed host version or missing coherent catalog capability');
@@ -61,8 +61,11 @@ function runCLI(directory, worktree) {
     return {file: name, sha256: crypto.createHash('sha256').update(bytes).digest('hex')};
   }
   async function main() {
-    const {RuntimeClient} = require(root + '/cli/runtime-client.js');
-    const {ModelCatalogParams} = require(root + '/shared/rpc-contract/structured-agent-session-params.js');
+    const currentLayout = fs.existsSync(root + '/cli/runtime/client.js');
+    const {RuntimeClient} = require(root + (currentLayout ? '/cli/runtime/client.js' : '/cli/runtime-client.js'));
+    const {ModelCatalogParams} = require(root + (currentLayout
+      ? '/shared/rpc-contract/structured-agent-session/structured-agent-session-params.js'
+      : '/shared/rpc-contract/structured-agent-session-params.js'));
     const client = new RuntimeClient(undefined, 90000, null, null);
     const manifest = await collect({worktree, receipts, save,
       now: () => new Date().toISOString(),

@@ -268,6 +268,7 @@ scripts/bootstrap.sh
 scripts/check_public_distribution.py
 scripts/doctor.py
 scripts/install.sh
+scripts/migrate_codex_startup.py
 scripts/repair_runtime_hook.py
 scripts/setup.sh
 scripts/sync-status.py

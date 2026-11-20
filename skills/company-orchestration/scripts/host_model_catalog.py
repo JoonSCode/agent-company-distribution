@@ -48,7 +48,7 @@ def load(directory, digest, *, worktree, model, effort, now=None):
     require(hashlib.sha256(raw).hexdigest() == digest, 'manifest hash mismatch')
     manifest = strict_json(raw)
     require(isinstance(manifest, dict) and manifest.get('format') == FORMAT, 'unknown manifest format')
-    require(manifest.get('app_version') == '1.4.245', 'unreviewed host version')
+    require(manifest.get('app_version') in ('1.4.245', '1.4.261', '1.4.263'), 'unreviewed host version')
     require(isinstance(worktree, str) and re.fullmatch(r'id:[^:]+::/.+', worktree), 'exact worktree id required')
     require(manifest.get('worktree') == worktree, 'worktree context changed; reprepare')
     runtime = manifest.get('runtime_id')
@@ -84,7 +84,7 @@ def load(directory, digest, *, worktree, model, effort, now=None):
         require(isinstance(result, dict), 'malformed result')
         responses.append(result)
     status, result = responses[0], responses[-1]
-    require(status.get('runtimeId') == runtime and status.get('appVersion') == '1.4.245'
+    require(status.get('runtimeId') == runtime and status.get('appVersion') == manifest['app_version']
             and 'agent-session.coherent-model-catalog.v1' in status.get('capabilities', []), 'unverified host provenance')
     require(result.get('origin') == 'probe', 'unknown or fallback catalog origin')
     require(result.get('listingInProgress', False) is False, 'partial listing')

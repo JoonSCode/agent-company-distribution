@@ -118,6 +118,9 @@ MARKER_LIMIT: Final[int] = 4096
 
 def marker_line(run_id: str, output: ProcessOutput | None = None) -> bytes:
     record: dict[str, JsonValue] = {"format": MARKER_FORMAT, "event": "attempt", "run_id": run_id}
+    launcher_pid = os.environ.get("AGENT_COMPANY_UPDATER_PID")
+    if output is None and launcher_pid and launcher_pid.isascii() and launcher_pid.isdecimal():
+        record["launcher_pid"] = int(launcher_pid)
     if output is not None:
         record.update(event="result", exit_code=output.returncode)
         streams: dict[str, JsonValue] = {}

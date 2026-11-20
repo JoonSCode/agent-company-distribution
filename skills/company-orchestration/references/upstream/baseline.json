@@ -117,19 +117,19 @@
     },
     {
       "path": "references/getting-started.md",
-      "sha256": "043c9c8b1268b9e84a97af7a3ccf78c1424b826e2da77d7b9d4f95b99bb979fa"
+      "sha256": "a3ba542705ab6e6d1e42c0a68daa8f83cc0efb4280fe53112c1947584db2604b"
     },
     {
       "path": "references/host-model-catalog.md",
-      "sha256": "e8315acd330a72328beff23e4325d9470fd0bb6ec87074a6e22a5d73d1961d81"
+      "sha256": "2d69d6d32758ed2b0e332fd3bb2626ef7062b517963c47eb84dccf0e7dc63b24"
     },
     {
       "path": "scripts/host_model_catalog.cjs",
-      "sha256": "66b7ee67991aba2afb5be90cf0315d8add9e26786f077ff7bd878ac47545e8fb"
+      "sha256": "f071ac7a59d848d2a93adc2d87dcdc3c8035f35c25d35c2238bdf7c29dcb6da0"
     },
     {
       "path": "scripts/host_model_catalog.py",
-      "sha256": "364d4581de9e686921c226c7f9c85927fc75c579e03ca668ffa63e2cece89902"
+      "sha256": "498f530da19798f4386227085460f0b4d79d0c0879c079ba8ff56e0fba9f9b47"
     },
     {
       "path": "references/worker-routing-evidence.md",
@@ -381,7 +381,7 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "946eaac7f9af7467331e50e8caaf11dbc02b82bc6ec6ecd576b5428f19942982"
+      "sha256": "835813d2671137c7597866678d6fc5d1bd8e5836a6556e2bc3c70baab3a495c0"
     },
     {
       "path": "scripts/test_unlisted_routes.py",
