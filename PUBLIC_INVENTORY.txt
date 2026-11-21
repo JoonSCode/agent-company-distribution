@@ -32,6 +32,8 @@ assets/readme/native-fixture/claims.json
 assets/readme/native-fixture/plan.json
 assets/readme/native-fixture/record.json
 assets/readme/native-fixture/view.json
+assets/readme/release-replay-mobile-still.png
+assets/readme/release-replay-mobile.gif
 assets/readme/release-replay-still.png
 assets/readme/release-replay.gif
 install.sh

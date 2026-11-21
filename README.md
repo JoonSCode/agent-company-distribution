@@ -5,6 +5,8 @@ Give an app task to a team in Orca. See who is working in parallel and what inde
 [Try the no-model demo](#try-it-before-you-install) · [Install in Orca](#install-in-orca) · [First real task](#your-first-real-task)
 
 <picture>
+  <source media="(max-width: 600px) and (prefers-reduced-motion: reduce)" srcset="assets/readme/release-replay-mobile-still.png">
+  <source media="(max-width: 600px)" srcset="assets/readme/release-replay-mobile.gif">
   <source media="(prefers-reduced-motion: reduce)" srcset="assets/readme/release-replay-still.png">
   <img src="assets/readme/release-replay.gif" alt="Installer and documentation owners work in parallel. QA holds release v0.2.3 over a macOS test failure. The fix passes review and the published tag is installed." width="768">
 </picture>
