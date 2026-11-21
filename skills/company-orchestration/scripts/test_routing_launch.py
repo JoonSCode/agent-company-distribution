@@ -921,6 +921,12 @@ print(json.dumps({'ok': True, 'result': result}))
                 record_path = Path(full_args[full_args.index('--record') + 1])
                 fresh_decision = json.loads(decision_path.read_text())
                 fresh_decision['binding']['run'] = 'run-host'
+                spec = '  한글・日本語 🚀\r\n\n'
+                spec_path = fresh / 'reviewed-spec.txt'
+                spec_path.write_bytes(spec.encode('utf-8'))
+                fresh_decision['binding']['spec_sha256'] = hashlib.sha256(spec.encode('utf-8')).hexdigest()
+                spec_index = full_args.index('--spec')
+                full_args[spec_index:spec_index + 2] = ['--spec-file', str(spec_path)]
                 decision_path.write_text(json.dumps(fresh_decision))
                 fresh_record = json.loads(record_path.read_text())
                 fresh_record['run'] = 'run-host'
@@ -936,6 +942,8 @@ print(json.dumps({'ok': True, 'result': result}))
                 with patch('record_check.canonical_home', return_value=fresh), patch('routing_launch.subprocess.run', side_effect=responses) as host:
                     self.assertEqual(routing_launch.main(full_args), 0)
                     self.assertEqual(host.call_count, 2)
+                    launched = host.call_args_list[0].args[0]
+                    self.assertEqual(launched[launched.index('--spec') + 1].encode('utf-8'), spec_path.read_bytes())
                 saved = json.loads(Path(full_args[full_args.index('--result') + 1]).read_text())
                 self.assertEqual(saved['stdout'], json.dumps(start))
                 self.assertEqual(saved['full_readback']['stdout'], json.dumps(full))

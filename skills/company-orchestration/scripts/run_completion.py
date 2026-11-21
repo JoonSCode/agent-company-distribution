@@ -33,6 +33,11 @@ LOCK = '.completion.lock'
 REJECTION = 'completion-rejection.json'
 HOOK_RECEIPT = 'completion-hook-receipt.json'
 RESERVED = {MANIFEST, RECEIPT, LOCK, REJECTION, HOOK_RECEIPT}
+LAUNCH_OPTIONAL_OUTPUTS = {
+    '.catalog-refresh': ('status.json', 'response-1.json', 'response-2.json', 'manifest.json', 'failure.json'),
+    '.reprepare': ('inventory-before.json', 'inventory-current.json', 'decision-before.json',
+                   'decision.json', 'provenance.json'),
+}
 
 
 def default_home():
@@ -105,7 +110,7 @@ def validate_manifest(manifest):
             require(isinstance(row, dict) and set(row) == {'receipt', 'attempt_binding', 'optional'} and isinstance(row['attempt_binding'], dict), 'invalid launch contract')
             parts(row['receipt'])
             require(ref != row['receipt'] and isinstance(row['optional'], list) and len(set(row['optional'])) == len(row['optional']), 'invalid launch output inventory')
-            allowed = {ref + '.catalog-refresh/' + name for name in ('status.json', 'response-1.json', 'response-2.json', 'manifest.json', 'failure.json')}
+            allowed = {ref + suffix + '/' + name for suffix, names in LAUNCH_OPTIONAL_OUTPUTS.items() for name in names}
             require(set(row['optional']) <= allowed, 'unsupported optional launch output')
             for output in [ref, row['receipt'], *row['optional']]:
                 declaration = manifest.get('creation_contract', {}).get(output, {})
@@ -460,9 +465,29 @@ def validate_launch_terminals(root, manifest):
         os.close(descriptor)
 
 
+def start_incarnation_matches(start, dispatch, terminal, *, same_runtime):
+    observed = dispatch.get('processIncarnation')
+    exact = start.get('processIncarnation')
+    if exact is not None:
+        return observed == exact
+    prompt = (start.get('prompt') or {}).get('processIncarnation')
+    if prompt is None or observed == prompt:
+        return True
+    # Orca's terminal prompt reports the bare incarnation ID. The shipped
+    # worker registry binds the Dispatch to <ptyId>:<incarnationId>.
+    if not same_runtime or not isinstance(terminal, dict) or not isinstance(prompt, str) or not prompt:
+        return False
+    handle, pty = terminal.get('handle'), terminal.get('ptyId')
+    return (isinstance(handle, str) and bool(handle) and handle == dispatch.get('assigneeHandle') and
+            isinstance(pty, str) and bool(pty) and terminal.get('incarnationId') == prompt and
+            observed == f'{pty}:{prompt}' and
+            any(isinstance(effect, dict) and effect.get('kind') == 'terminal' and
+                effect.get('role') == 'agent' and effect.get('id') == handle for effect in start.get('effects', ())))
+
+
 def launch_incarnation(start, result):
     """Retain the start value, or use an identity-bound saved full readback."""
-    original = start.get('processIncarnation') or start.get('prompt', {}).get('processIncarnation')
+    original = start.get('processIncarnation') or (start.get('prompt') or {}).get('processIncarnation')
     full = result.get('full_readback')
     if full is None:
         return original
@@ -481,7 +506,15 @@ def launch_incarnation(start, result):
                   envelope['result'].get('terminal', {}).get('handle') != start['terminal']))):
             return None
         value = dispatch.get('processIncarnation')
-        if not isinstance(value, str) or not value or (original and original != value):
+        if not isinstance(value, str) or not value:
+            return None
+        same_runtime = False
+        if original and original != value and 'stdout' in result:
+            start_envelope = decode(result['stdout'])
+            runtime = start_envelope.get('_meta', {}).get('runtimeId')
+            same_runtime = (start_envelope.get('ok') is True and start_envelope.get('result') == start and
+                            isinstance(runtime, str) and bool(runtime) and envelope.get('_meta', {}).get('runtimeId') == runtime)
+        if not start_incarnation_matches(start, dispatch, envelope['result'].get('terminal'), same_runtime=same_runtime):
             return None
         return value
     except (ValueError, KeyError, TypeError, AttributeError):

@@ -49,7 +49,7 @@
   "policy_files": [
     {
       "path": "SKILL.md",
-      "sha256": "a6f9eed42b74b5496ce6ae5d06572734ec125a7da6a5a419af90b17d859401e7"
+      "sha256": "c1eef49ff955ed4da0882f55b775a10c2ebe35d65b4cc8b69c3abe02d7c9d291"
     },
     {
       "path": "assets/claude-entry.md",
@@ -74,6 +74,10 @@
     {
       "path": "assets/model-choice-priors.json",
       "sha256": "c4cefc0d9e5fdf7b7e32baf5a8f3705d28c376bededc91b05ad952c988d833b6"
+    },
+    {
+      "path": "assets/orca-terminal-source-contract-1.4.268.json",
+      "sha256": "cfe851f582a4a34f9d5002f9276ca2a421dbf89b8641e0ae81e748c2d594e819"
     },
     {
       "path": "assets/orca-terminal-source-contract.json",
@@ -141,11 +145,11 @@
     },
     {
       "path": "references/getting-started.md",
-      "sha256": "a3ba542705ab6e6d1e42c0a68daa8f83cc0efb4280fe53112c1947584db2604b"
+      "sha256": "e0154fffa6c9e7cf8007e98001ee86b3d13aec13c9ed192e1863ce2bd6e8f62b"
     },
     {
       "path": "references/host-model-catalog.md",
-      "sha256": "2d69d6d32758ed2b0e332fd3bb2626ef7062b517963c47eb84dccf0e7dc63b24"
+      "sha256": "b14c664a3277af703d2757be03a7cfa19ce14f1798d27ab5ace49b3c392d7525"
     },
     {
       "path": "references/knowledge-repository.md",
@@ -157,7 +161,7 @@
     },
     {
       "path": "references/measurement-lifecycle.md",
-      "sha256": "c0136fe8ada7c72e734156cc0a0101f558081d32877c5159e4755d37045d72f0"
+      "sha256": "b13b2597d7557bfa22322baa436791082f8246db2db0ebf358f2547675c02601"
     },
     {
       "path": "references/model-candidates.md",
@@ -221,11 +225,15 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "1b67b3a0547c66fc7b4feb30430137b285bde8f15eeb903cb4ca2de701d278cb"
+      "sha256": "ca2607e0c13484e59932a3904071427aebe6a7246753e89d2c37ef6997a5fea3"
     },
     {
       "path": "references/session-continuity.md",
       "sha256": "03023bd1ec3a90ac3a69a6ee6d8cdd48a68addfc6917c438d21d4527f8ab9737"
+    },
+    {
+      "path": "references/stage-timeline.md",
+      "sha256": "6405f484082db3ca049865022a38a8665cedde4bc08d77be5f4e58b951e3539b"
     },
     {
       "path": "references/status-tui.md",
@@ -273,11 +281,11 @@
     },
     {
       "path": "scripts/host_model_catalog.cjs",
-      "sha256": "f071ac7a59d848d2a93adc2d87dcdc3c8035f35c25d35c2238bdf7c29dcb6da0"
+      "sha256": "3548764a79edc1c82268d88ff2932df984ffc2848ec5c4989b4d699b6f567bb1"
     },
     {
       "path": "scripts/host_model_catalog.py",
-      "sha256": "99d7814704c7abb18b74b075fdef4b5448d86b7ded82c02082f10f2fd1a29b98"
+      "sha256": "79f88fb6a37df81dd4569dbde4e029660b14cf70e843c5a01c5f39c48c6afb99"
     },
     {
       "path": "scripts/knowledge_repository.py",
@@ -289,11 +297,11 @@
     },
     {
       "path": "scripts/measurement_canary.py",
-      "sha256": "e584bb997d9f06b04cf353e8b3216fdef3c7c2af89cca3c5744593151fbc50f4"
+      "sha256": "687e7c906c973a3f5518a0913935fe79a3811628090bb13902e431abecae0a1e"
     },
     {
       "path": "scripts/measurement_lifecycle.py",
-      "sha256": "60df4d42d83d32c9c0ab8cfa76ed2b6521fd081c546aa9788b5253e295457e5a"
+      "sha256": "d9d23f6af6312762f87baf5e80b3b0da2edeb6ed14af00fb6bfa75f7cb04f580"
     },
     {
       "path": "scripts/native_maintenance.py",
@@ -314,6 +322,10 @@
     {
       "path": "scripts/native_usage.py",
       "sha256": "d56495af244a63934258689f2fad0480ebc3a097937d24f63f6055d057b1ae70"
+    },
+    {
+      "path": "scripts/offline_replay.py",
+      "sha256": "7df30cf85a7afc23f645e006c943bb411322536947979892dec98b5cc2ed8d6f"
     },
     {
       "path": "scripts/offline_sidecar.py",
@@ -345,7 +357,7 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "6d7051e4c2b46b8165938db5b22b16ff32bb1b9700f8365fe71aa9b2e959fdcc"
+      "sha256": "782ec35db08ffac80663fe4f378ca0c7f3a2352f242c5c706815d56058743b5e"
     },
     {
       "path": "scripts/record_integrity.py",
@@ -369,7 +381,7 @@
     },
     {
       "path": "scripts/routing_explain.py",
-      "sha256": "4d74077a75f541b01ce7e4d1119520a89033305491ac23997a2780f69c8220d3"
+      "sha256": "731940c2b1eed3637be70f9747072b8c7b250774f0fe39b86fdaa021c2a010ca"
     },
     {
       "path": "scripts/routing_hook.py",
@@ -377,19 +389,23 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "e4096cd7b64fa41a2c8700c4b38bc47a17bdc891808f870721e8cb5530ccb951"
+      "sha256": "4ee0c07f7ce474827b6f2ee73b42a76efc2540088151355c3ba4552979597459"
     },
     {
       "path": "scripts/routing_prepare.py",
-      "sha256": "630d0e5cdab2321256cd80057b8040e0e3a4326eb34a8b4920ea12aaf5664224"
+      "sha256": "dc199dc4bb56948d6a33e054e05706e6ca6ab8caf1a8a236d93f61d700c0799d"
     },
     {
       "path": "scripts/run_completion.py",
-      "sha256": "7c7a1b01819c37f24cfc338838810a699b47a72007c155881eb342cc2c001fb3"
+      "sha256": "8c0efcf157724db6aeca32e83bad3f055e08ef705bde0be71acb97176d395df4"
     },
     {
       "path": "scripts/semantic_settings.py",
-      "sha256": "65da5f642b3d9c7eb74fa3c5bc0bde32fd13a4a6a0e1710bef7b3f150a45ef46"
+      "sha256": "da1d6b6ef5d9e607d3851b5ef4c4b5156f03b9b864f896eb1303f31e2823bbcb"
+    },
+    {
+      "path": "scripts/stage_timeline.py",
+      "sha256": "91d210380f103eb91a2c0245824e55394fdbbce42f523d9289ac1c1940d22b6a"
     },
     {
       "path": "scripts/status_tui.py",
@@ -422,6 +438,10 @@
     {
       "path": "scripts/status_view.py",
       "sha256": "411e8489195213948b3bb37cc7dea1798c1d195d994d5e1052e43885691db26e"
+    },
+    {
+      "path": "scripts/storage_test_support.py",
+      "sha256": "52055ab3f167584f5013222ff5621bc666502110241f6f9f15ecfd83c7d341a2"
     },
     {
       "path": "scripts/test_continuity.py",
@@ -457,7 +477,7 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "496a0f7dd62ab10d912545fafb5eec13506e4ef5a5378ccb62eec2f98dae9b8a"
+      "sha256": "eaf3e5688b03cdbe49ada5da04bee2d421b43620136188f5e4c92d12b70c2088"
     },
     {
       "path": "scripts/test_routing_preflight.py",

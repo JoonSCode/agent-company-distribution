@@ -1,5 +1,14 @@
 # Release notes
 
+## v0.2.4
+
+- Fix inventory refresh for ordinary checked launches and add read-only lookup
+  of known Orca launch request IDs.
+- Add reviewed Orca 1.4.268 model catalog and local terminal measurement support.
+- Document the coordinator inbox peek, consume and acknowledgement flow.
+- Add deterministic stage timelines, reviewed unit DAG previews and pinned
+  offline replay. A checked launch can read the reviewed UTF-8 spec file.
+
 ## v0.2.3
 
 - The opt-in Orca model catalog recognizes reviewed local versions 1.4.245,

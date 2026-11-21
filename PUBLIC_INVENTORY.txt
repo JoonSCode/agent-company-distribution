@@ -296,6 +296,7 @@ skills/company-orchestration/assets/demo/record.json
 skills/company-orchestration/assets/demo/view.json
 skills/company-orchestration/assets/measurement-canary.json
 skills/company-orchestration/assets/model-choice-priors.json
+skills/company-orchestration/assets/orca-terminal-source-contract-1.4.268.json
 skills/company-orchestration/assets/orca-terminal-source-contract.json
 skills/company-orchestration/assets/outcome-eval/context.template.json
 skills/company-orchestration/assets/outcome-eval/tasks-next.json
@@ -334,6 +335,7 @@ skills/company-orchestration/references/resource-manifest-example.json
 skills/company-orchestration/references/resource-policy.md
 skills/company-orchestration/references/routing-prelaunch.md
 skills/company-orchestration/references/session-continuity.md
+skills/company-orchestration/references/stage-timeline.md
 skills/company-orchestration/references/status-tui.md
 skills/company-orchestration/references/status-view.md
 skills/company-orchestration/references/storage-lifecycle.md
@@ -362,6 +364,7 @@ skills/company-orchestration/scripts/native_operations.py
 skills/company-orchestration/scripts/native_reasoning.py
 skills/company-orchestration/scripts/native_storage.py
 skills/company-orchestration/scripts/native_usage.py
+skills/company-orchestration/scripts/offline_replay.py
 skills/company-orchestration/scripts/offline_sidecar.py
 skills/company-orchestration/scripts/orca_contract.py
 skills/company-orchestration/scripts/org_audit.py
@@ -381,6 +384,7 @@ skills/company-orchestration/scripts/routing_launch.py
 skills/company-orchestration/scripts/routing_prepare.py
 skills/company-orchestration/scripts/run_completion.py
 skills/company-orchestration/scripts/semantic_settings.py
+skills/company-orchestration/scripts/stage_timeline.py
 skills/company-orchestration/scripts/status_tui.py
 skills/company-orchestration/scripts/status_tui_context.py
 skills/company-orchestration/scripts/status_tui_data.py

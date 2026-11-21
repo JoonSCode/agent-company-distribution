@@ -12,8 +12,10 @@ reference when both are present. Comparison inventory evidence includes
 Legacy real evidence pins the current host's
 canonical Codex home's `models_cache.json`. The explicit
 [host-catalog opt-in](host-model-catalog.md) instead pins fresh exact-worktree
-metadata and semantic settings observations for local Orca 1.4.245, 1.4.261 or 1.4.263, through the
-same checker and checked launcher; it does not depend on that shared cache. For an explicit comparison of an unpinned Codex selection, the checker
+metadata for local Orca 1.4.245, 1.4.261, 1.4.263 or 1.4.268 through the
+same checker and checked launcher. It uses the host catalog independently of the
+shared cache. On 1.4.268 it requires the verified saved worktree catalog and
+matching semantic settings observations. For an explicit comparison of an unpinned Codex selection, the checker
 independently intersects its models and supported efforts with the packaged
 table and requires each non-excluded known model at the selected effort and
 every known pair that dominates the selection on the benchmark prior in the
@@ -249,6 +251,96 @@ capacity input is structural, not an authenticated reservation and is not a
 host launch authorization. Direct host calls are outside this checked launcher.
 
 ## Profile preparation and decision binding
+
+### Read-only reviewed DAG preview
+
+`scripts/routing_prepare.py preview --request REQUEST.json
+--expect-request-sha256 SHA256` projects an already reviewed full profile DAG
+into sorted per-unit `ready`/`blocked` rows. It writes nothing, reserves no
+storage/capacity, performs no host/provider calls, and always returns
+`launch_authorized=false`. Existing `prepare`/`check` bundle formats and native
+reasoning callers are unchanged. A blocked unit does not erase independent
+ready rows; exit 1 means at least one unit or global input is blocked, exit 0
+means every row is ready. Malformed/global stale inputs return missing-field
+diagnostics without a partial readiness claim.
+
+The strict request has these fields, with each file reference shaped exactly
+as `{"path":"/physical/path/file", "sha256":"<lowercase-byte-hash>"}`:
+
+```json
+{
+  "schema": "company-routing-preview-request/v1",
+  "record": {"path": "/physical/run/record.json", "sha256": "<hash>"},
+  "profile": {"path": "/physical/profile.json", "sha256": "<hash>"},
+  "enrollment": {"path": "/physical/enrollment.json", "sha256": "<hash>"},
+  "context": {"path": "/physical/context.json", "sha256": "<hash>"},
+  "worktree": "id:repo-id::/physical/workspace",
+  "units": [
+    {"id": "one", "decision": {"path": "/physical/decision.json", "sha256": "<hash>"},
+     "spec_file": {"path": "/physical/spec.txt", "sha256": "<hash>"}, "writers": ["source-area"]}
+  ]
+}
+```
+
+The record must be the existing enrolled canonical path for an active goal with
+accepted owner/scope/revision. The profile uses the existing strict version 1
+schema and contains the entire DAG; duplicate/cyclic/dangling or uncertain
+profiles deny. Supply exactly one input row per profile unit. Each original
+decision must already contain its full profile binding, selected identity,
+authority, authentication, tools, billing, current local catalog and semantic
+observations. It must be planned, bound to that unit and enrollment Run, and
+use the Codex subscription path. Preview never fills those fields or selects a replacement. Every
+row repeats the existing current prelaunch checker. Inadequate context/table
+capabilities or missing provenance remain blocked.
+
+The strict context has `schema=company-routing-preview-context/v1`, `binding`,
+`observed_at`, `valid_until`, `units`, `writers`, `capacity`, `evidence`.
+`binding` must equal the current `run`, `scope`, `revision`, `owner`, `worktree`,
+`record_sha256` and exact profile file's `profile_sha256`. Both timestamps must
+be timezone-aware ISO values bracketing the current check. `evidence` uses the
+existing checker evidence map; every entry requires kind `host`, a file and its
+exact hash. Every observation below requires an existing evidence key:
+
+```json
+{
+  "units": {"one": {"task": null, "evidence": "current-task-observation"}},
+  "writers": {"source-area": {"task": null, "evidence": "current-writer-observation"}},
+  "capacity": {"available": 1, "evidence": "current-capacity-observation"}
+}
+```
+
+These are caller-supplied review assertions with pinned original provenance;
+hashes and `kind=host` do not authenticate origin, resource freedom or host
+completeness. `task=null` explicitly asserts an observed unstarted unit/free
+writer; absence of evidence is never a free slot. Preserve pending/unknown
+attempts with a non-null task marker and reconcile the originals. Preview does
+not infer readiness from an absent row or retry an unknown attempt.
+
+For dependencies, `units` maps the predecessor to an existing canonical Task.
+It must be the same ID as the profile unit or have the existing validated
+historical profile/Task mapping. Settled successful execution, independent
+technical acceptance and parent integration must all pass. A ready predecessor
+alone never releases its child. Writers are explicit shared resource keys; all
+otherwise-ready units with overlapping keys block, without choosing a winner.
+Missing/busy writer evidence blocks. Insufficient evidenced capacity blocks the
+ready wave rather than assigning an arbitrary order. An empty writer list is an
+explicit assertion that this unit takes no mutable shared resource.
+
+Output retains the exact spec text, byte count and original path/hash (including
+leading spaces, CR/LF and every terminal LF), rebased decision/patch, existing
+checker result, original checked-input references, and observed accepted host
+dependency IDs. UTF-8 must be valid, nonempty and NUL-free. All source/input,
+configuration, enrollment and context validity pins are rechecked at the end.
+Keep stdout as private review evidence using the caller's existing enrolled
+artifact procedure if retaining it; preview creates no second persistent state.
+
+Pass reviewed rows through existing enrolled `prepare`/`check`, then current
+checked launch. Orca task-create supports `--deps` and `--spec-file`, but planned
+unit IDs are not actual Orca Task IDs; the preview only exposes observed IDs.
+Use checked launch `--spec-file PATH` to read those bytes without shell
+substitution. The launcher submits the same decoded text after its ordinary spec
+hash and authority checks. Recheck actual state and all launch gates immediately
+before each start. A preview does not reserve capacity or authorize a start.
 
 Use the existing Company conversation to propose the versioned unit DAG and profiles.
 Validate unknowns rather than guessing. From the skill directory run:

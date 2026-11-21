@@ -176,6 +176,8 @@ a small supplementary format when durable checking is useful; optional on-demand
 references cover [saved outcome evaluation](references/outcome-evaluation.md),
 [saved Codex usage](references/provider-usage.md), and the
 [local status snapshot viewer](references/status-view.md).
+For a read-only stage timeline and offline replay of explicitly pinned receipts,
+use the [receipt timeline guide](references/stage-timeline.md).
 
 For a caller-owned terminal, use the [organization/work TUI](references/status-tui.md)
 to keep company/team lead/member relationships separate from team-grouped task

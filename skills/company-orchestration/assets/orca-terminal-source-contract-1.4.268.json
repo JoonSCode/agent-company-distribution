@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "app_version": "1.4.268",
+  "source_name": "orcad-retained-source-BZZ6-NJq.js",
+  "observed_full_sha256": "fdfe560c88b7c71996025b7d33bc9152ca2fa835ceaca6efa6048620a9db7b97",
+  "title_app_asar_sha256": "78475b9e4b33cb0aa90be3877edd3b98c064f7c851967c2a815579ce2b8a2884",
+  "title_renderer": {
+    "path": "renderer/assets/store-CemgH41t.js",
+    "sha256": "d44fe5e4f59616c9cc98cfd72922619eee3d1c790d5f92daf7d252f218f7b029"
+  }
+}

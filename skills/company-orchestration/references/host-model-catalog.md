@@ -6,7 +6,8 @@ selector, profile/pin checks and checked launcher. See the
 [first-task procedure](getting-started.md#first-worker-task-opt-in-local-catalog)
 for the short user request and stop rules. Source availability and candidate live
 observations do not establish publication or installed activation; check the
-release's installed identity separately. This path is local Orca 1.4.245, 1.4.261 and 1.4.263 only.
+release's installed identity separately. The reviewed local builds are Orca
+1.4.245, 1.4.261, 1.4.263 and 1.4.268.
 
 Preparation is collector → semantic helper → real record/decision →
 `record_check.py routing-check` → checked launcher. The helpers do not create
@@ -79,10 +80,26 @@ node skills/company-orchestration/scripts/host_model_catalog.cjs \
 ```
 
 The collector writes the full parsed RuntimeClient envelope, strict request params,
-receipt times and response SHA hashes. It uses explicit local transport, existing
-auth and source fences, status plus one catalog request (one wait-for-listing
-follow-up only if requested by the host). It never generates a model response.
-Normal host metadata probing may prepare its own home/cache.
+receipt times and response SHA hashes. It uses explicit local transport and the
+existing auth and source fences. Orca 1.4.245, 1.4.261 and 1.4.263 use status and
+one catalog request, with one follow-up if the host reports a listing in progress.
+Normal host metadata probing on those builds may prepare its own home/cache.
+
+On 1.4.268 the collector requires the coherent, model-efforts and saved-only
+catalog capabilities. It uses one `savedOnly: true` request and leaves listing
+to Orca. A live 1.4.268 listing returned progress and stale rows even on the
+`waitForListing` follow-up. After Orca finished, the saved-only read returned a
+fresh configured catalog for the exact worktree. The Python checker requires
+probe origin, `modelsDifferByWorkspace: true` and
+`listingNamesConfiguredModel: true` on that build. Its Codex resolver can
+otherwise return a broader catalog that omits the verified configured model.
+The checker also requires known model efforts, a settled response and a
+`fetchedAt` no more than five minutes old.
+
+If Orca has no fresh observation for that worktree, stop preparation or launch.
+Let Orca complete an authorized model listing in that workspace before collecting
+again into a fresh directory. The saved-only collector starts no listing and has
+no fallback or retry on an unknown, stale or partial result.
 
 In the existing real routing decision, set the inventory evidence `source` to
 `orca_model_catalog`, its `file` to that directory's `manifest.json`, and pin that
@@ -105,14 +122,18 @@ Add `binding.host_catalog`:
 ```
 
 These are explicit observations of relevant local files, not a completeness claim
-about all host state. For Orca 1.4.245's live profile database, **do not hash the
-whole `profile-state.db`, `-wal`, or `-shm`**. Use the hash-only preparation helper:
+about all host state. Use the hash-only preparation helper for the live profile
+database. On 1.4.268 pass `--app-version 1.4.268` and use its semantic pin in the
+decision. The earlier reviewed builds keep the helper's original default and
+existing digest format. Whole-file pins of the profile database, WAL and SHM are
+unsuitable for the semantic workflow.
 
 ```sh
 uv run --offline --no-python-downloads --no-project --python 3.13 python -B \
   skills/company-orchestration/scripts/semantic_settings.py \
   --database "$HOME/Library/Application Support/Orca/profiles/$EXACT_ACTIVE_PROFILE_ID/profile-state.db" \
-  --worktree "$EXACT_HOST_WORKTREE_ID"
+  --worktree "$EXACT_HOST_WORKTREE_ID" \
+  --app-version 1.4.268
 ```
 
 Put the returned array in `binding.host_catalog.observed_files`, preserving any
@@ -123,8 +144,10 @@ hash input, not operator-selected filters. It also includes byte/absence pins fo
 the profile index, canonical `.codex/config.toml` and `auth.json`, runtime-home
 config/auth, and hook trust policy. These required external pins cannot be dropped
 or relabeled in semantic mode. Raw DB/WAL duplicate pins are rejected, not ignored.
-No kind (or `kind: file`) retains the legacy byte/absence behavior; unknown kinds
-deny. Old decisions are not rewritten or silently upgraded.
+On older reviewed builds, no kind (or `kind: file`) retains the legacy
+byte/absence behavior. The 1.4.268 catalog requires the 1.4.268 semantic digest
+and all external config/auth observations. Unknown kinds deny. Old decisions
+retain their original hashes.
 
 The reader opens that exact active profile DB with `mode=ro`, never `immutable=1`,
 and performs schema + settings reads in one read transaction, including committed
@@ -141,12 +164,15 @@ errors/locks and oversize deny. Bounds: settings <=1 MiB, schema <=256 entries a
 reviewed, not repinned to bypass. The same adapter runs during initial checker
 validation and again after final catalog refresh. Failures have no fallback.
 
-Read-only installed-source trace: catalog CP and structured worker GI use the
+The 1.4.245 installed-source trace found that catalog and structured worker launch use the
 same command/account/args/env dependency family; `app.asar:out/main/index.js`
 SHA-256 `392e5de92a381cf35715f72b9d7cee9a7b4d50bc7bdc96ba666b406fa6f9fa9d`
 binds those resolvers to `requireStore().getSettings()`. The profile preference
 getter returns runtime `state.settings`; the SQLite authority persists the
-`profile_state_documents` settings domain. Public `settings.getAgentLaunch` and
+`profile_state_documents` settings domain. In 1.4.268 the catalog dependency
+resolver also reads `requireStore().getSettings()` and resolves the existing
+worktree through the local workspace resolver. Its active profile uses the
+reviewed settings table and domain version 1. Public `settings.getAgentLaunch` and
 `settings.get` exist but are client projections, not assumed complete account/
 provider state; this adapter deliberately observes the complete persisted domain.
 It is not an atomic lock against pending in-memory or subsequent host changes.

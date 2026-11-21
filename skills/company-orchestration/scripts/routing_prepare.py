@@ -244,6 +244,178 @@ def check_bundle(root):
     return {**status(errors), 'bundle': str(root)}
 
 
+def preview(request_path, expected_sha256):
+    """Read a reviewed DAG and current supplied observations; never reserve/start.
+
+    The existing checker owns authority and profile selection. Context is pinned
+    review evidence, not authenticated host state or a resource reservation.
+    """
+    from datetime import datetime, timezone
+    from native_operations import pinned, require, shape, text
+    from native_storage import bound_enrollment, strings
+    from record_check import Checker
+    from worker_profile import validate_profile_document
+
+    request_path = request_path.absolute()
+    inputs = {}
+
+    def read(reference, base):
+        path, raw = pinned(reference, base)
+        require(str(path) not in inputs or inputs[str(path)] == digest(raw), 'input changed between reads')
+        inputs[str(path)] = digest(raw)
+        return path, raw
+
+    _, raw = read({'path': str(request_path), 'sha256': expected_sha256}, request_path.parent)
+    value = shape(decode(raw), ('schema', 'record', 'profile', 'enrollment', 'context',
+                               'worktree', 'units'), 'preview request')
+    require(value['schema'] == 'company-routing-preview-request/v1', 'unknown preview request')
+    text(value['worktree'], 'worktree')
+    record_path, record_raw = read(value['record'], request_path.parent)
+    _, profile_raw = read(value['profile'], request_path.parent)
+    context_path, context_raw = read(value['context'], request_path.parent)
+    ep, _ = read(value['enrollment'], request_path.parent)
+    enrollment, _, _, enrollment_hash = bound_enrollment(ep)
+    canonical = Path(enrollment['run']) / enrollment['record']
+    require(record_path == canonical, 'preview requires the enrolled canonical record path')
+    record, rp = rebase(decode(record_raw), record_path.parent, 'record.json')
+    profile = validate_profile_document(decode(profile_raw))
+    context = shape(decode(context_raw), ('schema', 'binding', 'observed_at', 'valid_until',
+                    'units', 'writers', 'capacity', 'evidence'), 'preview context')
+    require(context['schema'] == 'company-routing-preview-context/v1', 'unknown preview context')
+    goal = record['goal']
+    require(context['binding'] == dict(run=enrollment['run_id'], scope=goal['scope'],
+            revision=goal['revision'], owner=goal['current_owner'], worktree=value['worktree'],
+            record_sha256=digest(record_raw), profile_sha256=digest(profile_raw)), 'stale preview context binding')
+    require('artifact_retention' not in record and goal['id'] == enrollment['run_id'] and goal['current_owner'] == enrollment['owner']
+            and goal['owner_acceptance'] == 'accepted' and goal['status'] == 'active', 'active accepted enrolled goal required')
+    observed, until = [datetime.fromisoformat(context[k].replace('Z', '+00:00'))
+                       for k in ('observed_at', 'valid_until')]
+    require(observed.tzinfo is not None and until.tzinfo is not None
+            and observed <= datetime.now(timezone.utc) <= until, 'preview context expired or future')
+    checker = Checker(context_path.parent)
+    checker.evidence_map(context['evidence'], '$.context.evidence', 'real')
+    require(not checker.errors, 'invalid preview context evidence: ' + str(checker.errors))
+    # Pin actual files as well as declarations; opaque URLs alone cannot make a
+    # unit, shared writer or capacity ready. No credential/profile DB copying.
+    for ref in context['evidence'].values():
+        require(ref.get('kind') == 'host' and isinstance(ref.get('file'), str), 'pinned host context provenance required')
+        read({'path': ref['file'], 'sha256': ref['sha256']}, context_path.parent)
+
+    def observation(row, fields):
+        shape(row, fields, 'context observation')
+        require(isinstance(row['evidence'], str) and row['evidence'] in context['evidence'],
+                'missing context observation provenance')
+        if 'task' in fields:
+            text(row['task'], 'observed Task', nullable=True)
+
+    require(isinstance(context['units'], dict) and isinstance(context['writers'], dict), 'context maps required')
+    ids = {u['id'] for u in profile['units']}
+    require(set(context['units']) == ids, 'context must observe every exact profile unit')
+    for row in context['units'].values():
+        observation(row, ('task', 'evidence'))
+    for resource, row in context['writers'].items():
+        text(resource, 'writer resource')
+        observation(row, ('task', 'evidence'))
+    observation(context['capacity'], ('available', 'evidence'))
+    require(type(context['capacity']['available']) is int and context['capacity']['available'] >= 0,
+            'nonnegative observed available capacity required')
+    require(isinstance(value['units'], list), 'unit inputs must be an array')
+    supplied = {}
+    for row in value['units']:
+        shape(row, ('id', 'decision', 'spec_file', 'writers'), 'unit inputs')
+        text(row['id'], 'unit id')
+        require(row['id'] not in supplied, 'duplicate unit inputs')
+        strings(row['writers'], 'writer resources')
+        supplied[row['id']] = row
+    require(set(supplied) == ids, 'input units must match the exact profile DAG')
+    source, configuration = source_state(), resolve()['configuration_sha256']
+    tasks = {t['id']: t for t in record['tasks']}
+    errors, rows = [], []
+    for unit in sorted(profile['units'], key=lambda u: u['id']):
+        name, blocks = unit['id'], []
+        item = supplied[name]
+        decision_path, decision_raw = read(item['decision'], request_path.parent)
+        spec_path, spec = read(item['spec_file'], request_path.parent)
+        spec_text = spec.decode('utf-8')  # retain every space, CR and terminal LF
+        require(bool(spec_text.strip()) and '\x00' not in spec_text, 'nonempty NUL-free UTF-8 spec required')
+        decision, dp = rebase(decode(decision_raw), decision_path.parent, 'decision.json')
+        for path in evidence_inputs((record, decision)):
+            raw = regular(Path(path))
+            require(path not in inputs or inputs[path] == digest(raw), 'evidence changed between reads')
+            inputs[path] = digest(raw)
+        result, missing = checked(record, decision, request_path.parent, spec, value['worktree'])
+        blocks.extend(missing)
+        binding = decision.get('binding', {})
+        if (binding.get('task') != name or binding.get('run') != enrollment['run_id']
+                or name in tasks or context['units'][name]['task'] is not None):
+            blocks.append(issue('fresh_unit_required', 'Unit is already observed, unknown or not bound to this planned Run/unit'))
+        if decision.get('selected', {}).get('route') != 'codex':
+            blocks.append(issue('local_codex_required', 'Preview initially supports only fresh local Codex specs'))
+        if decision.get('constraints', {}).get('billing') != 'subscription':
+            blocks.append(issue('subscription_required', 'Preview initially supports only the existing Codex subscription path'))
+        if decision.get('profile_binding', {}).get('profile') != profile:
+            blocks.append(issue('profile_dag_mismatch', 'Decision must bind the exact complete reviewed profile DAG'))
+        dependencies = []
+        for dep in sorted(unit['depends_on']):
+            task_id = context['units'][dep]['task']
+            task = tasks.get(task_id)
+            mapped = (task_id == dep or task is not None and
+                      task.get('routing_decision', {}).get('profile_binding', {}).get('unit_id') == dep)
+            accepted = (mapped and task is not None and task['execution']['state'] == 'settled'
+                        and task['execution']['result'] is not None
+                        and task['execution']['result']['outcome'] == 'succeeded'
+                        and all(task.get(k) is not None and task[k]['verdict'] == 'passed'
+                                for k in ('technical', 'parent_integration')))
+            dependencies.append({'unit': dep, 'task': task_id, 'accepted': accepted})
+            if not accepted:
+                blocks.append(issue('dependency_unaccepted', 'Current settled, independently accepted dependency required: ' + dep))
+        for resource in item['writers']:
+            state = context['writers'].get(resource)
+            if state is None or state['task'] is not None:
+                blocks.append(issue('writer_unavailable', 'Current evidenced free writer required: ' + resource))
+        rows.append({'unit_id': name, 'status': 'blocked' if blocks else 'ready',
+                     'missing_fields': blocks, 'dependencies': dependencies, 'writers': sorted(item['writers']),
+                     'spec': {'path': str(spec_path), 'sha256': digest(spec), 'bytes': len(spec), 'text': spec_text},
+                     'decision': decision, 'patch': rp + dp, 'routing_check': result,
+                     'checked_inputs': {'record': {'path': str(canonical), 'sha256': digest(record_raw)},
+                         'decision': {'path': str(decision_path), 'sha256': digest(decision_raw)},
+                         'spec_file': {'path': str(spec_path), 'sha256': digest(spec)},
+                         'worktree': value['worktree'], 'enrollment': {'path': str(ep), 'sha256': inputs[str(ep)]},
+                         'run': enrollment['run_id'], 'parent': binding.get('parent_task'),
+                         'deps': [d['task'] for d in dependencies if d['accepted']]}})
+    # No arbitrary scheduling priority: ambiguous simultaneous claims all block.
+    ready = [row for row in rows if row['status'] == 'ready']
+    for row in ready:
+        conflicts = [other['unit_id'] for other in ready if other is not row
+                     and set(row['writers']) & set(other['writers'])]
+        if conflicts:
+            row['missing_fields'].append(issue('shared_writer', 'Conflicting ready units: ' + ', '.join(conflicts)))
+        if len(ready) > context['capacity']['available']:
+            row['missing_fields'].append(issue('capacity_unavailable', 'Observed capacity cannot cover this ready wave; narrow the reviewed DAG'))
+        if row['missing_fields']:
+            row['status'] = 'blocked'
+    # Revalidate the same inputs/current source at the end, never reuse a cached
+    # successful check. Preview performs no lock/reservation and is not a lease.
+    for path, expected in sorted(inputs.items()):
+        if digest(regular(Path(path))) != expected:
+            errors.append(issue('input_drift', 'Input changed during preview: ' + path))
+    if source_state() != source or resolve()['configuration_sha256'] != configuration:
+        errors.append(issue('preparation_drift', 'Configuration/source changed during preview'))
+    if bound_enrollment(ep)[3] != enrollment_hash or datetime.now(timezone.utc) > until:
+        errors.append(issue('context_drift', 'Enrollment or context validity changed during preview'))
+    for row in rows:
+        row['missing_fields'].extend(errors)
+        row['status'] = 'blocked' if row['missing_fields'] else 'ready'
+    missing = [dict(error, path='$.units.' + row['unit_id'] + error['path'][1:])
+               for row in rows for error in row['missing_fields']]
+    return {**status(missing), 'format': 'company-routing-preview/v1', 'read_only': True,
+            'units': rows, 'ready': [row['unit_id'] for row in rows if row['status'] == 'ready'],
+            'inputs': dict(sorted(inputs.items())), 'source': source, 'configuration_sha256': configuration,
+            'limits': LIMITS + ' Supplied context is not authenticated host state or a reservation; '
+            'planned unit IDs are never host Task IDs. Recheck each checked launch; no automatic retry. '
+            'Launcher --spec-file transport is a separate integration seam; this preview sends nothing.'}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
@@ -255,12 +427,20 @@ def main(argv=None):
     item.add_argument('--expect-enrollment-sha256', required=True)
     item = sub.add_parser('check', help='read-only current revalidation, never launch')
     item.add_argument('bundle', type=Path)
+    item = sub.add_parser('preview', help='read-only reviewed DAG projection; no bundle write or launch')
+    item.add_argument('--request', type=Path, required=True)
+    item.add_argument('--expect-request-sha256', required=True)
     args = parser.parse_args(argv)
     try:
-        result = prepare(args) if args.command == 'prepare' else check_bundle(args.bundle)
+        if args.command == 'preview':
+            result = preview(args.request, args.expect_request_sha256)
+        else:
+            result = prepare(args) if args.command == 'prepare' else check_bundle(args.bundle)
         code = 0 if result['ok'] else 1
     except (ValueError, OSError, KeyError, TypeError, AttributeError, OverflowError, RecursionError) as exc:
         result = status([issue('prepare_input', str(exc))])
+        if args.command == 'preview':
+            result.update(format='company-routing-preview/v1', read_only=True)
         code = 1
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return code

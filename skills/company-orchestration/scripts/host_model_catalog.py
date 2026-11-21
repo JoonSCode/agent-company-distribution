@@ -9,6 +9,13 @@ import re
 
 FORMAT = 'company-host-catalog-metadata/v1'
 MAX_AGE_SECONDS = 300
+SAVED_ONLY_VERSION = '1.4.268'
+REVIEWED_VERSIONS = ('1.4.245', '1.4.261', '1.4.263', SAVED_ONLY_VERSION)
+COHERENT_CATALOG = 'agent-session.coherent-model-catalog.v1'
+SAVED_ONLY_CAPABILITIES = (
+    'agent-session.model-catalog.model-efforts.v1',
+    'agent-session.model-catalog.saved-only.v1',
+)
 
 
 def require(condition, message):
@@ -48,13 +55,15 @@ def load(directory, digest, *, worktree, model, effort, now=None):
     require(hashlib.sha256(raw).hexdigest() == digest, 'manifest hash mismatch')
     manifest = strict_json(raw)
     require(isinstance(manifest, dict) and manifest.get('format') == FORMAT, 'unknown manifest format')
-    require(manifest.get('app_version') in ('1.4.245', '1.4.261', '1.4.263'), 'unreviewed host version')
+    app_version = manifest.get('app_version')
+    require(app_version in REVIEWED_VERSIONS, 'unreviewed host version')
+    saved_only = app_version == SAVED_ONLY_VERSION
     require(isinstance(worktree, str) and re.fullmatch(r'id:[^:]+::/.+', worktree), 'exact worktree id required')
     require(manifest.get('worktree') == worktree, 'worktree context changed; reprepare')
     runtime = manifest.get('runtime_id')
     require(isinstance(runtime, str) and bool(runtime), 'missing runtime identity')
     receipts = manifest.get('receipts')
-    if not isinstance(receipts, list) or len(receipts) not in (2, 3):
+    if not isinstance(receipts, list) or len(receipts) not in ((2,) if saved_only else (2, 3)):
         raise ValueError('bounded status + catalog receipt sequence required')
     responses, seen_ids, previous_time = [], set(), None
     for index, receipt in enumerate(receipts):
@@ -75,8 +84,14 @@ def load(directory, digest, *, worktree, model, effort, now=None):
         require(previous_time is None or previous_time <= started, 'out-of-order receipts')
         previous_time = received
         params = {} if index == 0 else {'agent': 'codex', 'worktree': worktree}
+        if saved_only and index == 1:
+            params['savedOnly'] = True
+            require(isinstance(receipt.get('params'), dict) and receipt['params'].get('savedOnly') is True,
+                    'saved-only request required')
         if index == 2:
             params['waitForListing'] = True
+            require(isinstance(receipt.get('params'), dict) and receipt['params'].get('waitForListing') is True,
+                    'literal waitForListing required')
             require(responses[-1].get('listingInProgress') is True, 'unsolicited catalog retry')
         require(receipt.get('method') == ('status.get' if index == 0 else 'agentSession.modelCatalog')
                 and receipt.get('params') == params, 'method or launch context mismatch')
@@ -84,13 +99,23 @@ def load(directory, digest, *, worktree, model, effort, now=None):
         require(isinstance(result, dict), 'malformed result')
         responses.append(result)
     status, result = responses[0], responses[-1]
-    require(status.get('runtimeId') == runtime and status.get('appVersion') == manifest['app_version']
-            and 'agent-session.coherent-model-catalog.v1' in status.get('capabilities', []), 'unverified host provenance')
+    capabilities = status.get('capabilities')
+    require(status.get('runtimeId') == runtime and status.get('appVersion') == app_version
+            and isinstance(capabilities, list) and COHERENT_CATALOG in capabilities
+            and (not saved_only or all(capability in capabilities for capability in SAVED_ONLY_CAPABILITIES)),
+            'unverified host provenance')
     require(result.get('origin') == 'probe', 'unknown or fallback catalog origin')
-    require(result.get('listingInProgress', False) is False, 'partial listing')
+    require(result.get('listingInProgress', False) is False and result.get('waitExpired', False) is False,
+            'partial listing')
     require(result.get('unavailable') is None, 'catalog unavailable')
     require(result.get('nextCursor') is None and result.get('hasMore', False) is False
             and result.get('complete', True) is True, 'pagination or incomplete result')
+    if saved_only:
+        # Orca 1.4.268 can project a base catalog for a workspace. In its reviewed
+        # Codex resolver that projection cannot name the configured model.
+        require(result.get('modelsDifferByWorkspace') is True
+                and result.get('listingNamesConfiguredModel') is True,
+                'missing verified workspace catalog; refresh in Orca and reprepare')
     # Absence of complete is NOT converted to a completeness claim.
     fetched = result.get('fetchedAt')
     require(type(fetched) in (int, float) and fetched > 0, 'missing host fetchedAt')
@@ -103,6 +128,7 @@ def load(directory, digest, *, worktree, model, effort, now=None):
     normalized, ids = [], set()
     for row in models:
         require(isinstance(row, dict) and isinstance(row.get('id'), str) and row['id'], 'malformed model')
+        require(not saved_only or row.get('effortsKnown', True) is True, 'unverified model efforts')
         require(row['id'] not in ids, 'duplicate model id')
         ids.add(row['id'])
         levels = row.get('efforts')
@@ -116,7 +142,7 @@ def load(directory, digest, *, worktree, model, effort, now=None):
         normalized.append({'slug': row['id'], 'supported_reasoning_levels': [{'effort': value} for value in values]})
     require(any(row['slug'] == model and {'effort': effort} in row['supported_reasoning_levels']
                 for row in normalized), 'selected model/effort absent; reprepare')
-    return {'format': FORMAT, 'runtime_id': runtime, 'worktree': worktree,
+    return {'format': FORMAT, 'app_version': app_version, 'runtime_id': runtime, 'worktree': worktree,
             'selected': {'model': model, 'effort': effort}, 'models': normalized,
             'host_result': result, 'metadata_verified': True, 'launch_authorized': False,
             'unknown': ['effective_provider_config', 'provider_list_completeness',
@@ -160,15 +186,23 @@ def bound_catalog(decision, base, configuration, *, now=None):
     context = decision['binding']['host_catalog']
     require(context['configuration_sha256'] == configuration['configuration_sha256'],
             'observed Company configuration changed; reprepare')
+    path = (Path(base) / source['file']).resolve()
+    require(path.name == 'manifest.json', 'catalog evidence must pin manifest.json')
+    selected = decision['selected']
+    value = load(path.parent, source['sha256'], worktree=context['worktree'],
+                 model=selected['model'], effort=selected['effort'], now=now)
+    require(value['runtime_id'] == context['runtime_id'], 'catalog runtime binding changed')
     observations = context['observed_files']
     require(isinstance(observations, list) and observations, 'observed config/auth policy files required')
     require({'config', 'auth_policy'} <= {row['role'] for row in observations},
             'explicit config and auth policy observations required')
-    from semantic_settings import KIND, validate_rows
+    from semantic_settings import KIND, LEGACY_VERSION, validate_rows
     require(all(row.get('kind') in (None, 'file', KIND) for row in observations),
             'unknown observation kind')
-    if any(row.get('kind') == KIND for row in observations):
-        validate_rows(observations, context['worktree'])
+    saved_only = value['app_version'] == SAVED_ONLY_VERSION
+    if saved_only or any(row.get('kind') == KIND for row in observations):
+        validate_rows(observations, context['worktree'],
+                      app_version=SAVED_ONLY_VERSION if saved_only else LEGACY_VERSION)
     for row in observations:
         if row.get('kind') == KIND:
             continue
@@ -177,12 +211,6 @@ def bound_catalog(decision, base, configuration, *, now=None):
         # Legacy byte/absence observations remain unchanged outside the DB.
         digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
         require(digest == row['sha256'], 'observed config/auth policy changed; reprepare')
-    path = (Path(base) / source['file']).resolve()
-    require(path.name == 'manifest.json', 'catalog evidence must pin manifest.json')
-    selected = decision['selected']
-    value = load(path.parent, source['sha256'], worktree=context['worktree'],
-                 model=selected['model'], effort=selected['effort'], now=now)
-    require(value['runtime_id'] == context['runtime_id'], 'catalog runtime binding changed')
     return value
 
 

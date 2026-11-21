@@ -78,7 +78,8 @@ A short first request is enough:
 > required launch evidence is missing; report acceptance separately from worker completion.
 
 The lead confirms the output path and bounded execution budget before launch.
-Use the existing exact host-listed worktree on **local Orca 1.4.245, 1.4.261 or 1.4.263**, with a
+Use the existing exact host-listed worktree on **local Orca 1.4.245, 1.4.261,
+1.4.263 or 1.4.268**, with a
 fresh **non-measurement** `--spec` attempt. This is an explicit opt-in, not the
 default route, a new-worktree path or an end-to-end preparation command.
 
@@ -96,8 +97,10 @@ configuration output local. Diagnostics do not grant worker authority.
 
 The lead uses the [catalog preparation reference](host-model-catalog.md) in this order:
 
-1. Collect fresh metadata for the exact host-listed worktree; use the semantic
-   settings helper for the actual active profile. Preserve original observations.
+1. Collect fresh metadata for the exact host-listed worktree and use the semantic
+   settings helper for the active profile. On 1.4.268, Orca needs a recent verified
+   listing for that workspace and the helper takes `--app-version 1.4.268`.
+   Preserve original observations.
 2. Prepare the real record and decision: current Run/session ownership, resources,
    exact spec, profile/selection, configuration, authentication, tools, billing and
    support evidence remain required. The collector/helper do not fill these in.

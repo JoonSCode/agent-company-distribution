@@ -3,6 +3,7 @@
 import argparse
 import copy
 from datetime import datetime, timezone
+from decimal import Decimal
 import hashlib
 import fcntl
 import shutil
@@ -23,13 +24,21 @@ if __name__ == "__main__":
     import sys as _sys
     _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
 
-from record_check import CHECKED_AGENTS, check_routing, read_json_snapshot
+from record_check import (CHECKED_AGENTS, INVENTORY_HASH_CHANGED, check_routing,
+                          invalid_constant, read_json_snapshot, unique_object)
 from route_select import load_table
 from orca_contract import resolve_orca
 from company_config import resolve, resource_manifest_check
 
 
 from atomic_persistence import atomic_state
+
+
+def logical_attempt(binding):
+    # The enrollment scopes this identity to one Run. The planned token or
+    # failed Dispatch distinguishes attempts for the same Task. Fresh evidence,
+    # selection, revision and output names cannot mint another attempt.
+    return {key: binding.get(key) for key in ('task', 'attempt')} if isinstance(binding, dict) else {}
 
 
 def timeout_stream_metadata(value):
@@ -157,7 +166,7 @@ def storage_launch_guard(args, reserve=False, capability=None):
     paths = [args.receipt.absolute(), args.result.absolute()]
     if args.reprepare_inventory:
         directory = args.result.absolute().with_name(args.result.name + '.reprepare')
-        paths += [directory / name for name in ('inventory-before.json', 'inventory-current.json', 'decision-before.json', 'decision.json', 'provenance.json')]
+        paths += [directory / name for name in lifecycle.LAUNCH_OPTIONAL_OUTPUTS['.reprepare']]
     if args.measurement_attempt:
         ledger = root / record.get('measurement', {}).get('ledger', '')
         require(ledger.is_relative_to(root) and ledger != root, 'measurement ledger outside enrolled Run', Blocked)
@@ -172,7 +181,7 @@ def storage_launch_guard(args, reserve=False, capability=None):
         decision = {}
     if decision.get('binding', {}).get('host_catalog') is not None:
         directory = args.result.absolute().with_name(args.result.name + '.catalog-refresh')
-        paths += [directory / name for name in ('status.json', 'response-1.json', 'response-2.json', 'manifest.json', 'failure.json')]
+        paths += [directory / name for name in lifecycle.LAUNCH_OPTIONAL_OUTPUTS['.catalog-refresh']]
     # Refuse an ambiguous/observed attempt before reserving renamed outputs.
     # A malformed local packet still gets its pure pre-start diagnostic; this
     # branch never probes a host, refreshes an inventory, or grants another start.
@@ -180,9 +189,12 @@ def storage_launch_guard(args, reserve=False, capability=None):
         require(capability is not None, 'reservation requires held Run capability', Blocked)
         capability.verify()
         result_ref = args.result.absolute().relative_to(root).as_posix()
-        attempt_binding = decision.get('binding', {})
+        if args.reprepare_inventory:
+            require(all(path.relative_to(root).as_posix() not in manifest.get('creation_contract', {})
+                        for path in paths), 'reprepare requires unused output reservations', Blocked)
+        attempt_binding = logical_attempt(decision.get('binding', {}))
         for prior_ref, prior_contract in manifest.get('launch_contract', {}).items():
-            if prior_ref != result_ref and prior_contract.get('attempt_binding') == attempt_binding:
+            if prior_ref != result_ref and logical_attempt(prior_contract['attempt_binding']) == attempt_binding:
                 prior = lifecycle.decode(lifecycle.read_file(capability.fd, prior_ref)[0])
                 if prior.get('launch_state') != 'not_started' or os.path.lexists(root / prior_contract['receipt']):
                     checked = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
@@ -193,7 +205,6 @@ def storage_launch_guard(args, reserve=False, capability=None):
         storage.lexical(str(path))
         require(path.is_relative_to(root), 'checked output outside enrolled Run', Blocked)
         ref = path.relative_to(root).as_posix()
-        import run_completion as lifecycle
         lifecycle.parts(ref)
         # Check every currently existing parent without resolving namespace links.
         parent = path.parent
@@ -218,11 +229,9 @@ def storage_launch_guard(args, reserve=False, capability=None):
         manifest = lifecycle.decode(raw)
         launches = manifest.setdefault('launch_contract', {})
         result_ref = args.result.absolute().relative_to(root).as_posix()
-        attempt_binding = decision.get('binding', {})
         declaration = dict(receipt=args.receipt.absolute().relative_to(root).as_posix(),
                            attempt_binding=attempt_binding,
-                           optional=[p.relative_to(root).as_posix() for p in paths[2:]
-                                     if '.catalog-refresh' in str(p)])
+                           optional=[p.relative_to(root).as_posix() for p in paths[2:]])
         if result_ref in launches and launches[result_ref] != declaration:
             prior = lifecycle.decode(lifecycle.read_file(capability.fd, result_ref)[0])
             require(prior.get('launch_state') == 'not_started' and not os.path.lexists(root / launches[result_ref]['receipt']),
@@ -235,7 +244,9 @@ def storage_launch_guard(args, reserve=False, capability=None):
 
 
 def full_launch_readback(executable, payload, selected, timeout, *, agent='codex', runtime_id=None):
-    """Read the host's exact Dispatch after a concise start response."""
+    """Read the host's exact Dispatch and effective settings or incarnation."""
+    from run_completion import start_incarnation_matches
+
     result = {'status': 'unverified', 'reason': 'full host readback unavailable',
               'exit_code': None, 'stdout': '', 'stderr': ''}
     if not all(isinstance(payload.get(k), str) and payload[k] for k in ('runId', 'taskId', 'dispatchId')):
@@ -245,17 +256,17 @@ def full_launch_readback(executable, payload, selected, timeout, *, agent='codex
                                payload['dispatchId'], '--full', '--json'],
                               check=False, capture_output=True, text=True, timeout=timeout)
         result.update(exit_code=host.returncode, stdout=host.stdout, stderr=host.stderr)
-        data = json.loads(host.stdout)
+        data = json.loads(host.stdout, object_pairs_hook=unique_object, parse_constant=invalid_constant)
         dispatch = data['result']['dispatch']
         worker = data['result']['worker']
-        original_incarnation = payload.get('processIncarnation') or payload.get('prompt', {}).get('processIncarnation')
         if (host.returncode != 0 or data.get('ok') is not True or
                 (runtime_id is not None and data.get('_meta', {}).get('runtimeId') != runtime_id) or
                 dispatch.get('id') != payload['dispatchId'] or
                 dispatch.get('taskId') != payload['taskId'] or
                 dispatch.get('runId') != payload['runId'] or
                 worker.get('dispatchId') != payload['dispatchId'] or
-                (original_incarnation is not None and dispatch.get('processIncarnation') != original_incarnation) or
+                not start_incarnation_matches(payload, dispatch, data['result'].get('terminal'),
+                                              same_runtime=runtime_id is not None) or
                 (payload.get('terminal') is not None and
                  (dispatch.get('assigneeHandle') != payload['terminal'] or
                   data['result'].get('terminal', {}).get('handle') != payload['terminal']))):
@@ -275,6 +286,15 @@ def full_launch_readback(executable, payload, selected, timeout, *, agent='codex
 def main(argv=None):
     # Parse all arguments before creating the lock or result (including --help).
     args = argument_parser().parse_args(argv)
+    if args.spec_file is not None:
+        from native_operations import regular
+        try:
+            args.spec = regular(args.spec_file).decode('utf-8')
+            if not args.spec or '\0' in args.spec:
+                raise ValueError('spec requires nonempty UTF-8 without NUL')
+        except (OSError, ValueError) as exc:
+            print(json.dumps({'ok': False, 'error': 'spec file blocked', 'detail': str(exc)}))
+            return 1
     # Validate the pinned enrollment before opening its existing lifecycle lock.
     try:
         import native_storage as storage
@@ -292,9 +312,8 @@ def main(argv=None):
         import run_completion as rc
         with rc.lifecycle_lock(Path(enrollment['sejong_home']), Path(enrollment['run'])) as capability:
             args.storage_capability = capability
-            storage_launch_guard(args, reserve=True, capability=capability)
-            if args.reprepare_inventory and (path.exists() or args.receipt.exists() or
-                    path.with_name(path.name + '.reprepare').exists()):
+            if (os.path.lexists(path.with_name(path.name + '.reprepare')) or
+                    (args.reprepare_inventory and (os.path.lexists(path) or os.path.lexists(args.receipt)))):
                 print(json.dumps({'ok': False, 'error': 'reprepare requires unused result and receipt paths; preserve prior attempts'}))
                 return 1
             if args.reprepare_inventory:
@@ -305,6 +324,7 @@ def main(argv=None):
                         args.origin_receipt or args.measurement_attempt):
                     print(json.dumps({'ok': False, 'error': 'inventory reprepare supports only a fresh non-measurement spec launch'}))
                     return 1
+            storage_launch_guard(args, reserve=True, capability=capability)
             if path.exists():
                 try:
                     prior = json.loads(path.read_text(encoding='utf-8'))
@@ -343,6 +363,7 @@ def argument_parser():
     parser.add_argument('--from', dest='sender', required=True)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--spec')
+    mode.add_argument('--spec-file', type=Path, help='read exact UTF-8 spec bytes before launch checks')
     mode.add_argument('--task')
     parser.add_argument('--retry-of')
     parser.add_argument('--run')
@@ -382,24 +403,24 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
         if not condition:
             raise ValueError(message)
 
-    def unique_object(pairs):
-        value = {}
-        for key, item in pairs:
-            require(key not in value, 'duplicate inventory JSON key')
-            value[key] = item
-        return value
-
-    def invalid_constant(value):
-        raise ValueError('nonfinite inventory JSON value: ' + value)
+    def same_json(a, b):
+        if type(a) is not type(b):
+            return False
+        if isinstance(a, dict):
+            return a.keys() == b.keys() and all(same_json(a[key], b[key]) for key in a)
+        if isinstance(a, list):
+            return len(a) == len(b) and all(same_json(x, y) for x, y in zip(a, b))
+        return a == b
 
     from host_model_catalog import inventory_reference
     ref = inventory_reference(decision)
     inventory = decision['evidence'][ref]
-    expected_errors = {('$.evidence.' + ref, 'hash_mismatch'),
-                       ('$.price_selection', 'price_selection_invalid')}
+    pin_error = ('$.evidence.' + ref, 'hash_mismatch')
+    drift_errors = {(path, INVENTORY_HASH_CHANGED) for path in ('$.selected_runtime', '$.price_selection')}
+    errors = {(e['path'], e['code']) for e in rejected['errors']}
     require(not rejected['ok'] and decision['label'] == 'real' and
-            {(e['path'], e['code']) for e in rejected['errors']} == expected_errors and
-            any(e['message'] == 'Candidate inventory hash changed before comparison' for e in rejected['errors']),
+            decision['selected']['route'] == 'codex' and inventory.get('source') != 'orca_model_catalog' and
+            pin_error in errors and bool(errors & drift_errors) and errors <= {pin_error, *drift_errors},
             'reprepare is limited to an inventory-only hash denial')
     require(json.loads(args.result.read_bytes()) == {'launch_state_version': 1, 'launch_state': 'not_started'},
             'reprepare requires authoritative local not_started before any host invocation')
@@ -408,20 +429,20 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
     before = args.reprepare_inventory.read_bytes()
     require(hashlib.sha256(before).hexdigest() == inventory['sha256'], 'missing hash-matching full inventory snapshot')
     current = path.read_bytes()
-    old = json.loads(before, object_pairs_hook=unique_object, parse_constant=invalid_constant)
-    new = json.loads(current, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+    old = json.loads(before, object_pairs_hook=unique_object, parse_constant=invalid_constant, parse_float=Decimal)
+    new = json.loads(current, object_pairs_hook=unique_object, parse_constant=invalid_constant, parse_float=Decimal)
     require(isinstance(old, dict) and isinstance(new, dict), 'inventory must be an object')
     require(isinstance(new.get('models'), list) and bool(new['models']), 'missing or partial models inventory')
     # No model/capability/price/availability field is projected out. Unknown
     # envelope fields, client identity/version and etag changes need review too.
-    require(json.dumps({k: v for k, v in old.items() if k != 'fetched_at'}, sort_keys=True) ==
-            json.dumps({k: v for k, v in new.items() if k != 'fetched_at'}, sort_keys=True),
+    require(same_json({k: v for k, v in old.items() if k != 'fetched_at'},
+                      {k: v for k, v in new.items() if k != 'fetched_at'}),
             'inventory content changed; material selection review required')
     old_time, new_time, observed, until = [datetime.fromisoformat(value.replace('Z', '+00:00'))
         for value in (old['fetched_at'], new['fetched_at'], inventory['observed_at'], inventory['valid_until'])]
     now = datetime.now(timezone.utc)
     require(all(t.tzinfo is not None for t in (old_time, new_time, observed, until)) and
-            old_time <= new_time <= now <= until and observed <= new_time,
+            old_time < new_time <= now <= until and observed <= new_time,
             'refresh timestamp is unknown, regressed, future or outside existing freshness bounds')
     refreshed = copy.deepcopy(decision)
     refreshed['evidence'][ref]['sha256'] = hashlib.sha256(current).hexdigest()
@@ -435,14 +456,17 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
     checked = check_routing(refreshed, args.decision.parent, record, args.record.parent, prelaunch=True)
     require(checked['ok'] and refreshed['selected'] == decision['selected'],
             'current-evidence selection or binding failed; review required: ' + json.dumps(checked['errors']))
+    decision_before = args.decision.read_bytes()
+    require(hashlib.sha256(decision_before).hexdigest() == original_hash, 'original decision changed during reprepare')
     archive = args.result.with_name(args.result.name + '.reprepare')
     archive.mkdir(mode=0o700)  # Exclusive, durable one-refresh marker even on later failure.
-    for name, data in (('inventory-before.json', before), ('inventory-current.json', current)):
-        with (archive / name).open('xb') as stream:
+    for name, data in (('inventory-before.json', before), ('inventory-current.json', current),
+                       ('decision-before.json', decision_before)):
+        handle = os.open(archive / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(handle, 'wb') as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-    atomic_state(archive / 'decision-before.json', decision)
     atomic_state(archive / 'decision.json', refreshed)
     digest = hashlib.sha256((archive / 'decision.json').read_bytes()).hexdigest()
     provenance = {'original_decision_sha256': original_hash, 'decision_sha256': digest,
@@ -479,16 +503,6 @@ def _main(args):
     result = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
     original_decision_hash = decision_hash
     refresh = None
-    if args.reprepare_inventory and not result['ok']:
-        try:
-            decision, result, decision_hash, refresh = reprepare_inventory(
-                args, decision, record, result, decision_hash)
-        except (ValueError, KeyError, TypeError, AttributeError, OSError) as exc:
-            print(json.dumps({'ok': False, 'error': 'inventory reprepare denied', 'detail': str(exc)}))
-            return 1
-    result['receipt'].update(decision_sha256=decision_hash, record_sha256=record_hash)
-    if refresh is not None:
-        result['receipt']['inventory_reprepare'] = refresh
     if result['label'] != 'real':
         result['ok'] = False
         result['errors'].append({'path': '$.label', 'code': 'synthetic_launch',
@@ -507,14 +521,24 @@ def _main(args):
         result['ok'] = False
         result['errors'].append({'path': '$.binding.parent_task', 'code': 'parent_binding',
                                  'message': 'Parent Task must match the checked decision'})
-    result['receipt']['spec_sha256'] = spec_hash
-    profile_binding = decision.get('profile_binding')
-    result['receipt']['profile_unit'] = profile_binding.get('unit_id') if isinstance(profile_binding, dict) else None
-    result['receipt']['requested_run'] = args.run
     if (args.run is not None or 'run' in binding or 'run' in record) and (
             not args.run or binding.get('run') != args.run or record.get('run') != args.run):
         result['ok'] = False
         result['errors'].append({'path': '$.binding.run', 'code': 'run_binding', 'message': 'Run must match decision and current record'})
+    if args.reprepare_inventory and not result['ok']:
+        try:
+            decision, result, decision_hash, refresh = reprepare_inventory(
+                args, decision, record, result, decision_hash)
+        except (ValueError, KeyError, TypeError, AttributeError, OSError, ArithmeticError, RecursionError) as exc:
+            print(json.dumps({'ok': False, 'error': 'inventory reprepare denied', 'detail': str(exc),
+                              'rejected_check': result}))
+            return 1
+    result['receipt'].update(decision_sha256=decision_hash, record_sha256=record_hash, spec_sha256=spec_hash,
+                             requested_run=args.run)
+    profile_binding = decision.get('profile_binding')
+    result['receipt']['profile_unit'] = profile_binding.get('unit_id') if isinstance(profile_binding, dict) else None
+    if refresh is not None:
+        result['receipt']['inventory_reprepare'] = refresh
     selected = result['receipt']['selected']
     catalog_context = binding.get('host_catalog')
     if catalog_context is not None:
@@ -681,9 +705,7 @@ def _main(args):
     else:
         command = [executable, 'orchestration', 'worker-start', '--from', args.sender, '--task' if args.task else '--spec', args.task or args.spec,
                    '--worktree', args.worktree, '--agent', agent, '--model', selected['model'],
-                   '--effort', selected['effort'], '--json']
-        if agent == 'antigravity':
-            command.append('--full')  # The concise projection omits the runtime identity.
+                   '--effort', selected['effort'], '--json', '--full']
     if args.run:
         command.extend(('--run', args.run))
     if args.retry_of:
@@ -807,11 +829,12 @@ def _main(args):
     status, reason = ('failed', 'host returned nonzero') if host.returncode else ('unverified', 'host result lacks required readback')
     full_readback = None
     try:
-        envelope = json.loads(host.stdout)
+        envelope = json.loads(host.stdout, object_pairs_hook=unique_object, parse_constant=invalid_constant)
         payload = envelope['result']
+        response_runtime = envelope.get('_meta', {}).get('runtimeId')
         if host.returncode == 0 and envelope.get('ok') is False:
             status, reason = 'failed', 'host returned an unsuccessful result'
-        elif runtime_id is not None and envelope.get('_meta', {}).get('runtimeId') != runtime_id:
+        elif runtime_id is not None and response_runtime != runtime_id:
             status, reason = 'unverified', 'host runtime does not match AGY evidence'
         elif host.returncode == 0 and envelope.get('ok') is True and isinstance(payload.get('taskId'), str) and payload['taskId'] and isinstance(payload.get('dispatchId'), str) and payload['dispatchId']:
             if args.task and (payload['taskId'] != args.task or payload['dispatchId'] == args.retry_of):
@@ -826,7 +849,12 @@ def _main(args):
                 effective = payload.get('launch', {}).get('effective')
                 if isinstance(effective, dict) and all(effective.get(field) is not None for field in ('agent', 'model', 'effort')):
                     if effective.get('agent') == agent and effective.get('model') == selected['model'] and effective.get('effort') == selected['effort']:
-                        status, reason = 'observed', 'host IDs and effective launch settings observed'
+                        if response_runtime and payload.get('runId') and not payload.get('processIncarnation'):
+                            full_readback = full_launch_readback(executable, payload, selected, args.probe_timeout,
+                                                                agent=agent, runtime_id=response_runtime)
+                            status, reason = full_readback['status'], full_readback['reason']
+                        else:
+                            status, reason = 'observed', 'host IDs and effective launch settings observed'
                     else:
                         status, reason = 'failed', 'host effective launch settings differ from checked selection'
                 elif runtime_id is not None and isinstance(effective, dict) and any(
@@ -835,7 +863,7 @@ def _main(args):
                     status, reason = 'failed', 'partial host settings contradict checked AGY selection'
                 elif args.run:
                     full_readback = full_launch_readback(executable, payload, selected, args.probe_timeout,
-                                                        agent=agent, runtime_id=runtime_id)
+                                                        agent=agent, runtime_id=runtime_id or response_runtime)
                     status, reason = full_readback['status'], full_readback['reason']
     except (ValueError, KeyError, TypeError, AttributeError):
         pass

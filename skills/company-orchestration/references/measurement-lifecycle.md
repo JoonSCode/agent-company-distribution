@@ -17,23 +17,36 @@ technical reviewer and integration actors cannot be omitted. Extra actors and
 attempts require an append-only amendment before dispatch.
 
 The supported adapter is `orca-local-terminal/v2`. Preparation does **not**
-require an existing LIVE worker or any dispatch row. It verifies the observed
-Orca 1.4.245 version, local ready runtime, actual orchestration/stop capabilities,
-readable SQLite column contracts, version-2 hook snapshot, and reviewed source
-slices for the exact resolver, hook serializer, scoped stop, injected worker
-preamble and owned completion report handler. The source-slice
-hashes and observed whole-file hash are in
-`assets/orca-terminal-source-contract.json`; unknown versions or changed slices
-require review, not a caller-supplied ready flag. The installed source file is
-explicitly named by `collector.host_source`.
+require an existing live worker or any Dispatch row. It verifies a local, ready
+runtime, the orchestration and stop capabilities, readable Dispatch columns,
+and the reviewed installed source named by `collector.host_source`.
+
+| Orca version | Installed source pin | Settings and hook store |
+| --- | --- | --- |
+| 1.4.245 | Slices in `assets/orca-terminal-source-contract.json` | Legacy settings JSON and version-2 `agent-hooks/last-status.json` |
+| 1.4.268 | Exact runtime chunk and, when automatic titles are enabled, the main-process archive and desktop renderer in `assets/orca-terminal-source-contract-1.4.268.json` | Active `profile-state.db` settings domain v1 and `agent-hooks/last-status.db` schema 202 |
+
+The 1.4.268 reader uses read-only SQLite reads with committed WAL data. It reads
+the active settings path from `agent hooks status`, checks SQLite authority,
+and requires the matching local orchestration and hook databases. A legacy hook
+file beside the SQLite store makes the source ambiguous. Only persisted entry
+rows are used. Authority commitments and exit rows cannot supply a hook identity.
+Unknown builds, schemas and changed source pins require review.
 
 An explicitly selected **historical** hook `sample_session` names its transcript;
 `sample_turn` proves strict response-level parser compatibility. Its timestamps
 and old launch hashes do not establish future identity, and its usage is never
 added to the experiment. No newest-file lookup occurs. `agent hooks status`
-confirms managed Codex hooks and names the settings file; only five capture
-booleans are retained. Chat/structured launch defaults, missing hooks, or generated
-title work are refused before launch rather than silently changing settings.
+confirms managed Codex hooks and names the settings store. The receipt retains
+only the capture flags. On 1.4.268 the Codex chat preference comes from
+`nativeChatProviders.codex` or the global default surface when the provider
+preference is absent. Capture requires a local terminal preference and enabled
+Codex hooks. The reviewed 1.4.268 desktop title code derives tab labels from
+existing text with local formatting. If automatic titles are enabled, the
+adapter pins the reviewed main-process layout handler and renderer bytes before
+allowing preparation.
+1.4.245 keeps its existing automatic-title restriction. A 1.4.268 checked start
+requires an existing non-bare local worktree. A denial changes no settings.
 Private capture bytes are actually written/read/fsynced (including directory
 fsync). The full capability/access probe is repeated immediately before launch.
 
@@ -41,7 +54,12 @@ fsync). The full capability/access probe is repeated immediately before launch.
 matching 64-hex launch-token hashes, task/run/pane/process and current runtime,
 fresh local terminal hook, native `turn:` key and exact `session_meta`.
 `receivedAt` is milliseconds, provider `key` is `session_id`, and `hostTurn.owner`
-is `codex:SESSION`. First usage is not required. Missing correspondence leaves
+is `codex:SESSION`. On 1.4.268 the start receipt must report Codex terminal
+mode and the same terminal handle as the full worker readback. That readback
+must identify the same runtime epoch, local terminal, and owned terminal resource
+for this exact Dispatch. The worker's stored placement must show a fresh
+Codex terminal without a structured preference. `worker-show --full` supplies
+these fields. First usage is not required. Missing correspondence leaves
 the durable attempt unbound, blocks all further starts, and cannot become measured
 success. Capability support is not a guarantee that a future hook will arrive.
 
@@ -223,9 +241,11 @@ coordinator owner, plus three honestly sourced routing decisions named
 `worker.json`, `independent-reviewer.json`, `coordinator.json`. Decisions must bind
 SHA-256 of the exact corresponding prompt. Do not promote unit-test evidence to
 host evidence. `measurement_canary.py prepare --record RECORD --decisions DIR`
-with `--orca ORCA --host-source SOURCE_JS --sample-session HISTORICAL_SESSION
---sample-turn HISTORICAL_TURN` builds the bounded plan and delegates only to
-preparation. Attach its returned prepare pointer to the record. Then explicit
+with `--orca ORCA --sample-session HISTORICAL_SESSION --sample-turn HISTORICAL_TURN`
+builds the bounded plan and delegates only to preparation. It selects the
+reviewed hook-store and installed source filenames for the observed version.
+`--host-source` and `--hooks` allow selecting the actual reviewed paths.
+Attach its returned prepare pointer to the record. Then explicit
 `run --authorize-live --from SENDER --worktree WORKTREE` drives the fixed three
 actors sequentially through the existing checked launcher, bind, close and
 settle CLIs. `launch --actor ACTOR` uses the same bounded observation for just
@@ -239,6 +259,9 @@ runtime/task/run/process readback and DB correspondence. This discovered host
 command fences the Dispatch and stops its owned supervised process, not unrelated
 terminals. Stop intent, receipt, and `worker-show` readback are retained. Only a
 `stopped` receipt plus stopped worker and exited observation is reported stopped.
+On 1.4.268 the command can also stop helpers owned by the target. The canary
+checks for helper Dispatches before invoking it and leaves a stop unconfirmed
+if the full receipt includes helpers or a helper stop error.
 `closed_agent_terminal` alone is **not** proof. Unknown acceptance cannot supply
 a safe dispatch target: preserve it, report unknown, never guess or relaunch.
 Stopped/unknown/cancelled attempts prevent every further start. Existing exact

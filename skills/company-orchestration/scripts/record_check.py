@@ -42,6 +42,11 @@ ROUTING_LIMITS = (
     'authenticate supplied semantic/price evidence, require every candidate, mandate a model, equate models, or convert quota to tokens.'
 )
 NO_RECORD = object()
+INVENTORY_HASH_CHANGED = 'canonical_inventory_hash_changed'
+
+
+class InventoryHashChanged(SelectionError):
+    """The canonical Codex inventory disagrees with its preparation pin."""
 
 
 def identity(candidate):
@@ -286,7 +291,7 @@ class Checker:
                     if host_models is None:
                         inventory_bytes = inventory_path.read_bytes()
                         if hashlib.sha256(inventory_bytes).hexdigest() != inventory.get('sha256'):
-                            raise SelectionError('Candidate inventory hash changed before comparison')
+                            raise InventoryHashChanged('Candidate inventory hash changed before comparison')
                         contents = json.loads(inventory_bytes)
                         if not isinstance(contents, dict) or not isinstance(contents.get('models'), list):
                             raise SelectionError('Pinned Codex inventory must contain the host models array')
@@ -374,6 +379,9 @@ class Checker:
                         any(previous[group] != result[group] for group in ('compared', 'rejected')) or
                         previous['comparison_basis'] != result['comparison_basis']):
                     raise SelectionError('Recorded candidate table or comparison differs from prelaunch receipt')
+        except InventoryHashChanged as exc:
+            self.error(path, INVENTORY_HASH_CHANGED, str(exc))
+            return None
         except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
             self.error(path, 'price_selection_invalid', str(exc))
             return None
@@ -418,7 +426,7 @@ class Checker:
                     raise SelectionError('Codex inventory must reference this host canonical models_cache.json')
                 raw = source.read_bytes()
                 if hashlib.sha256(raw).hexdigest() != inventory['sha256']:
-                    raise SelectionError('Host inventory hash changed')
+                    raise InventoryHashChanged('Host inventory hash changed')
                 observed = datetime.fromisoformat(inventory['observed_at'].replace('Z', '+00:00'))
                 until = datetime.fromisoformat(inventory['valid_until'].replace('Z', '+00:00'))
                 if observed.tzinfo is None or until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= until:
@@ -464,6 +472,8 @@ class Checker:
             problems = route_errors(config, route=row['route'], model=row['model'], effort=row['effort'], billing=row['billing'], head=constraints.get('task') == 'head_orchestration', explicit_pin=pinned is not None)
             if problems:
                 raise SelectionError('; '.join(problems))
+        except InventoryHashChanged as exc:
+            self.error(path, INVENTORY_HASH_CHANGED, str(exc))
         except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
             self.error(path, 'selected_runtime_invalid', str(exc))
 
