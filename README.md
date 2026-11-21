@@ -1,6 +1,6 @@
 # Agent Company for Orca
 
-Give an app task to a team in Orca. See who is working in parallel, what independent QA found, and what still needs your decision.
+Give an app task to a team in Orca. See who is working in parallel and what independent QA found. Orca runs the workers, and you decide what to spend and publish.
 
 [Try the no-model demo](#try-it-before-you-install) · [Install in Orca](#install-in-orca) · [First real task](#your-first-real-task)
 
