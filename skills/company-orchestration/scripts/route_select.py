@@ -115,6 +115,50 @@ def estimated_cost(estimate, models, refs):
             'total_api_price_proxy_usd': float(total) if complete else None, 'stage_usd': stage_costs}
 
 
+
+def validate_runtime_observation(candidate, refs, *, synthetic=False, prelaunch=True, current_runtime=True, observation_key='unlisted_runtime'):
+    key = identity(candidate)
+    evidence(candidate['runtime_evidence'], refs, 'candidate runtime', host=True, synthetic=synthetic)
+    runtime = refs[candidate['runtime_evidence']].get(observation_key)
+    obj(runtime, ('candidate', 'agent', 'host', 'supported', 'authenticated', 'tools', 'billing',
+                  'model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence',
+                  'billing_evidence', 'observed_at', 'valid_until'), observation_key)
+    require(runtime['candidate'] == dict(zip(('route', 'family', 'model', 'effort'), key)),
+            'Unlisted runtime must bind the exact candidate and effort')
+    require(runtime['agent'] == ROUTE_ALIASES.get(candidate['route'], candidate['route']),
+            'Unlisted runtime must bind the actual agent route')
+    require(isinstance(runtime['host'], str) and runtime['host'].strip(),
+            'Unlisted runtime requires the observed host')
+    require(all(runtime[field] == candidate[field] for field in ('supported', 'authenticated', 'tools', 'billing')),
+            'Unlisted runtime observations do not match candidate support, authentication, tools or billing')
+    for field in ('model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence', 'billing_evidence'):
+        ref = evidence(runtime[field], refs, 'unlisted ' + field, host=True, synthetic=synthetic)
+        if not synthetic:
+            require(isinstance(refs[ref].get('file'), str) and isinstance(refs[ref].get('sha256'), str),
+                    'Unlisted runtime evidence needs a pinned host file')
+            require(refs[ref].get('host') == runtime['host'], 'Unlisted evidence is for a different host')
+            try:
+                source_at = datetime.fromisoformat(refs[ref]['observed_at'].replace('Z', '+00:00'))
+                source_until = datetime.fromisoformat(refs[ref]['valid_until'].replace('Z', '+00:00'))
+            except (KeyError, ValueError, AttributeError, TypeError):
+                raise SelectionError('Unlisted host evidence freshness is malformed')
+            require(source_at.tzinfo is not None and source_until.tzinfo is not None and source_at <= source_until,
+                    'Unlisted host evidence freshness is malformed')
+            if prelaunch and current_runtime:
+                require(source_at <= datetime.now(timezone.utc) <= source_until,
+                        'Unlisted host evidence freshness is expired or unknown')
+    try:
+        observed = datetime.fromisoformat(runtime['observed_at'].replace('Z', '+00:00'))
+        until = datetime.fromisoformat(runtime['valid_until'].replace('Z', '+00:00'))
+    except (ValueError, AttributeError, TypeError):
+        raise SelectionError('Unlisted runtime freshness is malformed')
+    require(observed.tzinfo is not None and until.tzinfo is not None and observed <= until,
+            'Unlisted runtime freshness is malformed')
+    if prelaunch and current_runtime:
+        require(observed <= datetime.now(timezone.utc) <= until,
+                'Unlisted runtime freshness is expired or unknown')
+    return runtime
+
 def select(selection, refs, configuration, *, synthetic=False, table=None, table_sha256=None, prelaunch=False, requested=None, host_models=None, current_runtime=True, explicit_pin=False, legacy_record=False):
     """LLM supplies semantics/quality fit; deterministic code applies gates and prices."""
     fields = ('version', 'task', 'cost_basis', 'scope_api_authorized', 'candidates')
@@ -209,44 +253,7 @@ def select(selection, refs, configuration, *, synthetic=False, table=None, table
         require(candidate['tools'] != 'unknown' and candidate['billing'] != 'unknown',
                 'Unknown tools or billing; no automatic fallback')
         if model is None:
-            runtime = refs[candidate['runtime_evidence']].get('unlisted_runtime')
-            obj(runtime, ('candidate', 'agent', 'host', 'supported', 'authenticated', 'tools', 'billing',
-                          'model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence',
-                          'billing_evidence', 'observed_at', 'valid_until'), 'unlisted runtime')
-            require(runtime['candidate'] == dict(zip(('route', 'family', 'model', 'effort'), key)),
-                    'Unlisted runtime must bind the exact candidate and effort')
-            require(runtime['agent'] == ROUTE_ALIASES.get(candidate['route'], candidate['route']),
-                    'Unlisted runtime must bind the actual agent route')
-            require(isinstance(runtime['host'], str) and runtime['host'].strip(),
-                    'Unlisted runtime requires the observed host')
-            require(all(runtime[field] == candidate[field] for field in ('supported', 'authenticated', 'tools', 'billing')),
-                    'Unlisted runtime observations do not match candidate support, authentication, tools or billing')
-            for field in ('model_evidence', 'support_evidence', 'auth_evidence', 'tools_evidence', 'billing_evidence'):
-                ref = evidence(runtime[field], refs, 'unlisted ' + field, host=True, synthetic=synthetic)
-                if not synthetic:
-                    require(isinstance(refs[ref].get('file'), str) and isinstance(refs[ref].get('sha256'), str),
-                            'Unlisted runtime evidence needs a pinned host file')
-                    require(refs[ref].get('host') == runtime['host'], 'Unlisted evidence is for a different host')
-                    try:
-                        source_at = datetime.fromisoformat(refs[ref]['observed_at'].replace('Z', '+00:00'))
-                        source_until = datetime.fromisoformat(refs[ref]['valid_until'].replace('Z', '+00:00'))
-                    except (KeyError, ValueError, AttributeError, TypeError):
-                        raise SelectionError('Unlisted host evidence freshness is malformed')
-                    require(source_at.tzinfo is not None and source_until.tzinfo is not None and source_at <= source_until,
-                            'Unlisted host evidence freshness is malformed')
-                    if prelaunch and current_runtime:
-                        require(source_at <= datetime.now(timezone.utc) <= source_until,
-                                'Unlisted host evidence freshness is expired or unknown')
-            try:
-                observed = datetime.fromisoformat(runtime['observed_at'].replace('Z', '+00:00'))
-                until = datetime.fromisoformat(runtime['valid_until'].replace('Z', '+00:00'))
-            except (ValueError, AttributeError, TypeError):
-                raise SelectionError('Unlisted runtime freshness is malformed')
-            require(observed.tzinfo is not None and until.tzinfo is not None and observed <= until,
-                    'Unlisted runtime freshness is malformed')
-            if prelaunch and current_runtime:
-                require(observed <= datetime.now(timezone.utc) <= until,
-                        'Unlisted runtime freshness is expired or unknown')
+            validate_runtime_observation(candidate, refs, synthetic=synthetic, prelaunch=prelaunch, current_runtime=current_runtime)
             require(candidate['usage_estimate'] is None,
                     'Unlisted model has no verified rate in the table; do not fabricate an estimate')
             if candidate['quality'] == 'adequate':

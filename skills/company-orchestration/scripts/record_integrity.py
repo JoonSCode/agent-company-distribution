@@ -6,7 +6,7 @@ The legacy record checker remains the completion/status consistency gate.
 import hashlib
 from pathlib import Path
 
-from host_model_catalog import bound_catalog, load, require, strict_json, timestamp
+from host_model_catalog import bound_catalog, inventory_reference, load, require, strict_json, timestamp
 
 SCOPE = 'recorded_host_catalog_inputs'
 LIMITS = [
@@ -58,7 +58,7 @@ def historical_catalog(decision, evidence, base):
     """
     binding = decision['binding']
     context = binding['host_catalog']
-    inventory = evidence[decision['price_selection']['inventory_evidence']]
+    inventory = evidence[inventory_reference(decision)]
     require(inventory.get('source') == 'orca_model_catalog', 'not a host catalog source')
     path, manifest = pinned_json(inventory, base)
     require(path.name == 'manifest.json', 'catalog evidence must pin manifest.json')
@@ -127,6 +127,12 @@ def evaluate(record, base, configuration, *, legacy_ok):
             if not isinstance(decision, dict):
                 raise ValueError('recorded decision unavailable')
             require(configuration is not None, 'current Company configuration unavailable')
+            if 'profile_binding' in decision:
+                from worker_route import configured_table, digest
+                configured, _ = configured_table(configuration)
+                profile = decision['profile_binding']
+                require(isinstance(profile, dict) and digest(configured) == digest(profile['table']),
+                        'current configured worker table differs from recorded profile')
             # Record-level evidence is the actual Checker evidence namespace;
             # embedded/cached decision evidence cannot replace it here.
             bound_catalog({**decision, 'evidence': evidence}, base, configuration)

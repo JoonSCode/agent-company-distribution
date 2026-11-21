@@ -15,7 +15,13 @@ SIDECAR = 'native-reasoning.json'
 
 
 def load(request_path):
-    value, base, source = request(request_path, SCHEMA, KEYS)
+    schema = decode(regular(Path(request_path))).get('schema')
+    keys = KEYS if schema == SCHEMA else (*KEYS, 'enrollment', 'output_files')
+    require(schema in (SCHEMA, 'company-native-reasoning-request/v2'), 'unknown reasoning request schema')
+    value, base, source = request(request_path, schema, keys)
+    if schema != SCHEMA:
+        pinned(value['enrollment'], base)
+        require(value['output_files'] == [*routing_prepare.FILES, 'manifest.json', SIDECAR], 'exact reasoning output inventory required')
     require(value['depth'] in ('standard', 'deep', 'ultrathink'), 'unsupported task depth')
     text(value['effort'], 'explicit effort'); text(value['worktree'], 'worktree')
     files, raw = {}, {}
@@ -57,11 +63,15 @@ def guards(value, decision):
 
 
 def launch_input(root, worktree, binding):
-    return {'entrypoint': 'routing_launch.py', 'record': str(root / 'record.json'),
+    manifest = decode(regular(root / 'manifest.json'))
+    require(manifest['format'] == routing_prepare.FORMAT, 'legacy context-free bundle cannot authorize new launch', Blocked)
+    reference = manifest['enrollment']
+    return {'entrypoint': 'routing_launch.py', 'record': manifest['canonical_record']['path'],
+            'enrollment': reference, 'prepared_bundle': str(root),
             'decision': str(root / 'decision.json'), 'spec_file': str(root / 'spec.txt'),
             'worktree': worktree, 'run': binding.get('run'), 'parent': binding.get('parent_task'),
-            'binding_flags': {flag: binding[key] for flag, key in (('--run', 'run'), ('--parent', 'parent_task'))
-                              if binding.get(key) is not None},
+            'binding_flags': {'--enrollment-request': reference['path'], '--expect-enrollment-sha256': reference['sha256'], '--prepared-bundle': str(root),
+                              **{flag: binding[key] for flag, key in (('--run', 'run'), ('--parent', 'parent_task')) if binding.get(key) is not None}},
             'required_caller_flags': ['--from', '--receipt', '--result'],
             'resource_limit_flags_if_required_by_scope': ['--require-resource-manifest', '--resource-manifest',
                 '--declared-host', '--declared-tool', '--declared-billing', '--declared-spend'],
@@ -79,6 +89,8 @@ def bundle_binding(root, value, files, decision, result):
     manifest_raw = regular(root / 'manifest.json')
     manifest = decode(manifest_raw)
     require(manifest['worktree'] == value['worktree'], 'native bundle worktree mismatch', Blocked)
+    if value['schema'] != SCHEMA:
+        require(manifest.get('enrollment') == value['enrollment'], 'native bundle enrollment differs', Blocked)
     for key, original, prepared in (('record', 'original-record.json', 'record.json'),
                                     ('decision', 'original-decision.json', 'decision.json'),
                                     ('spec_file', 'spec.txt', 'spec.txt')):
@@ -104,11 +116,15 @@ def prepare(request_path, output=None):
     result['blockers'] = guards(value, decision)
     if result['blockers']:
         return result
+    require(value['schema'] == 'company-native-reasoning-request/v2', 'fresh preparation requires explicit v2 enrollment/output inventory', Blocked)
     root = Path(output).absolute()
+    from native_storage import reserve_producer
+    reserve_producer(value['enrollment'], [root / SIDECAR], 'native_reasoning.py')
     result['bundle'] = str(root)
     try:
         routing_prepare.prepare(argparse.Namespace(record=files['record'], decision=files['decision'],
-            spec_file=files['spec_file'], output=root, worktree=value['worktree']))
+            spec_file=files['spec_file'], output=root, worktree=value['worktree'],
+            enrollment_request=Path(value['enrollment']['path']), expect_enrollment_sha256=value['enrollment']['sha256']))
         # Exact depth/effort input is retained without rewriting routing authority.
         require(sha(regular(Path(source['path']))) == source['sha256'], 'native request changed during preparation', Blocked)
         routing_prepare.write_private(root, SIDECAR, routing_prepare.encoded({

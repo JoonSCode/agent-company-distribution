@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import stat
 import sys
 
 # Select Python's normal cache prefix before importing Company modules.
@@ -19,7 +20,8 @@ if __name__ == "__main__":
 
 # A direct bind or hook invocation must not create caches in the managed skill.
 sys.dont_write_bytecode = True
-from completion_hook import state_parent
+from completion_hook import state_parent, binding_path as completion_binding_path
+import run_completion as lifecycle
 from record_check import check_record, check_routing, read_json_snapshot
 
 
@@ -67,6 +69,16 @@ def raw_launch(tool, data):
                 continue
             if part[1:3] in (['orchestration', 'worker-start'], ['orchestration', 'dispatch'], ['agent', 'launch']):
                 return True
+            # A targeted send can start a new Task on a settled Dispatch. The
+            # host offers no atomic "only if still active" condition. Coordinator
+            # mail and the distinct ask/reply/worker_done paths stay available.
+            targets = [part[i + 1] for i in range(3, len(part) - 1) if part[i] == '--to']
+            targets += [arg[5:] for arg in part[3:] if arg.startswith('--to=')]
+            if (part[1:3] == ['orchestration', 'send'] and any(
+                    not target.startswith('run:') for target in targets) and
+                    '--type=worker_done' not in part and not any(
+                        part[i:i + 2] == ['--type', 'worker_done'] for i in range(3, len(part)))):
+                return True
             if part[1:3] == ['worktree', 'create'] and any(arg == '--agent' or arg.startswith('--agent=') for arg in part[3:]):
                 return True
     return False
@@ -113,8 +125,10 @@ def bind(home, session, decision, record, receipt_dir, expected=None):
         name = target.name if old is None else '.routing-' + os.urandom(16).hex()
         fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
         with os.fdopen(fd, 'w', encoding='utf-8') as out:
-            json.dump({'session_id': session, 'decision': str(Path(decision).resolve()),
-                       'record': str(Path(record).resolve()), 'receipt_dir': str(Path(receipt_dir).resolve())}, out)
+            payload = ({'session_id': session, 'state': 'exited'} if decision is None else
+                       {'session_id': session, 'decision': str(Path(decision).resolve()),
+                        'record': str(Path(record).resolve()), 'receipt_dir': str(Path(receipt_dir).resolve())})
+            json.dump(payload, out)
             out.flush()
             os.fsync(out.fileno())
         if old is not None:
@@ -126,8 +140,41 @@ def bind(home, session, decision, record, receipt_dir, expected=None):
         os.close(parent)
 
 
-def guard(event, scope_path):
-    if not scope_path or event.get('hook_event_name') != 'PreToolUse':
+def registered_company(home, session):
+    """Use the independent completion registration only as a scope signal."""
+    if not isinstance(session, str) or not session or len(session) > 4096:
+        return False
+    target = completion_binding_path(home, session)
+    try:
+        parent = state_parent(target)
+    except FileNotFoundError:
+        return False
+    except (OSError, ValueError):
+        return True
+    try:
+        try:
+            fd = os.open(target.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+        except FileNotFoundError:
+            return False
+        except OSError:
+            return True
+    finally:
+        os.close(parent)
+    try:
+        with os.fdopen(fd, 'rb') as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 65536:
+                return True
+            binding = lifecycle.decode(stream.read(65537))
+        if binding.get('format') != 'company-completion-session/v1' or binding.get('session_id') != session:
+            return True
+        return True
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return True
+
+
+def guard(event, scope_path, *, company_session=False):
+    if event.get('hook_event_name') != 'PreToolUse':
         return {}
     tool, data = event.get('tool_name'), event.get('tool_input')
     data = data if isinstance(data, dict) else {}
@@ -135,10 +182,14 @@ def guard(event, scope_path):
     native = tool in ('spawn_agent', 'Agent')
     if not raw_orca and not native:
         return {}
+    if not scope_path:
+        return deny('Registered Company session requires a routing binding.') if company_session else {}
     scope, error, _ = read_json_snapshot(Path(scope_path))
     if error or not isinstance(scope, dict):
         return deny('Company routing scope cannot be read.')
     if scope.get('session_id') != event.get('session_id'):
+        return deny('Registered Company session routing binding does not match.') if company_session else {}
+    if scope == {'session_id': event.get('session_id'), 'state': 'exited'}:
         return {}
     decision_path, record_path = scope.get('decision'), scope.get('record')
     if not isinstance(decision_path, str) or not isinstance(record_path, str):
@@ -166,7 +217,7 @@ def guard(event, scope_path):
     if not result['ok'] or result['label'] != 'real':
         return deny('Company routing prelaunch check failed.')
     if raw_orca:
-        return deny('Use the checked Company launcher for Orca worker-start.')
+        return deny('Use checked Company launch; targeted worker send may create a Task and has no atomic active-state condition.')
     selected = result['receipt']['selected']
     if selected['route'] != 'codex' or data.get('model') != selected['model'] or data.get('reasoning_effort') != selected['effort']:
         return deny('Native helper model and effort must match the checked decision.')
@@ -197,10 +248,16 @@ def main():
     register.add_argument('--record', required=True)
     register.add_argument('--receipt-dir', required=True)
     register.add_argument('--expected-sha256')
+    exit_parser = sub.add_parser('exit')
+    exit_parser.add_argument('--session', required=True)
+    exit_parser.add_argument('--expected-sha256')
     args = parser.parse_args()
     home = Path(os.environ.get('SEJONG_HOME', str(Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex'))) / 'sejong'))).expanduser()
     if args.command == 'bind':
         bind(home, args.session, args.decision, args.record, args.receipt_dir, args.expected_sha256)
+        return
+    if args.command == 'exit':
+        bind(home, args.session, None, None, None, args.expected_sha256)
         return
     event = json.load(sys.stdin)
     override = os.environ.get('COMPANY_ROUTING_SCOPE')
@@ -218,7 +275,11 @@ def main():
             scope = str(target)
         except FileNotFoundError:
             scope = None
-    print(json.dumps(guard(event, scope)))
+    data = event.get('tool_input') if isinstance(event.get('tool_input'), dict) else {}
+    relevant = event.get('hook_event_name') == 'PreToolUse' and (
+        event.get('tool_name') in ('spawn_agent', 'Agent') or raw_launch(event.get('tool_name'), data))
+    company_session = registered_company(home, event.get('session_id')) if relevant else False
+    print(json.dumps(guard(event, scope, company_session=company_session)))
 
 
 if __name__ == '__main__':

@@ -24,6 +24,75 @@ from provider_usage import read_usage, unique_object
 VERSION = 2
 ADAPTER = 'orca-local-terminal/v2'
 SOURCE_CONTRACT = Path(__file__).resolve().parent.parent / 'assets/orca-terminal-source-contract.json'
+SOURCE_CONTRACT_268 = SOURCE_CONTRACT.with_name('orca-terminal-source-contract-1.4.268.json')
+SQLITE_HOST = '1.4.268'
+
+
+def capture_settings(settings_path, config, app_version):
+    if app_version != SQLITE_HOST:
+        settings = decode(settings_path.read_bytes())['settings']
+        flags = {k: settings.get(k) for k in ('experimentalNativeChat', 'experimentalStructuredNativeChat',
+                  'openAgentTabsInChatByDefault', 'agentStatusHooksEnabled', 'tabAutoGenerateTitle')}
+        require(all(flags[k] is False for k in flags if k != 'agentStatusHooksEnabled'),
+                'unsupported launch configuration: terminal-only/no-title-model capture required; do not change host settings implicitly')
+    else:
+        # The active profile reported by hooks status is the same store used by worker-start.
+        app = settings_path.parent.parent.parent
+        hooks = app / 'agent-hooks' / 'last-status.db'
+        require(settings_path == settings_path.resolve() and settings_path.name == 'profile-state.db'
+                and settings_path.parent.parent.name == 'profiles'
+                and Path(config['database']).resolve() == app / 'orchestration.db'
+                and Path(config['hooks']).resolve() == hooks
+                and not os.path.lexists(hooks.with_suffix('.json')),
+                'unsupported local profile or hook-store authority')
+        require(settings_path.with_suffix('.db.authority').read_text().strip() == 'sqlite',
+                'SQLite settings authority required')
+        with closing(sqlite3.connect(settings_path.as_uri() + '?mode=ro', uri=True)) as db:
+            rows = db.execute("SELECT domain_version, payload FROM profile_state_documents "
+                              "WHERE domain='settings'").fetchall()
+        require(len(rows) == 1 and rows[0][0] == 1, 'unsupported profile settings schema')
+        settings = decode(rows[0][1])
+        default_surface = settings.get('agentDefaultSurface', 'terminal')
+        codex_chat = settings.get('nativeChatProviders', {}).get('codex', default_surface == 'chat')
+        require(default_surface in ('terminal', 'chat') and type(codex_chat) is bool,
+                'unknown Codex launch preference')
+        flags = {'codexPrefersChat': codex_chat, 'agentStatusHooksEnabled': settings.get('agentStatusHooksEnabled'),
+                 'tabAutoGenerateTitle': settings.get('tabAutoGenerateTitle')}
+        require(not codex_chat and type(flags['tabAutoGenerateTitle']) is bool,
+                'unsupported launch configuration: known local terminal preferences required')
+    require(flags['agentStatusHooksEnabled'] is True, 'unsupported launch configuration: managed hooks required')
+    return flags
+
+
+def hook_entries(path, app_version, pane=None):
+    if app_version == SQLITE_HOST:
+        require(path.name == 'last-status.db' and not os.path.lexists(path.with_suffix('.json')),
+                'SQLite hook-store authority required')
+        with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as db:
+            db.execute('BEGIN')  # Schema and rows come from the same WAL-aware snapshot.
+            schema = db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchall()
+            require(schema == [('202',)], 'unsupported SQLite hook store schema')
+            if pane is None:
+                rows = db.execute("SELECT key, value FROM rows WHERE "
+                                  "substr(CAST(key AS BLOB), 1, 6)=X'656e74727900'").fetchall()
+            else:
+                rows = db.execute('SELECT key, value FROM rows WHERE key=?', ('entry\0' + pane,)).fetchall()
+        entries = []
+        for key, raw in rows:
+            entry = decode(raw)
+            require(key == 'entry\0' + entry['paneKey'], 'SQLite hook entry pane mismatch')
+            entries.append(entry)
+        return entries
+    status = decode(path.read_bytes())
+    require(status.get('version') == 2 and isinstance(status.get('entries'), (dict, list)),
+            'unsupported hook snapshot schema; version 2 required')
+    entries = status['entries']
+    return list(entries.values()) if isinstance(entries, dict) else entries
+
+
+def local_codex_hook(entry):
+    return (entry.get('connectionId') is None and entry.get('source') == 'codex'
+            and not any(entry.get(k) for k in ('providerSessionOnly', 'structuredHost', 'executionHost', 'wslDistro')))
 
 
 def collector_probe(config, executable):
@@ -34,13 +103,16 @@ def collector_probe(config, executable):
     Source slices are pinned to the reviewed installed host contract; unknown
     versions/serializers fail closed. Only allowlisted metadata leaves this probe.
     """
-    contract = decode(SOURCE_CONTRACT.read_bytes())
     status = host(executable, 'status')
     require(status.get('target', {}).get('kind') == 'local'
             and status.get('runtime', {}).get('state') == 'ready', 'ready local runtime required')
     rt = status['runtime']
-    require(rt.get('appVersion') == contract['app_version'],
+    app_version = rt.get('appVersion')
+    require(app_version in ('1.4.245', SQLITE_HOST),
             'unsupported host version: review exact resolver, hook serializer and worker-stop contract')
+    contract_data = (SOURCE_CONTRACT_268 if app_version == SQLITE_HOST else SOURCE_CONTRACT).read_bytes()
+    contract = decode(contract_data)
+    require(app_version == contract['app_version'], 'host source contract version differs')
     require({'orchestration.contract.v1', 'orchestration.worker-stop-verdict.v1'}
             <= set(rt.get('capabilities', [])), 'unsupported host accounting/stop surfaces')
     hook_status = host(executable, 'agent', 'hooks', 'status')
@@ -48,34 +120,43 @@ def collector_probe(config, executable):
     require(hook_status.get('enabled') is True and len(codex) == 1
             and codex[0].get('state') == 'installed' and codex[0].get('managedHooksPresent') is True,
             'Codex managed hook capture is unavailable; enable/repair host hooks before launch')
-    settings = decode(Path(hook_status['settingsPath']).read_bytes())['settings']
-    # Read only these booleans; never export settings, prompts, accounts or env.
-    flags = {k: settings.get(k) for k in ('experimentalNativeChat', 'experimentalStructuredNativeChat',
-              'openAgentTabsInChatByDefault', 'agentStatusHooksEnabled', 'tabAutoGenerateTitle')}
-    require(flags['agentStatusHooksEnabled'] is True
-            and all(flags[k] is False for k in flags if k != 'agentStatusHooksEnabled'),
-            'unsupported launch configuration: terminal-only/no-title-model capture required; do not change host settings implicitly')
     source_path = Path(config['host_source']).resolve()
-    code = source_path.read_text()
-    for section in contract['sections']:
-        start = code.find(section['start'])
-        end = code.find(section['end'], start + len(section['start']))
-        require(start >= 0 and end > start
-                and digest(code[start:end].encode()) == section['sha256'],
+    if app_version == SQLITE_HOST:
+        source_sha = digest(source_path.read_bytes())
+        require(source_path.name == contract['source_name'] and source_sha == contract['observed_full_sha256'],
                 'unsupported host source contract: exact resolver/serializer/scoped stop requires review')
+    else:
+        code = source_path.read_text()
+        for section in contract['sections']:
+            start = code.find(section['start'])
+            end = code.find(section['end'], start + len(section['start']))
+            require(start >= 0 and end > start
+                    and digest(code[start:end].encode()) == section['sha256'],
+                    'unsupported host source contract: exact resolver/serializer/scoped stop requires review')
+        source_sha = digest(code.encode())
+    flags = capture_settings(Path(hook_status['settingsPath']), config, app_version)
+    title_evidence = {}
+    if app_version == SQLITE_HOST and flags['tabAutoGenerateTitle']:
+        # The main-process layout handler and desktop store both format existing text.
+        title = contract['title_renderer']
+        out = source_path.parent.parent.parent
+        title_files = {'title_app_asar_sha256': (out.parent.parent / 'app.asar', contract['title_app_asar_sha256']),
+                       'title_renderer_sha256': (out / title['path'], title['sha256'])}
+        for key, (path, sha) in title_files.items():
+            require(path.is_file() and digest(path.read_bytes()) == sha,
+                    'unsupported automatic title implementation: reviewed main and renderer sources required')
+            title_evidence[key] = sha
     database = Path(config['database']).resolve()
     with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
         db.execute('SELECT id, run_id, task_id, assignee_pane_key, process_incarnation, '
                    'launch_token_hash FROM dispatch_contexts LIMIT 0')
         db.execute('SELECT dispatch_id, runtime_epoch, agent_terminal_handle, state FROM worker_dispatches LIMIT 0')
-    hooks = decode(Path(config['hooks']).read_bytes())
-    require(hooks.get('version') == 2 and isinstance(hooks.get('entries'), (dict, list)),
-            'unsupported hook snapshot schema; version 2 required')
-    entries = hooks['entries']
-    entries = list(entries.values()) if isinstance(entries, dict) else entries
+    entries = hook_entries(Path(config['hooks']), app_version)
     samples = [e for e in entries if e.get('providerSession', {}).get('key') == 'session_id'
                and e['providerSession'].get('id') == config['sample_session']]
     require(len(samples) == 1, 'explicit host-named historical sample required (not a LIVE dispatch)')
+    if app_version == SQLITE_HOST:
+        require(local_codex_hook(samples[0]), 'local Codex terminal sample required')
     sample_source = Path(samples[0]['providerSession']['transcriptPath']).resolve()
     sha = digest(sample_source.read_bytes())
     sample = read_usage(sample_source, sha, 'capability-sample-only', config['sample_turn'])
@@ -84,14 +165,14 @@ def collector_probe(config, executable):
             'unsupported provider source shape: complete response-level export required')
     require(isinstance(rt.get('runtimeId'), str) and rt['runtimeId'], 'host runtime identity unavailable')
     return {'runtime': rt['runtimeId'], 'app_version': rt['appVersion'],
-            'source_contract_sha256': digest(SOURCE_CONTRACT.read_bytes()),
-            'host_source_sha256': digest(code.encode()), 'hook_schema': 2,
+            'source_contract_sha256': digest(contract_data),
+            'host_source_sha256': source_sha, 'hook_schema': 202 if app_version == SQLITE_HOST else 2,
             'capture_settings': flags, 'codex_hooks': 'installed',
             'sample': {'session': config['sample_session'], 'turn': config['sample_turn'],
                        'source': str(sample_source), 'sha256': sha},
             'meaning': 'capability/access only; future dispatch identity unobserved',
             'stop_command': ['orchestration', 'worker-stop', '--dispatch'],
-            'hard_provider_deadline': False}
+            'hard_provider_deadline': False, **title_evidence}
 
 
 def require(condition, message):
@@ -122,25 +203,50 @@ def timestamp(value):
     return result.timestamp()
 
 
-def write_once(path, data):
-    """Exclusive durable receipts. A partial write blocks recovery, never retries work."""
-    with path.open('xb') as stream:
-        os.chmod(path, 0o600)
-        stream.write(data)
-        stream.flush()
-        os.fsync(stream.fileno())
-    fd = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+def write_once(path, data, enrollment=None, capability=None):
+    """Reserve exact retained evidence before exclusive durable publication."""
+    if enrollment is None:
+        enrollment = decode((path.parent / 'prepare.json').read_bytes()).get('storage_enrollment')
+    require(enrollment is not None, 'explicit storage enrollment required before measurement allocation')
+    from native_storage import reserve_producer, bound_enrollment
+    if capability is None:
+        from run_completion import lifecycle_lock
+        intake, _, _, _ = bound_enrollment(Path(enrollment['path']))
+        with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as cap:
+            return write_once(path, data, enrollment, cap)
+    capability.verify()
+    reserve_producer(enrollment, [path], 'measurement_lifecycle.py', capability)
+    import run_completion as rc
+    ref = path.absolute().relative_to(capability.root).as_posix()
+    with rc.parent_fd(capability.fd, ref) as (parent, name):
+        handle = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
+        with os.fdopen(handle, 'wb') as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.fsync(parent)
+        capability.verify()
+        with rc.parent_fd(capability.fd, ref) as (fresh, _):
+            require((os.fstat(fresh).st_dev, os.fstat(fresh).st_ino) == (os.fstat(parent).st_dev, os.fstat(parent).st_ino), 'measurement parent moved')
+        require(rc.read_file(capability.fd, ref)[0] == data, 'measurement durable readback differs')
 
 
 @contextmanager
-def locked(root):
-    with (root / '.lock').open('a') as stream:
-        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        yield
+def locked(root, capability=None):
+    from native_storage import bound_enrollment, locked_run
+    from native_operations import pinned
+    from run_completion import lifecycle_lock
+    enrollment = decode((root / 'prepare.json').read_bytes()).get('storage_enrollment')
+    require(enrollment is not None, 'legacy ledger is read-only; fresh enrolled measurement required')
+    ep, _ = pinned(enrollment, Path.cwd())
+    intake, _, _, _ = bound_enrollment(ep)
+    require(root.is_relative_to(Path(intake['run'])), 'ledger outside enrolled Run')
+    if capability is not None:
+        with locked_run(intake, capability):
+            yield capability
+    else:
+        with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as cap:
+            yield cap
 
 
 def host(executable, *args):
@@ -151,22 +257,52 @@ def host(executable, *args):
     return envelope['result']
 
 
-def runtime(executable):
+def runtime(executable, app_version=None):
     value = host(executable, 'status')
     # Accept only the observed host identity, never a caller's claimed runtime.
     require(value.get('target', {}).get('kind') == 'local'
             and value.get('runtime', {}).get('state') == 'ready', 'ready local runtime required')
+    require(app_version is None or value['runtime'].get('appVersion') == app_version,
+            'host version changed since preparation')
     ident = value['runtime'].get('runtimeId')
     require(isinstance(ident, str) and ident, 'host runtime identity unavailable')
     return ident
 
 
-def exact_source(config, executable, dispatch_id, after=None):
+def worker_show(executable, dispatch_id, app_version):
+    flags = ['--full'] if app_version == SQLITE_HOST else []
+    return host(executable, 'orchestration', 'worker-show', '--dispatch', dispatch_id, *flags)
+
+
+def require_fresh_codex_worker(view, runtime_id):
+    dispatch, worker = view['dispatch'], view['worker']
+    terminal, resource = view.get('terminal') or {}, view.get('terminalResource') or {}
+    options = worker['startOptions']
+    handle = dispatch['assigneeHandle']
+    require(dispatch['hostScope'] == {'kind': 'local', 'hostId': 'local'}
+            and isinstance(handle, str) and handle.startswith('term_')
+            and worker['dispatchId'] == dispatch['id'] and worker['runtimeEpoch'] == runtime_id
+            and worker['agentTerminalHandle'] == handle
+            and options['agent'] == 'codex' and options.get('terminal') is None
+            and options['mode']['mode'] == options['mode']['preferred'] == 'terminal'
+            and terminal.get('handle') == handle and terminal.get('executionHostId') == 'local'
+            and terminal.get('agentIdentity') == 'codex'
+            and resource.get('originDispatchId') == resource.get('ownerDispatchId') == dispatch['id']
+            and resource.get('terminalHandle') == handle and resource.get('ownershipState') == 'owned',
+            'fresh owned local Codex terminal worker required')
+
+
+def exact_source(config, executable, dispatch_id, after=None, *,
+                 app_version='1.4.245', runtime_id=None, expected_handle=None):
     """Allowlisted join; never enumerate transcript filenames or copy hook payloads."""
-    first = host(executable, 'orchestration', 'worker-show', '--dispatch', dispatch_id)
+    first = worker_show(executable, dispatch_id, app_version)
     dispatch = first['dispatch']
     require(dispatch['id'] == dispatch_id and first['observation']['exactWorker'] is True
             and first['observation']['status'] == 'live', 'exact live worker required')
+    if app_version == SQLITE_HOST:
+        require_fresh_codex_worker(first, runtime_id)
+        require(expected_handle is None or dispatch['assigneeHandle'] == expected_handle,
+                'launch terminal handle mismatch')
     database = Path(config['database']).resolve()
     with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
         db.row_factory = sqlite3.Row
@@ -181,15 +317,15 @@ def exact_source(config, executable, dispatch_id, after=None):
             and all(c in '0123456789abcdef' for c in row['launch_token_hash'])
             and row['process_incarnation'],
             'dispatch identity or launch hash unavailable')
-    status = decode(Path(config['hooks']).read_bytes())
-    entries = status['entries']
-    entries = list(entries.values()) if isinstance(entries, dict) else entries
+    entries = hook_entries(Path(config['hooks']), app_version, row['assignee_pane_key'])
     matches = [entry for entry in entries if entry.get('paneKey') == row['assignee_pane_key']
                and entry.get('launchTokenHash') == row['launch_token_hash']]
     require(len(matches) == 1, 'unique launch-token hook binding required')
     entry = matches[0]
     require(entry.get('connectionId') is None and not entry.get('providerSessionOnly')
             and not entry.get('structuredHost'), 'local terminal hook required')
+    if app_version == SQLITE_HOST:
+        require(local_codex_hook(entry), 'local Codex terminal hook required')
     require(type(entry['receivedAt']) is int, 'host hook timestamp must be milliseconds')
     observed = entry['receivedAt'] / 1000
     require(0 <= datetime.now(timezone.utc).timestamp() - observed <= 120,
@@ -212,9 +348,11 @@ def exact_source(config, executable, dispatch_id, after=None):
     require(sessions == [provider['id']] and starts == [turn],
             'fresh exact single-turn source required; resumed/nested sessions unsupported')
     single_turn(data, turn)
-    second = host(executable, 'orchestration', 'worker-show', '--dispatch', dispatch_id)
+    second = worker_show(executable, dispatch_id, app_version)
     require(second['dispatch'] == dispatch and second['observation']['exactWorker'] is True
             and second['observation']['status'] == 'live', 'worker changed during capture')
+    if app_version == SQLITE_HOST:
+        require_fresh_codex_worker(second, runtime_id)
     return {'dispatch': dispatch_id, 'task': row['task_id'], 'run': row['run_id'],
             'pane': row['assignee_pane_key'], 'process': row['process_incarnation'],
             'launch_token_sha256': row['launch_token_hash'], 'session': provider['id'],
@@ -305,13 +443,17 @@ def events(root):
     return result
 
 
-def append(root, kind, value):
+def append(root, kind, value, capability=None):
+    if capability is None:
+        with locked(root) as cap:
+            return append(root, kind, value, cap)
+    capability.verify()
     prior = events(root)
     sequence = len(prior)
     previous = digest((root / ('event-%06d.json' % (sequence - 1))).read_bytes()) if prior else None
     item = {'version': VERSION, 'sequence': sequence, 'previous': previous,
             'at': now(), 'kind': kind, 'value': value}
-    write_once(root / ('event-%06d.json' % sequence), encoded(item))
+    write_once(root / ('event-%06d.json' % sequence), encoded(item), capability=capability)
     return item
 
 
@@ -338,8 +480,23 @@ def prepared(record, base):
     return root, p
 
 
-def prepare(record_path, plan_path, root, executable, probe_dispatch=None):
+def prepare(record_path, plan_path, root, executable, probe_dispatch=None, enrollment=None):
+    require(enrollment is not None, 'explicit storage enrollment required')
+    from native_operations import pinned
+    from native_storage import bound_enrollment
+    from run_completion import lifecycle_lock
+    ep, _ = pinned(enrollment, Path.cwd())
+    intake, _, _, _ = bound_enrollment(ep)
+    with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as capability:
+        return _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollment, capability)
+
+
+def _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollment, capability):
+    from native_storage import reserve_producer
+    intake = reserve_producer(enrollment, [root / 'capture-probe', root / 'prepare.json'], 'measurement_lifecycle.py', capability)
+    require('measurement-v2' in intake['consumers'] and record_path.absolute() == Path(intake['run']) / intake['record'], 'canonical measurement record/consumer enrollment required')
     record = decode(record_path.read_bytes())
+    require(record['goal']['id'] == intake['run_id'] and record['goal']['current_owner'] == intake['owner'], 'measurement enrollment goal/owner differs')
     plan = decode(plan_path.read_bytes())
     frozen = freeze(record, record_path.parent)
     validate_attempts(plan['attempts'], frozen['expected_actors'])
@@ -355,21 +512,22 @@ def prepare(record_path, plan_path, root, executable, probe_dispatch=None):
     runtime_id = bridge['runtime']
     root.mkdir(mode=0o700, parents=False, exist_ok=False)
     probe = os.urandom(32)
-    write_once(root / 'capture-probe', probe)
+    write_once(root / 'capture-probe', probe, enrollment, capability)
     require((root / 'capture-probe').read_bytes() == probe, 'capture readback failed')
     value = {'version': VERSION, 'adapter': ADAPTER, 'created_at': now(), 'runtime': runtime_id,
              'collector': plan['collector'], 'readiness': bridge, 'frozen': frozen,
              'attempts': plan['attempts'], 'limits': limits, 'future_provider_ids': 'unobserved',
-             'capture_probe_sha256': digest(probe)}
-    write_once(root / 'prepare.json', encoded(value))
+             'capture_probe_sha256': digest(probe), 'storage_enrollment': enrollment}
+    write_once(root / 'prepare.json', encoded(value), enrollment, capability)
     return {'ok': True, 'ledger': str(root), 'prepare_sha256': digest(encoded(value)),
             'future_provider_ids': 'unobserved'}
 
 
 class Launch:
-    def __init__(self, args, record, base):
+    def __init__(self, args, record, base, capability):
         self.root, self.prep = prepared(record, base)
         self.args = args
+        self.capability = capability
         self.attempt = next((a for a in self.prep['attempts'] if a['id'] == args.measurement_attempt), None)
         if self.attempt is None:
             raise ValueError('explicit prepared attempt required')
@@ -379,6 +537,7 @@ class Launch:
         decision = decode(args.decision.read_bytes())
         require(decision.get('constraints', {}).get('billing') == 'subscription'
                 and args.declared_billing != 'paid_api', 'v2 forbids paid billing/fallback')
+        require(decision.get('selected', {}).get('route') == 'codex', 'v2 requires the Codex route')
         require(not any((args.terminal, args.reuse_dispatch, args.origin_receipt)), 'v2 terminal reuse unsupported')
         require(digest(args.decision.read_bytes()) == self.attempt['decision_sha256'], 'prepared decision changed')
         require(args.spec is None or digest(args.spec.encode()) == self.attempt['spec_sha256'], 'prepared spec changed')
@@ -413,19 +572,25 @@ class Launch:
         # Access/capability only, never require an unrelated live dispatch.
         probe = collector_probe(p['collector'], args.orca)
         require(probe == p['readiness'], 'collector contract/source changed since preparation')
+        if probe['app_version'] == SQLITE_HOST:
+            require(args.worktree not in ('new-child', 'new-top-level'),
+                    'v2 requires an existing local worktree')
+            worktree = host(args.orca, 'worktree', 'show', '--worktree', args.worktree)['worktree']
+            require(worktree.get('hostId') == 'local' and worktree.get('isArchived') is False
+                    and worktree.get('isBare') is False, 'v2 requires an existing local worktree')
 
     def pending(self, command, receipt):
         require(digest(self.args.decision.read_bytes()) == self.attempt['decision_sha256'], 'decision changed before invocation')
         return append(self.root, 'pending', {'attempt': self.attempt['id'], 'argv': command,
                       'result': str(self.args.result.resolve()), 'receipt_sha256': digest(receipt.read_bytes()),
-                      'prepare_sha256': digest((self.root / 'prepare.json').read_bytes())})
+                      'prepare_sha256': digest((self.root / 'prepare.json').read_bytes())}, self.capability)
 
     def bind(self):
-        return bind(self.root, self.prep, self.attempt['id'], self.args.orca)
+        return bind(self.root, self.prep, self.attempt['id'], self.args.orca, self.capability)
 
 
 @contextmanager
-def launch_guard(args):
+def launch_guard(args, capability):
     record = decode(args.record.read_bytes())
     m = record.get('measurement', {})
     if m.get('version') != VERSION:
@@ -433,12 +598,12 @@ def launch_guard(args):
         return
     require(m.get('mode') == 'required', 'v2 must require measurement')
     args.orca = args.orca or 'orca'
-    launch = Launch(args, record, args.record.parent)
-    with locked(launch.root):
+    launch = Launch(args, record, args.record.parent, capability)
+    with locked(launch.root, capability):
         yield launch
 
 
-def bind(root, p, attempt, executable):
+def bind(root, p, attempt, executable, capability=None):
     history = events(root)
     require(not any(e['kind'] in ('binding', 'settlement') and
                     (e['kind'] == 'settlement' or e['value'].get('attempt') == attempt) for e in history),
@@ -451,20 +616,27 @@ def bind(root, p, attempt, executable):
             and saved['prelaunch_receipt_sha256'] == pending['value']['receipt_sha256'],
             'accepted host receipt unavailable; unknown start cannot be retried')
     start = decode(saved['stdout'])['result']
-    require(runtime(executable) == p['runtime'], 'runtime changed')
-    bridge, data = exact_source(p['collector'], executable, start['dispatchId'], after=pending['at'])
+    app_version = p['readiness']['app_version']
+    require(runtime(executable, app_version) == p['runtime'], 'runtime changed')
+    if app_version == SQLITE_HOST:
+        require(start.get('mode') == 'terminal' and start.get('agent') == 'codex'
+                and isinstance(start.get('terminal'), str) and start['terminal'].startswith('term_'),
+                'actual launch must report Codex terminal mode')
+    bridge, data = exact_source(p['collector'], executable, start['dispatchId'], after=pending['at'],
+                                app_version=app_version, runtime_id=p['runtime'],
+                                expected_handle=start.get('terminal'))
     require(bridge['task'] == start['taskId'] and bridge['run'] == start['runId'], 'launch/source ID mismatch')
     require(not any(e['kind'] == 'binding' and (e['value']['bridge']['dispatch'] == bridge['dispatch']
                 or e['value']['bridge']['session'] == bridge['session']) for e in history), 'duplicate dispatch/session')
     name = 'source-%06d-prefix.jsonl' % len(history)
-    write_once(root / name, data)
+    write_once(root / name, data, capability=capability)
     return append(root, 'binding', {'attempt': attempt, 'bridge': bridge, 'prefix': name,
                   'host_receipt_sha256': digest(encoded(saved)), 'host_receipt': saved,
                   'status': 'usage_observed' if any(decode(line).get('type') == 'token_usage_record'
-                                                   for line in data.splitlines()) else 'identity_observed'})
+                                                   for line in data.splitlines()) else 'identity_observed'}, capability)
 
 
-def close_attempt(root, p, attempt, executable):
+def close_attempt(root, p, attempt, executable, capability=None):
     history = events(root)
     require(not any(e['kind'] == 'settlement' or (e['kind'] == 'closed' and e['value']['attempt'] == attempt)
                     for e in history), 'already closed or settled')
@@ -472,9 +644,12 @@ def close_attempt(root, p, attempt, executable):
     require(len(bindings) == 1, 'attempt has no exact binding')
     binding = bindings[0]
     bridge = binding['bridge']
-    observed = host(executable, 'orchestration', 'worker-show', '--dispatch', bridge['dispatch'])['dispatch']
-    require(runtime(executable) == p['runtime'] and observed['id'] == bridge['dispatch']
+    app_version = p['readiness']['app_version']
+    require(runtime(executable, app_version) == p['runtime'], 'runtime changed')
+    observed = worker_show(executable, bridge['dispatch'], app_version)['dispatch']
+    require(observed['id'] == bridge['dispatch']
             and observed['taskId'] == bridge['task'] and observed['runId'] == bridge['run']
+            and observed['assigneePaneKey'] == bridge['pane']
             and observed['processIncarnation'] == bridge['process'], 'final host identity changed')
     outcome = observed['status']
     require(outcome in ('completed', 'failed', 'cancelled'), 'attempt still running')
@@ -483,7 +658,7 @@ def close_attempt(root, p, attempt, executable):
     require(digest(prefix) == bridge['prefix_sha256'] and data.startswith(prefix), 'source prefix changed')
     name = 'source-%06d-final.jsonl' % len(history)
     # Preserve even incomplete failed/cancelled accounting; it never becomes zero.
-    write_once(root / name, data)
+    write_once(root / name, data, capability=capability)
     # A worker_done can settle the host while its tool result/final response is
     # still streaming. Preserve that observation, but never close on host status
     # alone or turn a partial capture into a terminal accounting failure.
@@ -498,14 +673,15 @@ def close_attempt(root, p, attempt, executable):
         if sample['usage']['coverage'] != 'complete':
             pending = True
             raise ValueError('final source incomplete')
-        second = host(executable, 'orchestration', 'worker-show', '--dispatch', bridge['dispatch'])['dispatch']
-        require(second == observed and runtime(executable) == p['runtime'], 'final host identity changed during capture')
+        second = worker_show(executable, bridge['dispatch'], app_version)['dispatch']
+        require(second == observed and runtime(executable, app_version) == p['runtime'],
+                'final host identity changed during capture')
         if Path(bridge['source']).read_bytes() != data:
             pending = True
             raise ValueError('source advanced during capture')
     except ValueError as exc:
         append(root, 'partial', {'attempt': attempt, 'outcome': outcome, 'source': name,
-               'sha256': digest(data), 'bytes': len(data), 'reason': str(exc)})
+               'sha256': digest(data), 'bytes': len(data), 'reason': str(exc)}, capability)
         if outcome == 'completed' and pending:
             raise ValueError('native completion pending') from exc
         raise ValueError('partial accounting preserved; attempt remains open') from exc
@@ -513,7 +689,7 @@ def close_attempt(root, p, attempt, executable):
               if decode(line).get('type') == 'event_msg' and decode(line)['payload'].get('type') == 'task_started']
     require(starts == [bridge['turn']], 'unplanned additional turn')
     return append(root, 'closed', {'attempt': attempt, 'outcome': outcome, 'source': name,
-                  'sha256': digest(data), 'bytes': len(data), 'host_dispatch': observed})
+                  'sha256': digest(data), 'bytes': len(data), 'host_dispatch': observed}, capability)
 
 
 def observed_union(root, p, history):
@@ -631,7 +807,7 @@ def terminal_receipt(root, p, history):
     return receipts[0], expected
 
 
-def settle(root, p):
+def settle(root, p, capability=None):
     history = events(root)
     for event in history:
         if event['kind'] == 'closed':
@@ -642,7 +818,7 @@ def settle(root, p):
                     'late source append/change after close; cannot settle')
     if any(e['kind'] == 'settlement' for e in history):
         return terminal_receipt(root, p, history)[0]  # Verify, never append duplicates.
-    return append(root, 'settlement', terminal_value(root, p, history))
+    return append(root, 'settlement', terminal_value(root, p, history), capability)
 
 
 def accounting_record(record, base, event):
@@ -731,7 +907,7 @@ def retained_files(record, base):
     return [(root / name, digest((root / name).read_bytes())) for name in names]
 
 
-def amend(root, p, path):
+def amend(root, p, path, capability=None):
     history = events(root)
     require(not any(e['kind'] == 'settlement' for e in history), 'already settled')
     pending = {e['value']['attempt'] for e in history if e['kind'] == 'pending'}
@@ -742,13 +918,15 @@ def amend(root, p, path):
     combined = p['attempts'] + extra
     validate_attempts(combined, {a['actor'] for a in combined})
     require(len(combined) <= p['limits']['max_attempts'], 'attempt budget exceeded')
-    return append(root, 'amendment', {'attempts': extra})
+    return append(root, 'amendment', {'attempts': extra}, capability)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('prepare', 'bind', 'close', 'settle', 'finalize', 'amend'))
     parser.add_argument('--record', type=Path, required=True)
+    parser.add_argument('--enrollment-request', type=Path, required=True)
+    parser.add_argument('--expect-enrollment-sha256', required=True)
     parser.add_argument('--plan', type=Path)
     parser.add_argument('--ledger', type=Path)
     parser.add_argument('--orca', default='orca')
@@ -762,21 +940,25 @@ def main(argv=None):
                 and args.output_record.resolve() != args.record.resolve()
                 and args.output_record.resolve().parent == args.record.resolve().parent),
                 'finalize output must be a distinct sibling record')
+        from native_operations import pinned
+        enrollment = {'path': str(args.enrollment_request.absolute()), 'sha256': args.expect_enrollment_sha256}
+        pinned(enrollment, Path.cwd())
         if args.action == 'prepare':
-            result = prepare(args.record, args.plan, args.ledger, args.orca, args.probe_dispatch)
+            result = prepare(args.record, args.plan, args.ledger, args.orca, args.probe_dispatch, enrollment)
         else:
             record = decode(args.record.read_bytes())
             root = (args.record.parent / record['measurement']['ledger']).resolve()
-            with locked(root):
+            require(decode((root / 'prepare.json').read_bytes()).get('storage_enrollment') == enrollment, 'measurement enrollment pin differs')
+            with locked(root) as capability:
                 root, p = prepared(record, args.record.parent)
                 if args.action == 'amend':
-                    result = amend(root, p, args.plan)
+                    result = amend(root, p, args.plan, capability)
                 elif args.action == 'bind':
-                    result = bind(root, p, args.attempt, args.orca)
+                    result = bind(root, p, args.attempt, args.orca, capability)
                 elif args.action == 'close':
-                    result = close_attempt(root, p, args.attempt, args.orca)
+                    result = close_attempt(root, p, args.attempt, args.orca, capability)
                 else:
-                    result = settle(root, p)
+                    result = settle(root, p, capability)
                 if args.output_record is not None:
                     from record_check import check_record
                     derived = accounting_record(record, args.record.parent, result)
@@ -786,7 +968,7 @@ def main(argv=None):
                     if args.output_record.exists():
                         require(args.output_record.read_bytes() == data, 'derived record already exists with different bytes')
                     else:
-                        write_once(args.output_record, data)
+                        write_once(args.output_record, data, enrollment, capability)
             result = {'ok': True, 'receipt': result, 'sha256': digest(encoded(result))}
             if args.action in ('settle', 'finalize'):
                 _, value = terminal_receipt(root, p, events(root))

@@ -176,6 +176,8 @@ a small supplementary format when durable checking is useful; optional on-demand
 references cover [saved outcome evaluation](references/outcome-evaluation.md),
 [saved Codex usage](references/provider-usage.md), and the
 [local status snapshot viewer](references/status-view.md).
+For a read-only stage timeline and offline replay of explicitly pinned receipts,
+use the [receipt timeline guide](references/stage-timeline.md).
 
 For a caller-owned terminal, use the [organization/work TUI](references/status-tui.md)
 to keep company/team lead/member relationships separate from team-grouped task
@@ -315,6 +317,9 @@ does not establish overall success. Preserve unregistered/unfinished/invalid Run
 
 Before actual Orca coordination, read [Orca contract](references/orca-contract.md).
 Use its single-attempt authority, inbox processing and resource settlement.
+The pinned upstream documents are historical 1.4.217 source, not the current
+host's delivery contract. For inbox handling use the version-scoped Orca contract
+and current host help, including its consuming-check and legacy ACK distinction.
 For runtime/guide drift, follow [update policy](references/update-policy.md).
 The package's Python tools inspect and compare evidence; they do not schedule,
 launch, retry, stop, update or approve work on the operator's behalf.

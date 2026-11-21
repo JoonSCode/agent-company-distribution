@@ -51,6 +51,7 @@ Use an independent reviewer for material outcomes.
 ```
 
 Supported machine fields: schema_version (1), preset (single/multiple/custom),
+worker_table (optional absolute path with a SHA-256 pin),
 services (unique selected service IDs), updater/api_paid (booleans), head_model
 and head_effort (opaque strings), head_efforts (allowed opaque effort list;
 head_effort is its preferred choice), excluded_models/excluded_model_prefixes
@@ -161,3 +162,15 @@ their documentation or continued availability does not establish cache isolation
 Existing managed
 files, including unexpected caches, remain subject to full integrity checking;
 this setting does not repair or authorize removing them.
+
+## Configured worker routing table
+
+The packaged `assets/worker-routing-table.json` is the default execution table.
+To explicitly configure an external table in a private or task configuration,
+set `worker_table` to a quoted absolute `path#sha256=<lowercase-byte-digest>`.
+The usual common → preset → private user → task precedence applies. Both path
+and pinned bytes must match; a changed or missing file denies fresh prelaunch.
+A configured table may contain host capability overlays or other approved model
+choices. Its assertions are not proof of human intent, host capability,
+authentication, or launch authorization. Existing independent host and safety
+checks remain required. This configuration does not modify any user document.

@@ -1038,6 +1038,7 @@ def build_view(
     require_routing=False,
     require_resources=False,
     goal_evidence=None,
+    storage_closeout=None,
 ):
     """Build a deterministic status view dict from one supplementary record and its check_record result."""
     resolved_base = Path(base) if base is not None else (Path(record_path).parent if record_path is not None else Path.cwd())
@@ -1200,6 +1201,9 @@ def build_view(
 
     return {
         'format': 'company-status-view/v1',
+        'storage_closeout': storage_closeout if storage_closeout is not None else {
+            'status': 'unknown', 'removed_files': None, 'removed_logical_bytes': None,
+            'receipt': None, 'final_summary': 'Storage: unknown — exact closeout request not supplied; removal accounting unknown.'},
         'goal_evidence': actual_check['goal_evidence'],
         'snapshot': {
             'label': label,
@@ -1716,6 +1720,11 @@ def render_html(view):
 </head>
 <body>
 <main>
+  <section class="section-card" id="storage-closeout">
+    <h2>Storage closeout</h2>
+    <p>{_esc(view['storage_closeout']['final_summary'])}</p>
+    <p class="small muted">Storage observations do not approve the overall goal or launch work.</p>
+  </section>
   <header class="banner" id="top-summary">
     <h1>Agent Company 보조 레코드 정적 상태 스냅샷</h1>
     <div class="badge-row">
@@ -1936,6 +1945,7 @@ def _build_parser():
     render_p.add_argument('--captured-at', help='Optional captured timestamp (reported only when supplied)')
     render_p.add_argument('--generated-at', help='Optional generation timestamp override')
     render_p.add_argument('--goal-evidence', help='Required sidecar path relative to the record directory')
+    render_p.add_argument('--storage-closeout-request', type=Path, help='exact read-only storage result request; no latest Run discovery')
     render_p.add_argument('--require-routing', action='store_true', help='Require a routing decision on every task')
     render_p.add_argument('--require-resources', action='store_true', help='Require resource_accounting="required"')
 
@@ -1976,8 +1986,25 @@ def main(argv=None):
                     print('  - ' + str(f))
         return 0 if result['ok'] else 1
 
+    storage_result = None
+    if args.storage_closeout_request is not None:
+        try:
+            import native_storage
+            from native_operations import regular, decode
+            intake = decode(regular(args.storage_closeout_request))
+            if input_path.absolute() != Path(intake['run']) / intake['record']:
+                raise ValueError('storage closeout request names a different canonical record')
+            storage_result = native_storage.closeout(args.storage_closeout_request)
+            if (storage_result['run_id'] != value.get('goal', {}).get('id') or
+                    storage_result['owner'] != value.get('goal', {}).get('current_owner')):
+                raise ValueError('storage closeout goal/owner differs from displayed record')
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            print(json.dumps({'ok': False, 'errors': [{'code': 'storage_closeout_input', 'message': str(exc)}]}))
+            return 2
+
     view = build_view(
         value,
+        storage_closeout=storage_result,
         base=input_path.parent,
         record_path=input_path,
         record_sha256=digest,
@@ -2014,6 +2041,7 @@ def main(argv=None):
             'output': str(args.output) if args.output is not None else None,
             'json_output': str(args.json_output) if args.json_output is not None else None,
             'next_unresolved': view['summary']['next_unresolved'],
+            'storage_closeout': view['storage_closeout'],
         }
         print(json.dumps(summary_out, ensure_ascii=False, indent=2))
     return 0

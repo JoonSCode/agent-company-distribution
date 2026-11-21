@@ -26,8 +26,21 @@ alternatives and evidence/stop conditions into each brief; do not assume Claude
 receives the native Codex common instructions. Native Codex TOML tools/sandbox
 permissions do not carry over to Claude. Preserve independent QA and no-self-approval.
 
-The Codex Stop hook does not run for this Claude entry. The accepted lead must
-explicitly perform the existing run_completion.py freeze/cleanup checks with
-settled consumers and required receipts at overall completion. A worker_done or
-Claude turn end does not authorize cleanup or certify final acceptance. Follow
-the installed completion-retention reference and actual host permissions.
+The Codex Stop hook does not run for this Claude entry. Before supported
+intermediate allocation, supply the actual lead session/cwd observation to the
+installed `native_operations.py storage enroll --request EXACT`; use its exact
+enrollment pin with `storage classify` reserve before each known writer, then
+freeze closed originals only after producer/consumer settlement. At independently
+accepted overall completion use `storage plan --request EXACT`, then explicit
+`storage apply --plan EXACT --expect-plan-sha256 SHA256`, followed by read-only
+`storage closeout --request EXACT`. Read the returned `final_summary` into the
+ordinary final response, including blocked/unknown/skipped results and the exact
+receipt; protocol `{}` or exit zero is not a cleanup result. `status_view.py render
+RECORD --storage-closeout-request EXACT` displays the same verified observation.
+
+A worker_done or Claude turn end does not authorize cleanup or certify acceptance.
+Follow the installed native-operations/completion-retention references and actual
+host permissions; a live or unknown coordination resource remains blocked. Existing
+legacy roots require separately reviewed current maintenance authority, never new
+enrollment/backfilled acceptance. Read an exact operation with `storage
+maintenance-closeout --request EXACT`; this does not apply or retry maintenance.

@@ -20,6 +20,47 @@ CLI = PACKAGE / 'scripts/record_check.py'
 
 
 class RoutingPreflightTests(unittest.TestCase):
+    def test_default_runtime_history_is_bound_to_prelaunch_receipt(self):
+        fixture = test_route_select.SelectionCLITests()
+        fixture.setUp()
+        packet = fixture.packet()
+        row = packet.pop('price_selection')['candidates'][0]
+        packet['selected_reason'] = packet['alternatives'][0]['reason'] = 'ordinary_assignment'
+        packet['binding']['inventory_evidence'] = 'inventory'
+        packet['binding']['spec_sha256'] = 'a' * 64
+        packet['selected_runtime'] = {k: row[k] for k in ('route', 'family', 'model', 'effort',
+                                       'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')}
+        checker = record_check.Checker(self.root)
+        receipt = {'ok': True, 'receipt': checker.routing_receipt(packet)}
+        receipt['receipt']['spec_sha256'] = packet['binding']['spec_sha256']
+        path = self.root / 'default-receipt.json'
+        path.write_text(json.dumps(receipt))
+        packet['receipt_evidence'] = 'receipt'
+        packet['evidence']['receipt'] = {'kind': 'synthetic', 'ref': 'receipt', 'file': path.name,
+                                         'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+        def check(value):
+            checker = record_check.Checker(self.root)
+            checker.refs = value['evidence']
+            checker.routing(value, '$', None, True)
+            return [error['code'] for error in checker.errors]
+        self.assertNotIn('selected_runtime_receipt_invalid', check(packet))
+        for field in ('authenticated', 'model'):
+            changed = copy.deepcopy(packet)
+            changed['selected_runtime'][field] = False if field == 'authenticated' else 'forged'
+            self.assertIn('selected_runtime_receipt_invalid', check(changed))
+        changed = copy.deepcopy(packet)
+        del changed['selected_runtime']
+        self.assertIn('selected_runtime_receipt_invalid', check(changed))
+        changed = copy.deepcopy(packet)
+        changed['binding']['inventory_evidence'] = 'other'
+        self.assertIn('selected_runtime_receipt_invalid', check(changed))
+        changed = copy.deepcopy(packet)
+        changed['binding']['spec_sha256'] = 'b' * 64
+        self.assertIn('selected_runtime_receipt_invalid', check(changed))
+        changed = copy.deepcopy(packet)
+        changed['selected']['model'] = 'another-model'
+        self.assertIn('selected_runtime_receipt_invalid', check(changed))
+
     def test_recorded_prelaunch_preserves_nondominated_selection_and_receipt(self):
         fixture = test_route_select.SelectionCLITests()
         fixture.setUp()
@@ -73,18 +114,22 @@ class RoutingPreflightTests(unittest.TestCase):
                                            if not case['expected_errors']))
         fixture = test_route_select.SelectionCLITests()
         fixture.setUp()
+        self.fixture = fixture
+        self.addCleanup(fixture.doCleanups)
         self.decision = fixture.packet()
         self.record['tasks'][0]['model']['requested'] = self.decision['selected']['model']
         self.record['tasks'][0]['model']['effort_requested'] = self.decision['selected']['effort']
 
     def planned(self):
         self.decision['binding'].update(task='task-next', attempt='planned:task-next', planned=True)
+        self.fixture.prepare_profile(self.decision)
 
     def save(self):
         self.record_path.write_text(json.dumps(self.record))
         self.decision_path.write_text(json.dumps(self.decision))
 
     def invoke(self, expected=0, standalone=False, save=True):
+        self.fixture.authorize_profile(self.decision)
         if save:
             self.save()
         before = {p: (p.read_bytes(), p.stat().st_mtime_ns)
@@ -197,9 +242,10 @@ class RoutingPreflightTests(unittest.TestCase):
     def test_standalone_receipt_unchanged(self):
         result = self.invoke(standalone=True)
         self.assertEqual(set(result['receipt']),
-                         {'format', 'binding', 'selected', 'limits', 'decision_sha256', 'configuration_sha256', 'price_selection'})
+                         {'format', 'binding', 'selected', 'limits', 'decision_sha256', 'configuration_sha256', 'price_selection', 'profile_unit', 'profile_binding_sha256', 'worker_table_authority'})
 
     def test_receipt_hashes_bind_checked_bytes_when_inputs_change_after_read(self):
+        self.fixture.authorize_profile(self.decision)
         self.save()
         expected = {name: hashlib.sha256(path.read_bytes()).hexdigest()
                     for name, path in [('record_sha256', self.record_path),

@@ -44,6 +44,8 @@ def state_parent(target, create=False):
             child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
             os.close(fd)
             fd = child
+            info = os.fstat(fd)
+            lifecycle.require(info.st_uid in (0, os.getuid()) and not info.st_mode & 0o022, 'unsafe session/state namespace')
         return fd
     except BaseException:
         os.close(fd)
@@ -143,43 +145,50 @@ def dispatch(payload, home):
     lifecycle.require(isinstance(cwd, str) and cwd and Path(cwd).is_absolute(), 'explicit host cwd required')
     lifecycle.require(str(Path(cwd).resolve()) == binding.get('repo_root'),
                       'exact registered cwd mismatch')
-    root, run_fd = lifecycle.open_run(home, Path(binding['run']))
+    result = None
     try:
-        data, _ = lifecycle.read_file(run_fd, lifecycle.MANIFEST, True)
-        manifest = lifecycle.decode(data)
-        lifecycle.validate_manifest(manifest)
-        lifecycle.require(manifest.get('run_id') == binding['run_id'] and
-                          manifest.get('owner') == binding['owner'], 'registered Run/owner mismatch')
-        try:
-            record = lifecycle.decode(lifecycle.read_file(run_fd, binding['record'])[0])
-        except FileNotFoundError:
-            record = {}
-        lifecycle.require(isinstance(record.get('goal', {}), dict), 'invalid goal metadata')
-        if record.get('goal', {}).get('status') != 'succeeded':
-            result = {'status': 'skipped', 'reason': 'Run unfinished, failed or no accepted record',
-                      'run_id': binding['run_id'], 'session_id': session_id}
+        with lifecycle.lifecycle_lock(home, Path(binding['run'])) as capability:
+            root, run_fd = capability.root, capability.fd
+            data, _ = lifecycle.read_file(run_fd, lifecycle.MANIFEST, True)
+            manifest = lifecycle.decode(data)
+            lifecycle.validate_manifest(manifest)
+            lifecycle.require(manifest.get('run_id') == binding['run_id'] and
+                              manifest.get('owner') == binding['owner'], 'registered Run/owner mismatch')
+            if manifest.get('enrollment', {}).get('host') == 'explicit_lead':
+                result = {'status': 'skipped', 'reason': 'unsupported_automatic_trigger', 'run_id': binding['run_id'], 'session_id': session_id}
+            else:
+                try:
+                    try:
+                        record = lifecycle.decode(lifecycle.read_file(run_fd, binding['record'])[0])
+                    except FileNotFoundError:
+                        record = {}
+                    lifecycle.require(isinstance(record.get('goal', {}), dict), 'invalid goal metadata')
+                    if record.get('goal', {}).get('status') != 'succeeded':
+                        result = {'status': 'skipped', 'reason': 'Run unfinished, failed or no accepted record',
+                                  'run_id': binding['run_id'], 'session_id': session_id}
+                    else:
+                        # Borrow the already-held capability through unlink/readback;
+                        # never reacquire our own flock or publish an unlocked hook.
+                        result = lifecycle.complete(root, run_fd, manifest, lifecycle.sha(data), binding['record'],
+                                                    trigger='codex_stop', capability=capability)
+                        result['hook'] = {'event': 'Stop', 'session_id': session_id,
+                                          'exit_code': 1 if result['status'] == 'blocked' else 0}
+                except (OSError, ValueError, KeyError, TypeError) as exc:
+                    # Record rejection is diagnostic only while this exact Run
+                    # capability is still held and valid. A replaced namespace
+                    # fails verify below and reaches the outside no-write path.
+                    result = {'status': 'blocked', 'run_id': binding['run_id'],
+                              'errors': [str(exc)], 'removed': [],
+                              'hook': {'event': 'Stop', 'session_id': session_id, 'exit_code': 1}}
+            capability.verify()
             lifecycle.write_metadata(run_fd, lifecycle.HOOK_RECEIPT, result)
+            capability.verify()
             return result
     except (OSError, ValueError, KeyError, TypeError) as exc:
-        result = {'status':'blocked', 'run_id':binding['run_id'], 'errors':[str(exc)], 'removed':[]}
-        lifecycle.write_metadata(run_fd, lifecycle.HOOK_RECEIPT, result)
+        # Contention/unknown identity never writes another entrant's receipt.
+        result = lifecycle.blocked_observation(result, exc)
+        result['run_id'] = binding['run_id']
         return result
-    finally:
-        os.close(run_fd)
-    # This is the executable completion connection, not a policy suggestion.
-    # Main obtains the same exclusive Run lock and validates every guard again.
-    output = io.StringIO()
-    with contextlib.redirect_stdout(output):
-        code = lifecycle.main(['complete', '--run', str(root), '--sejong-home', str(home),
-                               '--record', binding['record'], '--expect-manifest-sha256', lifecycle.sha(data)])
-    result = lifecycle.decode(output.getvalue())
-    result['hook'] = {'event': 'Stop', 'session_id': session_id, 'exit_code': code}
-    root, run_fd = lifecycle.open_run(home, root)
-    try:
-        lifecycle.write_metadata(run_fd, lifecycle.HOOK_RECEIPT, result)
-    finally:
-        os.close(run_fd)
-    return result
 
 
 def main(argv=None):
