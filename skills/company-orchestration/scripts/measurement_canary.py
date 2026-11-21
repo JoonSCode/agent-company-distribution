@@ -17,7 +17,7 @@ from contextlib import closing
 
 from measurement_lifecycle import (ADAPTER, decode, digest, encoded, require, write_once,
     prepared, timestamp, events, append, locked, runtime, host, close_attempt,
-    SQLITE_HOST, SOURCE_CONTRACT, SOURCE_CONTRACT_268, worker_show, require_fresh_codex_worker)
+    SQLITE_HOST, SOURCE_CONTRACT, SOURCE_CONTRACT_268, worker_show, require_fresh_codex_worker, require_268_start)
 
 SCRIPTS = Path(__file__).resolve().parent
 FIXTURE = SCRIPTS.parent / 'assets/measurement-canary.json'
@@ -105,12 +105,11 @@ def stop_owned(root, prep, attempt, executable, reason):
         require(d['id'] == start['dispatchId'] and d['taskId'] == start['taskId']
                 and d['runId'] == start['runId'] and d.get('processIncarnation'), 'stop identity mismatch')
         if app_version == SQLITE_HOST:
-            require(start.get('mode') == 'terminal' and start.get('agent') == 'codex'
-                    and start.get('terminal') == d.get('assigneeHandle')
-                    and before['worker']['state'] == 'ready'
+            require(before['worker']['state'] == 'ready'
                     and before['observation']['exactWorker'] is True
                     and before['observation']['status'] == 'live', 'exact live Codex terminal stop required')
             require_fresh_codex_worker(before, prep['runtime'])
+            require_268_start(start, before)
         database = Path(prep['collector']['database']).resolve()
         with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
             db.execute('BEGIN')

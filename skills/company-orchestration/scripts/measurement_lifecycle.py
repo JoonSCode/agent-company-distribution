@@ -292,8 +292,27 @@ def require_fresh_codex_worker(view, runtime_id):
             'fresh owned local Codex terminal worker required')
 
 
+def require_268_start(start, view):
+    from run_completion import start_incarnation_matches
+
+    mode = start['mode']
+    require(mode['mode'] == mode['preferred'] == 'terminal'
+            and start['launch']['effective']['agent'] == start['prompt']['provider'] == 'codex',
+            'actual launch must report Codex terminal mode')
+    dispatch = view['dispatch']
+    handles = [effect['id'] for effect in start['effects']
+               if effect.get('kind') == 'terminal' and effect.get('role') == 'agent'
+               and effect.get('action') == 'created']
+    require(handles == [dispatch['assigneeHandle']], 'launch terminal handle mismatch')
+    require(start['dispatchId'] == dispatch['id'] and start['taskId'] == dispatch['taskId']
+            and start['runId'] == dispatch['runId'], 'launch/source ID mismatch')
+    prompt = start['prompt']['processIncarnation']
+    require(isinstance(prompt, str) and prompt and start_incarnation_matches(
+        start, dispatch, view['terminal'], same_runtime=True), 'launch process incarnation mismatch')
+
+
 def exact_source(config, executable, dispatch_id, after=None, *,
-                 app_version='1.4.245', runtime_id=None, expected_handle=None):
+                 app_version='1.4.245', runtime_id=None, accepted_start=None):
     """Allowlisted join; never enumerate transcript filenames or copy hook payloads."""
     first = worker_show(executable, dispatch_id, app_version)
     dispatch = first['dispatch']
@@ -301,8 +320,8 @@ def exact_source(config, executable, dispatch_id, after=None, *,
             and first['observation']['status'] == 'live', 'exact live worker required')
     if app_version == SQLITE_HOST:
         require_fresh_codex_worker(first, runtime_id)
-        require(expected_handle is None or dispatch['assigneeHandle'] == expected_handle,
-                'launch terminal handle mismatch')
+        if accepted_start is not None:
+            require_268_start(accepted_start, first)
     database = Path(config['database']).resolve()
     with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
         db.row_factory = sqlite3.Row
@@ -353,6 +372,8 @@ def exact_source(config, executable, dispatch_id, after=None, *,
             and second['observation']['status'] == 'live', 'worker changed during capture')
     if app_version == SQLITE_HOST:
         require_fresh_codex_worker(second, runtime_id)
+        if accepted_start is not None:
+            require_268_start(accepted_start, second)
     return {'dispatch': dispatch_id, 'task': row['task_id'], 'run': row['run_id'],
             'pane': row['assignee_pane_key'], 'process': row['process_incarnation'],
             'launch_token_sha256': row['launch_token_hash'], 'session': provider['id'],
@@ -618,13 +639,9 @@ def bind(root, p, attempt, executable, capability=None):
     start = decode(saved['stdout'])['result']
     app_version = p['readiness']['app_version']
     require(runtime(executable, app_version) == p['runtime'], 'runtime changed')
-    if app_version == SQLITE_HOST:
-        require(start.get('mode') == 'terminal' and start.get('agent') == 'codex'
-                and isinstance(start.get('terminal'), str) and start['terminal'].startswith('term_'),
-                'actual launch must report Codex terminal mode')
     bridge, data = exact_source(p['collector'], executable, start['dispatchId'], after=pending['at'],
                                 app_version=app_version, runtime_id=p['runtime'],
-                                expected_handle=start.get('terminal'))
+                                accepted_start=start)
     require(bridge['task'] == start['taskId'] and bridge['run'] == start['runId'], 'launch/source ID mismatch')
     require(not any(e['kind'] == 'binding' and (e['value']['bridge']['dispatch'] == bridge['dispatch']
                 or e['value']['bridge']['session'] == bridge['session']) for e in history), 'duplicate dispatch/session')

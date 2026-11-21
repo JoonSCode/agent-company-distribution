@@ -59,7 +59,7 @@ def sample(**overrides):
 
 class ResearchCacheTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir="/private/tmp", prefix="research-cache-")
+        self.temp = tempfile.TemporaryDirectory(prefix="research-cache-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "cache"
         self.store = cache.Store(self.root, create=True)

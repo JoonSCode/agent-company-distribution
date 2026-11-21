@@ -55,8 +55,8 @@ matching 64-hex launch-token hashes, task/run/pane/process and current runtime,
 fresh local terminal hook, native `turn:` key and exact `session_meta`.
 `receivedAt` is milliseconds, provider `key` is `session_id`, and `hostTurn.owner`
 is `codex:SESSION`. On 1.4.268 the start receipt must report Codex terminal
-mode and the same terminal handle as the full worker readback. That readback
-must identify the same runtime epoch, local terminal, and owned terminal resource
+mode, one created agent terminal effect and a prompt process incarnation
+that matches the full worker readback for that terminal. That readback must identify the same runtime epoch, local terminal, and owned terminal resource
 for this exact Dispatch. The worker's stored placement must show a fresh
 Codex terminal without a structured preference. `worker-show --full` supplies
 these fields. First usage is not required. Missing correspondence leaves

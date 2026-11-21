@@ -161,7 +161,7 @@
     },
     {
       "path": "references/measurement-lifecycle.md",
-      "sha256": "b13b2597d7557bfa22322baa436791082f8246db2db0ebf358f2547675c02601"
+      "sha256": "70b475e78e2bb62ae5b7be2b3403b8a43038b6c58aec8d93f69caf2bd7f37176"
     },
     {
       "path": "references/model-candidates.md",
@@ -297,11 +297,11 @@
     },
     {
       "path": "scripts/measurement_canary.py",
-      "sha256": "687e7c906c973a3f5518a0913935fe79a3811628090bb13902e431abecae0a1e"
+      "sha256": "98d56a8254c1b90f736bf3ec24420ca93aa4b3598e24ed3cd43da0b40951b87d"
     },
     {
       "path": "scripts/measurement_lifecycle.py",
-      "sha256": "d9d23f6af6312762f87baf5e80b3b0da2edeb6ed14af00fb6bfa75f7cb04f580"
+      "sha256": "23d84f3e2496b113a0de93d99f2b0f577514f250fc0c040900f36a4991317054"
     },
     {
       "path": "scripts/native_maintenance.py",
@@ -445,11 +445,11 @@
     },
     {
       "path": "scripts/test_continuity.py",
-      "sha256": "3f66f82629b3f298cffd66ad7fb173cbc8d566930d58ab49df68e20c57777bdc"
+      "sha256": "b21f69cedde51727a1b4dd3909bd564cf40695c355bba7ca47bcad15571c4957"
     },
     {
       "path": "scripts/test_knowledge_repository.py",
-      "sha256": "6627c5bffc3f09df1f86b370b4d1ac2c373af79ea8843e08c29f64487003d64f"
+      "sha256": "fdc0300da0374618394b4a1872d4ad78c09e8dcc0fd847183aa07d898d2b7cbc"
     },
     {
       "path": "scripts/test_launch_readiness.py",
@@ -465,7 +465,7 @@
     },
     {
       "path": "scripts/test_research_cache.py",
-      "sha256": "02f3b7789f8f392fceb0958ab5927d1a0302a65efc4312db5d6542ccd6a9fcc0"
+      "sha256": "5c021597b3a3dcf042cd707c68bf2855a83d7365d18f443004116f9393c400d8"
     },
     {
       "path": "scripts/test_route_select.py",
@@ -473,7 +473,7 @@
     },
     {
       "path": "scripts/test_routing_hook.py",
-      "sha256": "a490e90c1768b01b0e32d08c083c480a982997dcec5a87535b0d238c27b691c2"
+      "sha256": "4938aa2749a5f5f10b1939cde49ad6062837fe0504585c4e9af28b3331524ece"
     },
     {
       "path": "scripts/test_routing_launch.py",
