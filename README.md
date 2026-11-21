@@ -1,29 +1,31 @@
 # Agent Company for Orca
 
-## Give your app work a team, not another chat thread.
+Give an app task to a team in Orca. See who is working in parallel and what independent QA found. Orca runs the workers, and you decide what to spend and publish.
 
-**Turn an app goal into owned work, visible dependencies and independently reviewed results.**
+[Try the no-model demo](#try-it-before-you-install) · [Install in Orca](#install-in-orca) · [First real task](#your-first-real-task)
 
-Agent Company is a terminal-native operating layer for Orca: planning, design,
-development, marketing and QA/release working toward one outcome. Orca runs the
-workers; Company supplies the coordination rules. You keep control of goals,
-spending and publication.
+<picture>
+  <source media="(max-width: 600px) and (prefers-reduced-motion: reduce)" srcset="assets/readme/release-replay-mobile-still.png">
+  <source media="(max-width: 600px)" srcset="assets/readme/release-replay-mobile.gif">
+  <source media="(prefers-reduced-motion: reduce)" srcset="assets/readme/release-replay-still.png">
+  <img src="assets/readme/release-replay.gif" alt="Installer and documentation owners work in parallel. QA holds release v0.2.3 over a macOS test failure. The fix passes review and the published tag is installed." width="768">
+</picture>
 
-[Try the no-model demo](#try-it-before-you-install) · [Install](#install-in-orca) · [First real task](#your-first-real-task) · [Docs](#go-deeper)
+**Release replay.** Condensed illustration of the actual v0.2.3 release.
+[Read the sequence and evidence](assets/readme/RELEASE_REPLAY.md) · [Static frame](assets/readme/release-replay-still.png)
+
+<details>
+<summary>See the actual Orca terminal</summary>
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/readme/company-native-narrow.png">
-  <img src="assets/readme/company-native.png" alt="Actual Orca terminal screenshot: eight Unicode task cards with native status colors and branching dependencies. Synthetic search-release tasks and illustrative demo model assignments, not live model execution; specialist evidence is unknown and one dependency is undrawn." width="1010">
+  <img src="assets/readme/company-native.png" alt="Native Orca task cards showing dependencies in a synthetic search-release example." width="1010">
 </picture>
 
-**Actual Orca terminal screenshot — synthetic example tasks and illustrative
-assignments, not live model execution.** The unchanged shipped renderer uses its
-explicit dark palette. The wide map shows all eight cards and eight of nine
-recorded links; the narrow view shows four cards and one link on page 1 of 2,
-with clipped navigation kept as rendered. Unknown specialist evidence stays unknown.
-[Text version](assets/readme/company-native.txt) ·
-[Full-size screenshot](assets/readme/company-native.png) ·
-[Capture provenance and reproduction](assets/readme/NATIVE_CAPTURE.md)
+Actual terminal capture with synthetic inputs.
+[Text version](assets/readme/company-native.txt) · [Capture details](assets/readme/NATIVE_CAPTURE.md)
+
+</details>
 
 - **One goal, explicit owners.** Turn an unfinished idea into bounded contributions
   and observable completion criteria—not a mandatory cast of agents.
@@ -111,6 +113,8 @@ entry, use `/agent-company`. Start with a bounded, read-only request:
 > Read the installed Company entry and resolved configuration. Propose three
 > improvements to this repository, with reasons and a check for each. Do not edit
 > files, launch additional workers or publish anything.
+
+Look for three suggestions, each with a reason and a way to check it. If your agent cannot find the Company entry, see the [setup guide](skills/company-orchestration/references/getting-started.md).
 
 This step uses your authenticated agent; **it is not the no-model demo**. Company
 should establish scope and success criteria before you authorize implementation.
