@@ -161,7 +161,7 @@
     },
     {
       "path": "references/measurement-lifecycle.md",
-      "sha256": "70b475e78e2bb62ae5b7be2b3403b8a43038b6c58aec8d93f69caf2bd7f37176"
+      "sha256": "a2b031c9599dc8fbf5b41abeb64fc2fb9478a8b23a12e7a50d6ee31bbde2a52b"
     },
     {
       "path": "references/model-candidates.md",
@@ -301,7 +301,7 @@
     },
     {
       "path": "scripts/measurement_lifecycle.py",
-      "sha256": "23d84f3e2496b113a0de93d99f2b0f577514f250fc0c040900f36a4991317054"
+      "sha256": "846162976bc5f4a96327e3443cfe9c50fb4b7cd815b7d0814abd518c76ab844d"
     },
     {
       "path": "scripts/native_maintenance.py",

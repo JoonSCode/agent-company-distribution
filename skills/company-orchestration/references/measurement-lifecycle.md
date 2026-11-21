@@ -59,7 +59,10 @@ mode, one created agent terminal effect and a prompt process incarnation
 that matches the full worker readback for that terminal. That readback must identify the same runtime epoch, local terminal, and owned terminal resource
 for this exact Dispatch. The worker's stored placement must show a fresh
 Codex terminal without a structured preference. `worker-show --full` supplies
-these fields. First usage is not required. Missing correspondence leaves
+these fields. First usage is not required. A completed 1.4.268 Dispatch with only a
+launch-token-bound SessionStart hook may use the exact fresh session's single
+native start and matching completion after the pending timestamp. An active
+Dispatch still needs the hook's native turn key. Missing correspondence leaves
 the durable attempt unbound, blocks all further starts, and cannot become measured
 success. Capability support is not a guarantee that a future hook will arrive.
 

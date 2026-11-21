@@ -354,18 +354,30 @@ def exact_source(config, executable, dispatch_id, after=None, *,
     require(provider['key'] == 'session_id' and provider['id']
             and entry['hostTurn']['owner'] == 'codex:' + provider['id'], 'Codex terminal session required')
     turn_key = entry['hostTurn']['currentTurnKey']
-    require(isinstance(turn_key, str) and turn_key.startswith('turn:') and len(turn_key) > 5,
+    seeded = (app_version == SQLITE_HOST and accepted_start is not None and after is not None
+              and turn_key == 'seed' and entry.get('hookEventName') == 'SessionStart'
+              and dispatch['status'] == 'completed')
+    require(seeded or (isinstance(turn_key, str) and turn_key.startswith('turn:') and len(turn_key) > 5),
             'native turn identity unavailable')
-    turn = turn_key[5:]  # Explicit Orca hostTurn encoding, not a guessed provider ID.
     source = Path(provider['transcriptPath']).resolve()
     data = source.read_bytes()
     require(data and data.endswith(b'\n'), 'partial source write; reconcile later')
     rows = [decode(line) for line in data.splitlines()]
     sessions = [r['payload'].get('id') for r in rows if r.get('type') == 'session_meta']
-    starts = [r['payload'].get('turn_id') for r in rows if r.get('type') == 'event_msg'
-              and r['payload'].get('type') == 'task_started']
-    require(sessions == [provider['id']] and starts == [turn],
+    starts = [r for r in rows if r.get('type') == 'event_msg' and r['payload'].get('type') == 'task_started']
+    require(sessions == [provider['id']] and len(starts) == 1,
             'fresh exact single-turn source required; resumed/nested sessions unsupported')
+    start = starts[0]
+    turn = start['payload'].get('turn_id')
+    require(isinstance(turn, str) and turn and (seeded or turn_key == 'turn:' + turn),
+            'fresh exact single-turn source required; resumed/nested sessions unsupported')
+    if seeded:
+        # Completed terminal Dispatches can retain only the exact SessionStart hook.
+        # The token-bound session must contain a unique, fully closed native turn.
+        ends = [r for r in rows if r.get('type') == 'event_msg' and r['payload'].get('type') == 'task_complete']
+        require(len(ends) == 1 and ends[0]['payload'].get('turn_id') == turn
+                and timestamp(after) <= timestamp(start['timestamp']) <= timestamp(ends[0]['timestamp'])
+                <= datetime.now(timezone.utc).timestamp(), 'fresh completed native turn required')
     single_turn(data, turn)
     second = worker_show(executable, dispatch_id, app_version)
     require(second['dispatch'] == dispatch and second['observation']['exactWorker'] is True
