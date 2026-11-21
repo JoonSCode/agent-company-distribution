@@ -336,6 +336,7 @@ skills/company-orchestration/references/routing-prelaunch.md
 skills/company-orchestration/references/session-continuity.md
 skills/company-orchestration/references/status-tui.md
 skills/company-orchestration/references/status-view.md
+skills/company-orchestration/references/storage-lifecycle.md
 skills/company-orchestration/references/update-policy.md
 skills/company-orchestration/references/upstream/baseline.json
 skills/company-orchestration/references/upstream/coordinator-loop.md
@@ -344,6 +345,7 @@ skills/company-orchestration/references/upstream/kernel.md
 skills/company-orchestration/references/upstream/messaging-and-gates.md
 skills/company-orchestration/references/upstream/recovery-and-cleanup.md
 skills/company-orchestration/references/worker-routing-evidence.md
+skills/company-orchestration/scripts/atomic_persistence.py
 skills/company-orchestration/scripts/company_config.py
 skills/company-orchestration/scripts/completion_hook.py
 skills/company-orchestration/scripts/continuity.py
@@ -355,6 +357,7 @@ skills/company-orchestration/scripts/knowledge_repository.py
 skills/company-orchestration/scripts/launch_readiness.py
 skills/company-orchestration/scripts/measurement_canary.py
 skills/company-orchestration/scripts/measurement_lifecycle.py
+skills/company-orchestration/scripts/native_maintenance.py
 skills/company-orchestration/scripts/native_operations.py
 skills/company-orchestration/scripts/native_reasoning.py
 skills/company-orchestration/scripts/native_storage.py
@@ -386,6 +389,7 @@ skills/company-orchestration/scripts/status_tui_input.py
 skills/company-orchestration/scripts/status_tui_navigation.py
 skills/company-orchestration/scripts/status_tui_wide.py
 skills/company-orchestration/scripts/status_view.py
+skills/company-orchestration/scripts/storage_test_support.py
 skills/company-orchestration/scripts/test_continuity.py
 skills/company-orchestration/scripts/test_knowledge_repository.py
 skills/company-orchestration/scripts/test_launch_readiness.py

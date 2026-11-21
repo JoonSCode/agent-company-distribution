@@ -122,25 +122,50 @@ def timestamp(value):
     return result.timestamp()
 
 
-def write_once(path, data):
-    """Exclusive durable receipts. A partial write blocks recovery, never retries work."""
-    with path.open('xb') as stream:
-        os.chmod(path, 0o600)
-        stream.write(data)
-        stream.flush()
-        os.fsync(stream.fileno())
-    fd = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+def write_once(path, data, enrollment=None, capability=None):
+    """Reserve exact retained evidence before exclusive durable publication."""
+    if enrollment is None:
+        enrollment = decode((path.parent / 'prepare.json').read_bytes()).get('storage_enrollment')
+    require(enrollment is not None, 'explicit storage enrollment required before measurement allocation')
+    from native_storage import reserve_producer, bound_enrollment
+    if capability is None:
+        from run_completion import lifecycle_lock
+        intake, _, _, _ = bound_enrollment(Path(enrollment['path']))
+        with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as cap:
+            return write_once(path, data, enrollment, cap)
+    capability.verify()
+    reserve_producer(enrollment, [path], 'measurement_lifecycle.py', capability)
+    import run_completion as rc
+    ref = path.absolute().relative_to(capability.root).as_posix()
+    with rc.parent_fd(capability.fd, ref) as (parent, name):
+        handle = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
+        with os.fdopen(handle, 'wb') as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.fsync(parent)
+        capability.verify()
+        with rc.parent_fd(capability.fd, ref) as (fresh, _):
+            require((os.fstat(fresh).st_dev, os.fstat(fresh).st_ino) == (os.fstat(parent).st_dev, os.fstat(parent).st_ino), 'measurement parent moved')
+        require(rc.read_file(capability.fd, ref)[0] == data, 'measurement durable readback differs')
 
 
 @contextmanager
-def locked(root):
-    with (root / '.lock').open('a') as stream:
-        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        yield
+def locked(root, capability=None):
+    from native_storage import bound_enrollment, locked_run
+    from native_operations import pinned
+    from run_completion import lifecycle_lock
+    enrollment = decode((root / 'prepare.json').read_bytes()).get('storage_enrollment')
+    require(enrollment is not None, 'legacy ledger is read-only; fresh enrolled measurement required')
+    ep, _ = pinned(enrollment, Path.cwd())
+    intake, _, _, _ = bound_enrollment(ep)
+    require(root.is_relative_to(Path(intake['run'])), 'ledger outside enrolled Run')
+    if capability is not None:
+        with locked_run(intake, capability):
+            yield capability
+    else:
+        with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as cap:
+            yield cap
 
 
 def host(executable, *args):
@@ -305,13 +330,17 @@ def events(root):
     return result
 
 
-def append(root, kind, value):
+def append(root, kind, value, capability=None):
+    if capability is None:
+        with locked(root) as cap:
+            return append(root, kind, value, cap)
+    capability.verify()
     prior = events(root)
     sequence = len(prior)
     previous = digest((root / ('event-%06d.json' % (sequence - 1))).read_bytes()) if prior else None
     item = {'version': VERSION, 'sequence': sequence, 'previous': previous,
             'at': now(), 'kind': kind, 'value': value}
-    write_once(root / ('event-%06d.json' % sequence), encoded(item))
+    write_once(root / ('event-%06d.json' % sequence), encoded(item), capability=capability)
     return item
 
 
@@ -338,8 +367,23 @@ def prepared(record, base):
     return root, p
 
 
-def prepare(record_path, plan_path, root, executable, probe_dispatch=None):
+def prepare(record_path, plan_path, root, executable, probe_dispatch=None, enrollment=None):
+    require(enrollment is not None, 'explicit storage enrollment required')
+    from native_operations import pinned
+    from native_storage import bound_enrollment
+    from run_completion import lifecycle_lock
+    ep, _ = pinned(enrollment, Path.cwd())
+    intake, _, _, _ = bound_enrollment(ep)
+    with lifecycle_lock(Path(intake['sejong_home']), Path(intake['run'])) as capability:
+        return _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollment, capability)
+
+
+def _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollment, capability):
+    from native_storage import reserve_producer
+    intake = reserve_producer(enrollment, [root / 'capture-probe', root / 'prepare.json'], 'measurement_lifecycle.py', capability)
+    require('measurement-v2' in intake['consumers'] and record_path.absolute() == Path(intake['run']) / intake['record'], 'canonical measurement record/consumer enrollment required')
     record = decode(record_path.read_bytes())
+    require(record['goal']['id'] == intake['run_id'] and record['goal']['current_owner'] == intake['owner'], 'measurement enrollment goal/owner differs')
     plan = decode(plan_path.read_bytes())
     frozen = freeze(record, record_path.parent)
     validate_attempts(plan['attempts'], frozen['expected_actors'])
@@ -355,21 +399,22 @@ def prepare(record_path, plan_path, root, executable, probe_dispatch=None):
     runtime_id = bridge['runtime']
     root.mkdir(mode=0o700, parents=False, exist_ok=False)
     probe = os.urandom(32)
-    write_once(root / 'capture-probe', probe)
+    write_once(root / 'capture-probe', probe, enrollment, capability)
     require((root / 'capture-probe').read_bytes() == probe, 'capture readback failed')
     value = {'version': VERSION, 'adapter': ADAPTER, 'created_at': now(), 'runtime': runtime_id,
              'collector': plan['collector'], 'readiness': bridge, 'frozen': frozen,
              'attempts': plan['attempts'], 'limits': limits, 'future_provider_ids': 'unobserved',
-             'capture_probe_sha256': digest(probe)}
-    write_once(root / 'prepare.json', encoded(value))
+             'capture_probe_sha256': digest(probe), 'storage_enrollment': enrollment}
+    write_once(root / 'prepare.json', encoded(value), enrollment, capability)
     return {'ok': True, 'ledger': str(root), 'prepare_sha256': digest(encoded(value)),
             'future_provider_ids': 'unobserved'}
 
 
 class Launch:
-    def __init__(self, args, record, base):
+    def __init__(self, args, record, base, capability):
         self.root, self.prep = prepared(record, base)
         self.args = args
+        self.capability = capability
         self.attempt = next((a for a in self.prep['attempts'] if a['id'] == args.measurement_attempt), None)
         if self.attempt is None:
             raise ValueError('explicit prepared attempt required')
@@ -418,14 +463,14 @@ class Launch:
         require(digest(self.args.decision.read_bytes()) == self.attempt['decision_sha256'], 'decision changed before invocation')
         return append(self.root, 'pending', {'attempt': self.attempt['id'], 'argv': command,
                       'result': str(self.args.result.resolve()), 'receipt_sha256': digest(receipt.read_bytes()),
-                      'prepare_sha256': digest((self.root / 'prepare.json').read_bytes())})
+                      'prepare_sha256': digest((self.root / 'prepare.json').read_bytes())}, self.capability)
 
     def bind(self):
-        return bind(self.root, self.prep, self.attempt['id'], self.args.orca)
+        return bind(self.root, self.prep, self.attempt['id'], self.args.orca, self.capability)
 
 
 @contextmanager
-def launch_guard(args):
+def launch_guard(args, capability):
     record = decode(args.record.read_bytes())
     m = record.get('measurement', {})
     if m.get('version') != VERSION:
@@ -433,12 +478,12 @@ def launch_guard(args):
         return
     require(m.get('mode') == 'required', 'v2 must require measurement')
     args.orca = args.orca or 'orca'
-    launch = Launch(args, record, args.record.parent)
-    with locked(launch.root):
+    launch = Launch(args, record, args.record.parent, capability)
+    with locked(launch.root, capability):
         yield launch
 
 
-def bind(root, p, attempt, executable):
+def bind(root, p, attempt, executable, capability=None):
     history = events(root)
     require(not any(e['kind'] in ('binding', 'settlement') and
                     (e['kind'] == 'settlement' or e['value'].get('attempt') == attempt) for e in history),
@@ -457,14 +502,14 @@ def bind(root, p, attempt, executable):
     require(not any(e['kind'] == 'binding' and (e['value']['bridge']['dispatch'] == bridge['dispatch']
                 or e['value']['bridge']['session'] == bridge['session']) for e in history), 'duplicate dispatch/session')
     name = 'source-%06d-prefix.jsonl' % len(history)
-    write_once(root / name, data)
+    write_once(root / name, data, capability=capability)
     return append(root, 'binding', {'attempt': attempt, 'bridge': bridge, 'prefix': name,
                   'host_receipt_sha256': digest(encoded(saved)), 'host_receipt': saved,
                   'status': 'usage_observed' if any(decode(line).get('type') == 'token_usage_record'
-                                                   for line in data.splitlines()) else 'identity_observed'})
+                                                   for line in data.splitlines()) else 'identity_observed'}, capability)
 
 
-def close_attempt(root, p, attempt, executable):
+def close_attempt(root, p, attempt, executable, capability=None):
     history = events(root)
     require(not any(e['kind'] == 'settlement' or (e['kind'] == 'closed' and e['value']['attempt'] == attempt)
                     for e in history), 'already closed or settled')
@@ -483,7 +528,7 @@ def close_attempt(root, p, attempt, executable):
     require(digest(prefix) == bridge['prefix_sha256'] and data.startswith(prefix), 'source prefix changed')
     name = 'source-%06d-final.jsonl' % len(history)
     # Preserve even incomplete failed/cancelled accounting; it never becomes zero.
-    write_once(root / name, data)
+    write_once(root / name, data, capability=capability)
     # A worker_done can settle the host while its tool result/final response is
     # still streaming. Preserve that observation, but never close on host status
     # alone or turn a partial capture into a terminal accounting failure.
@@ -505,7 +550,7 @@ def close_attempt(root, p, attempt, executable):
             raise ValueError('source advanced during capture')
     except ValueError as exc:
         append(root, 'partial', {'attempt': attempt, 'outcome': outcome, 'source': name,
-               'sha256': digest(data), 'bytes': len(data), 'reason': str(exc)})
+               'sha256': digest(data), 'bytes': len(data), 'reason': str(exc)}, capability)
         if outcome == 'completed' and pending:
             raise ValueError('native completion pending') from exc
         raise ValueError('partial accounting preserved; attempt remains open') from exc
@@ -513,7 +558,7 @@ def close_attempt(root, p, attempt, executable):
               if decode(line).get('type') == 'event_msg' and decode(line)['payload'].get('type') == 'task_started']
     require(starts == [bridge['turn']], 'unplanned additional turn')
     return append(root, 'closed', {'attempt': attempt, 'outcome': outcome, 'source': name,
-                  'sha256': digest(data), 'bytes': len(data), 'host_dispatch': observed})
+                  'sha256': digest(data), 'bytes': len(data), 'host_dispatch': observed}, capability)
 
 
 def observed_union(root, p, history):
@@ -631,7 +676,7 @@ def terminal_receipt(root, p, history):
     return receipts[0], expected
 
 
-def settle(root, p):
+def settle(root, p, capability=None):
     history = events(root)
     for event in history:
         if event['kind'] == 'closed':
@@ -642,7 +687,7 @@ def settle(root, p):
                     'late source append/change after close; cannot settle')
     if any(e['kind'] == 'settlement' for e in history):
         return terminal_receipt(root, p, history)[0]  # Verify, never append duplicates.
-    return append(root, 'settlement', terminal_value(root, p, history))
+    return append(root, 'settlement', terminal_value(root, p, history), capability)
 
 
 def accounting_record(record, base, event):
@@ -731,7 +776,7 @@ def retained_files(record, base):
     return [(root / name, digest((root / name).read_bytes())) for name in names]
 
 
-def amend(root, p, path):
+def amend(root, p, path, capability=None):
     history = events(root)
     require(not any(e['kind'] == 'settlement' for e in history), 'already settled')
     pending = {e['value']['attempt'] for e in history if e['kind'] == 'pending'}
@@ -742,13 +787,15 @@ def amend(root, p, path):
     combined = p['attempts'] + extra
     validate_attempts(combined, {a['actor'] for a in combined})
     require(len(combined) <= p['limits']['max_attempts'], 'attempt budget exceeded')
-    return append(root, 'amendment', {'attempts': extra})
+    return append(root, 'amendment', {'attempts': extra}, capability)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('prepare', 'bind', 'close', 'settle', 'finalize', 'amend'))
     parser.add_argument('--record', type=Path, required=True)
+    parser.add_argument('--enrollment-request', type=Path, required=True)
+    parser.add_argument('--expect-enrollment-sha256', required=True)
     parser.add_argument('--plan', type=Path)
     parser.add_argument('--ledger', type=Path)
     parser.add_argument('--orca', default='orca')
@@ -762,21 +809,25 @@ def main(argv=None):
                 and args.output_record.resolve() != args.record.resolve()
                 and args.output_record.resolve().parent == args.record.resolve().parent),
                 'finalize output must be a distinct sibling record')
+        from native_operations import pinned
+        enrollment = {'path': str(args.enrollment_request.absolute()), 'sha256': args.expect_enrollment_sha256}
+        pinned(enrollment, Path.cwd())
         if args.action == 'prepare':
-            result = prepare(args.record, args.plan, args.ledger, args.orca, args.probe_dispatch)
+            result = prepare(args.record, args.plan, args.ledger, args.orca, args.probe_dispatch, enrollment)
         else:
             record = decode(args.record.read_bytes())
             root = (args.record.parent / record['measurement']['ledger']).resolve()
-            with locked(root):
+            require(decode((root / 'prepare.json').read_bytes()).get('storage_enrollment') == enrollment, 'measurement enrollment pin differs')
+            with locked(root) as capability:
                 root, p = prepared(record, args.record.parent)
                 if args.action == 'amend':
-                    result = amend(root, p, args.plan)
+                    result = amend(root, p, args.plan, capability)
                 elif args.action == 'bind':
-                    result = bind(root, p, args.attempt, args.orca)
+                    result = bind(root, p, args.attempt, args.orca, capability)
                 elif args.action == 'close':
-                    result = close_attempt(root, p, args.attempt, args.orca)
+                    result = close_attempt(root, p, args.attempt, args.orca, capability)
                 else:
-                    result = settle(root, p)
+                    result = settle(root, p, capability)
                 if args.output_record is not None:
                     from record_check import check_record
                     derived = accounting_record(record, args.record.parent, result)
@@ -786,7 +837,7 @@ def main(argv=None):
                     if args.output_record.exists():
                         require(args.output_record.read_bytes() == data, 'derived record already exists with different bytes')
                     else:
-                        write_once(args.output_record, data)
+                        write_once(args.output_record, data, enrollment, capability)
             result = {'ok': True, 'receipt': result, 'sha256': digest(encoded(result))}
             if args.action in ('settle', 'finalize'):
                 _, value = terminal_receipt(root, p, events(root))

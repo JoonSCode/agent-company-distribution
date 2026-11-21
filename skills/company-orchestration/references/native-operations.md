@@ -4,7 +4,7 @@
 
 ## 진입점과 반환
 
-패키지의 `scripts` 디렉터리에서 기존 Python 3.13+로 실행한다. 모든 명령은 stdout에 단일 JSON, exit 0=보고/prepared/completed, 1=현재 상태/권한 guard 차단, 2=형식/출처 충돌이다. 도움말만 일반 argparse 텍스트다. 기본은 read-only이며 prepare만 명시한 새 private bundle을 쓴다. glob·자동 session/home discovery·모델/host 호출은 없다.
+패키지의 `scripts` 디렉터리에서 기존 Python 3.13+로 실행한다. 모든 명령은 stdout에 단일 JSON, exit 0=보고/prepared/completed, 1=현재 상태/권한 guard 차단, 2=형식/출처 충돌이다. 도움말만 일반 argparse 텍스트다. report/plan/closeout은 read-only다. enroll/classify는 명시한 새 Run metadata, prepare는 명시한 새 private bundle을 쓴다. glob·자동 session/home discovery·모델 호출은 없다. `settle-launch`만 명시한 실행 파일에 exact Dispatch 종료 readback을 요청하며 새 worker를 시작하지 않는다.
 
 ```sh
 python3 -B native_operations.py storage report --request /private/storage-request.json
@@ -15,6 +15,12 @@ python3 -B native_operations.py reasoning check --bundle /private/new-exclusive-
 ```
 
 요청 JSON은 아래 명시 필드만 받는다. 중복 키·NaN·path traversal·symlink·hardlink 입력·깨진 SHA256을 거부한다. 상대 파일 참조는 **요청 파일 기준**이다. 해시는 lowercase 64 hex의 실제 원문 SHA256이어야 하며 placeholder는 입력으로 유효하지 않다. Pin은 출처 바이트 일치이지 출처 인증/사용자 승인이 아니다.
+
+## Storage: enrollment, classification, closeout
+
+새 supported 작업은 [native storage lifecycle](storage-lifecycle.md)의 enroll → reserve → writer → checked launch의 별도 exact exit/consumer settlement → freeze → accepted plan/apply → read-only closeout 순서다. `enroll`/`classify`는 명시한 새 Run metadata를 쓴다. `maintenance-plan`은 별도 current authority preview이며 `maintenance-apply`는 독립 exact review와 실제 owner approval 없이는 동작하지 않는다. 기존 v1 report/plan/apply 형식은 유지한다. Closeout은 실제 receipt를 읽어 not_enrolled/skipped/blocked/removed/unknown과 null-vs-zero, trigger, pending owner를 구분한다. JSON의 `final_summary`는 실제 관측/이전 receipt를 명시한 일반 최종 응답용 문장이다. 새 실행이나 APFS 절감으로 해석하지 않는다. `status_view.py render RECORD --storage-closeout-request EXACT`는 같은 canonical record/goal/owner의 read-only 결과를 HTML/JSON에 표시한다. 요청 미제공은 unknown이며 0으로 만들지 않는다. Codex Stop stdout `{}`는 그대로 프로토콜이다.
+
+`storage maintenance-closeout --request EXACT`는 별도 `company-native-storage-maintenance-closeout-request/v1` 요청의 정확한 `schema`, `plan`, `authorization`, `review`만 받는다(세 문서는 `{path,sha256}`). 원래 plan/request/auth/review와 external sink, root identity, preserved/historical metadata, 실제 부재/removed prefix를 다시 읽는다. receipt가 없으면 unknown, partial/pending/reappearance/stale/newer rejection은 blocked다. 이 명령은 apply/retry/init/register를 실행하지 않으며 actor 문자열을 실제 독립 승인으로 인증하지 않는다.
 
 ## Storage: explicit Run만
 
@@ -66,7 +72,7 @@ binding: {path, sha256, pointer} | null
 
 ## Deep reasoning: 다음 checked launch만
 
-요청 `schema: company-native-reasoning-request/v1`:
+새 prepare 요청 `schema: company-native-reasoning-request/v2` (v1 문서는 엄격한 기존 필드로만 읽으며 fresh prepare/launch 권한이 아님):
 
 ```text
 depth: standard | deep | ultrathink
@@ -75,13 +81,15 @@ record: {path,sha256}
 decision: {path,sha256}
 spec_file: {path,sha256}
 worktree: exact existing id:...::/... selector
+enrollment: {path,sha256}  # actual existing storage enrollment
+output_files: [original-record.json, original-decision.json, spec.txt, record.json, decision.json, patch.json, routing-check.json, missing-fields.json, manifest.json, native-reasoning.json]
 ```
 
 `ultrathink`는 `deep`의 UX alias일 뿐이다. deep+기존 승인 low도 유효하며 xhigh로 자동 승격하지 않는다. 지원 enum은 Company가 발명하지 않고 승인된 router/catalog가 검사한다. request effort가 이미 승인된 selected effort와 다르면 blocked다. provider/model/service/paid-opt-in/config/catalog/spec/scope/revision/현재 policy pins는 기존 router 검사를 유지한다. 다른 provider를 요청하면 그 선택을 그대로 출력하면서 `checked_launch_bridge_unavailable`로 차단한다. Codex/paid fallback이나 global defaults 수정은 없다.
 
 `routing_prepare.prepare`와 `check_bundle`가 실제 private bundle을 만든다. native sidecar는 original depth request pin과 requested/approved를 보존한다. `reasoning check`는 원래 요청·bundle·원문·현재 configuration/source/semantic bindings를 다시 확인한다. source policy hash drift는 차단이며 자동 sync/예외 처리하지 않는다. 준비 실패 시 partial bundle을 지우거나 자동 재준비하지 않는다.
 
-성공 응답의 `next_checked_launch`는 unchanged `routing_launch.py`가 받는 `record/decision/spec_file/worktree`와 필요한 run/parent flags를 반환한다. `spec_file`을 launcher flag로 전달하지 말고 그 **정확한 UTF-8 내용**을 `--spec`으로 넘겨야 한다. 호출자는 실제 승인된 `--from`, 사용하지 않은 `--receipt`와 `--result`를 명시해야 한다. existing/unknown result는 reconcile 전 재시도 금지다.
+성공 응답의 `next_checked_launch`는 checked `routing_launch.py`가 받는 `record/decision/spec_file/worktree`와 enrollment/prepared-bundle/run/parent flags를 반환한다. `record`는 편입된 Run의 canonical live record이고 bundle/record.json은 보존된 검토 snapshot이다. 두 원문을 현재 byte pin으로 cross-bind하며 canonical record 변경은 이전 bundle을 stale로 만든다. `routing_prepare.py prepare` 자체도 `--enrollment-request EXACT --expect-enrollment-sha256 SHA256`가 필수이고 fixed bundle/sidecar 파일은 생성 전 reserve한다. measurement lifecycle/canary CLI도 같은 flags를 전달하며 measurement-v2 consumer를 편입 때부터 명시한다. prepare/event/source-prefix/final/settlement writer는 각 다음 exact path를 생성 전에 preserve로 reserve한다. `spec_file`을 launcher flag로 전달하지 말고 그 **정확한 UTF-8 내용**을 `--spec`으로 넘겨야 한다. 호출자는 실제 승인된 `--from`, 사용하지 않은 `--receipt`와 `--result`를 명시해야 한다. existing/unknown result는 reconcile 전 재시도 금지다. launcher/ledger의 기존 stable lock은 삭제·이름 예외로 해제하지 않는다. 해당 activity marker 또는 미완료 creation reservation이 남으면 freeze/acceptance는 BLOCKED이며 migration 테스트 통과만으로 결합 lifecycle 완료를 주장하지 않는다.
 
 resource manifest/effort cap/지출 ceiling은 이 frozen depth request에 제공되지 않으므로 **prepared가 cap 검증 완료/권한 증명이 아니다**. 해당 scope가 요구하면 unchanged launcher에 `--require-resource-manifest --resource-manifest ... --declared-host ... --declared-tool ... --declared-billing ... --declared-spend ...`를 정확히 제공한다. 원래 gate는 host subprocess 이전에 cap/budget mismatch를 차단한다. trusted capacity reservation/live quota는 unknown/미지원이다. 테스트는 실제 native bundle→unchanged checked launcher→counted fake-host positive, cap/spend/unknown-result negative를 검증한다. 실제 호스트/모델은 호출하지 않는다.
 

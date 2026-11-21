@@ -1,7 +1,7 @@
 {
   "version": 2,
   "vocabulary_version": 1,
-  "source": "Company editorial task-fit priors plus 2026-11-07 narrow CLI smoke; references/worker-routing-evidence.md separates policy from observation; not a measured ranking or launch authorization",
+  "source": "All-family task fit and published API cost per benchmark task; references/worker-routing-evidence.md#all-family-cost-policy",
   "entries": [
     {
       "family": "general",
@@ -34,7 +34,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -43,7 +43,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -67,16 +67,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -100,10 +100,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -139,7 +139,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -148,7 +148,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -172,16 +172,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -205,10 +205,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-medium",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -220,7 +220,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 0,
@@ -244,16 +244,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 1,
@@ -277,16 +277,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-high",
             "effort": "high"
           },
           "priority": 2,
@@ -310,10 +310,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#general; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; general=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -351,7 +351,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -360,7 +360,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -386,16 +386,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -421,10 +421,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -462,7 +462,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -471,7 +471,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -497,16 +497,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -532,10 +532,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-medium",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -547,7 +547,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 0,
@@ -573,16 +573,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 1,
@@ -608,16 +608,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-high",
             "effort": "high"
           },
           "priority": 2,
@@ -643,10 +643,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#language; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; language=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -683,7 +683,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -692,7 +692,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -717,16 +717,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -751,10 +751,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -791,7 +791,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -800,7 +800,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -825,16 +825,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-argon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -859,10 +859,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-argon-medium",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -874,7 +874,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 0,
@@ -899,16 +899,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 1,
@@ -933,16 +933,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-argon-high",
             "effort": "high"
           },
           "priority": 2,
@@ -967,10 +967,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#structured_data; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; structured_data=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-argon-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1007,7 +1007,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1016,7 +1016,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -1041,16 +1041,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -1075,10 +1075,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1115,7 +1115,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1124,7 +1124,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -1149,16 +1149,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-neon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -1183,10 +1183,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-medium",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1198,7 +1198,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 0,
@@ -1223,16 +1223,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 1,
@@ -1257,16 +1257,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-neon-high",
             "effort": "high"
           },
           "priority": 2,
@@ -1291,10 +1291,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#reasoning; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; reasoning=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1333,7 +1333,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1342,7 +1342,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -1369,16 +1369,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -1405,10 +1405,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1447,7 +1447,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1456,7 +1456,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -1483,16 +1483,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-neon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -1519,10 +1519,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-medium",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1534,7 +1534,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 0,
@@ -1561,16 +1561,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: bounded interval-repair task only; hard code quality unmeasured",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 1,
@@ -1597,16 +1597,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-neon-high",
             "effort": "high"
           },
           "priority": 2,
@@ -1633,10 +1633,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#code; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; code=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-high",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1673,7 +1673,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1682,7 +1682,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -1707,16 +1707,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -1741,10 +1741,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1781,7 +1781,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -1790,7 +1790,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -1815,16 +1815,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-argon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -1849,10 +1849,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-argon-medium",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1864,7 +1864,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 0,
@@ -1889,16 +1889,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 1,
@@ -1923,16 +1923,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-argon-high",
             "effort": "high"
           },
           "priority": 2,
@@ -1957,10 +1957,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#research; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; research=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-argon-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -1998,7 +1998,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2007,7 +2007,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -2033,16 +2033,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -2068,10 +2068,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2109,7 +2109,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2118,7 +2118,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -2144,16 +2144,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-neon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -2179,10 +2179,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-medium",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2193,8 +2193,8 @@
       "candidates": [
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-neon-high",
             "effort": "high"
           },
           "priority": 0,
@@ -2220,16 +2220,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 1,
@@ -2255,16 +2255,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-terra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 2,
@@ -2290,10 +2290,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#visual; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; visual=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2331,7 +2331,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2340,7 +2340,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-luna",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 1,
@@ -2366,16 +2366,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 2,
@@ -2401,10 +2401,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2442,7 +2442,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2451,7 +2451,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 1,
@@ -2477,16 +2477,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-astra",
+            "route": "agy",
+            "model": "gemini-4-neon-medium",
             "effort": "medium"
           },
           "priority": 2,
@@ -2512,10 +2512,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-medium",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2527,7 +2527,7 @@
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 0,
@@ -2553,16 +2553,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 1,
@@ -2588,16 +2588,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-neon-high",
             "effort": "high"
           },
           "priority": 2,
@@ -2623,10 +2623,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#design; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; design=fail; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-neon-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2651,7 +2651,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2673,7 +2673,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2695,7 +2695,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2723,7 +2723,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2745,7 +2745,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2767,7 +2767,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2795,7 +2795,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2817,7 +2817,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2839,7 +2839,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#media_generation; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy; unsupported media output",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; media_generation=unsupported; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2878,7 +2878,7 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
             "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
             "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
@@ -2886,8 +2886,8 @@
         },
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6-luna",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-low",
             "effort": "low"
           },
           "priority": 1,
@@ -2911,16 +2911,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-luna; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-luna/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-low",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.2-sol",
             "effort": "low"
           },
           "priority": 2,
@@ -2944,10 +2944,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; easy/low is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -2958,8 +2958,8 @@
       "candidates": [
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-terra",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-medium",
             "effort": "medium"
           },
           "priority": 0,
@@ -2983,16 +2983,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-medium",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-sol",
+            "model": "gpt-6.1-terra",
             "effort": "medium"
           },
           "priority": 1,
@@ -3016,16 +3016,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
+            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
             "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-sol",
             "effort": "medium"
           },
           "priority": 2,
@@ -3049,10 +3049,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; medium/medium is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]
@@ -3063,8 +3063,8 @@
       "candidates": [
         {
           "identity": {
-            "route": "codex",
-            "model": "gpt-6.1-sol",
+            "route": "agy",
+            "model": "gemini-4-hydrogen-high",
             "effort": "high"
           },
           "priority": 0,
@@ -3088,16 +3088,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-sol; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-sol/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: agy/gemini-4-hydrogen-high",
+            "observed_smoke: no local result for this identity and task family",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6-astra",
+            "model": "gpt-6.2-sol",
             "effort": "high"
           },
           "priority": 1,
@@ -3121,16 +3121,16 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6-astra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6-astra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-sol",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         },
         {
           "identity": {
             "route": "codex",
-            "model": "gpt-6.1-terra",
+            "model": "gpt-6.2-astra",
             "effort": "high"
           },
           "priority": 2,
@@ -3154,10 +3154,10 @@
           "constraints": [],
           "evidence": [
             "editorial_prior: references/worker-routing-evidence.md#tool_use; capability assertions are task-fit policy, not universal certification",
-            "policy_order: references/worker-routing-evidence.md#orders; hard/high is an initial policy, not tested difficulty or low/high effort",
-            "identity: assets/model-choice-priors.json models.gpt-6.1-terra; explicit successor migration in references/worker-routing-evidence.md#migration",
-            "observed_smoke: 2026-11-07 requested gpt-6.1-terra/medium; tool_use=pass; one easy fixture only; backend identity/effort unverified",
-            "modalities_and_runner: references/worker-routing-evidence.md#boundaries; code/structured_data are text representations; tools/context/constraints remain unasserted"
+            "policy_order: references/worker-routing-evidence.md#all-family-cost-policy",
+            "identity: codex/gpt-6.2-astra",
+            "observed_smoke: no local result for this identity",
+            "modalities_and_runner: references/worker-routing-evidence.md#boundaries"
           ]
         }
       ]

@@ -743,3 +743,22 @@ class CompletionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
+class FullReadbackIncarnationTests(unittest.TestCase):
+    def test_full_readback_is_bound_before_using_incarnation(self):
+        start = {'runId': 'run', 'taskId': 'task', 'dispatchId': 'dispatch'}
+        full = {'ok': True, 'result': {'dispatch': {'id': 'dispatch', 'taskId': 'task',
+                'runId': 'run', 'processIncarnation': 'proc:inc'}, 'worker': {'dispatchId': 'dispatch'}}}
+        saved = {'full_readback': {'status': 'observed', 'exit_code': 0, 'stdout': json.dumps(full)}}
+        self.assertEqual(rc.launch_incarnation(start, saved), 'proc:inc')
+        full['result']['dispatch']['taskId'] = 'other'
+        saved['full_readback']['stdout'] = json.dumps(full)
+        self.assertIsNone(rc.launch_incarnation(start, saved))
+        self.assertIsNone(rc.launch_incarnation({**start, 'processIncarnation': 'original'}, saved))
+        self.assertEqual(rc.launch_incarnation({**start, 'processIncarnation': 'original'}, {}), 'original')
+        full['result']['dispatch'].update(taskId='task', assigneeHandle='term')
+        full['result']['terminal'] = {'handle': 'term'}
+        saved['full_readback']['stdout'] = json.dumps(full)
+        self.assertEqual(rc.launch_incarnation({**start, 'terminal': 'term'}, saved), 'proc:inc')
+        self.assertIsNone(rc.launch_incarnation({**start, 'terminal': 'other'}, saved))
+        self.assertIsNone(rc.launch_incarnation({**start, 'processIncarnation': 'changed'}, saved))

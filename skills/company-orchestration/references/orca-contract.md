@@ -165,16 +165,30 @@ ORCA orchestration send --to dispatch:<dispatch-id> --subject "Follow-up" --body
 ```
 
 Use `check --terminal <handle>` when the caller is not inferable; never `--from`
-for check. A consuming check delivers the oldest FIFO batch and replays it until
-acknowledged. Process every row, including ones outside a wake filter: answer
-questions, validate completions against the expected active Dispatch, read
-artifacts and decide settled terminal ownership before acknowledging. A successful
-send proves enqueue, not reading, acceptance or turn start.
-For status and instructions, record acceptance, unresolved points and next
-actions in the existing work record, then acknowledge the batch without waiting
-for implementation to finish. Acknowledgment confirms receipt, not success,
-approval or settlement; questions and completion/resource checks still need
-their actual handling.
+for check. Check the actual host's `check --help` before relying on its delivery
+semantics. On Orca 1.4.268 a consuming check returns the oldest unread FIFO batch
+and marks it handled as it returns; a later check advances to newer mail. Preserve
+the entire returned receipt before processing every row, including rows outside a
+wake filter. Answer questions, validate completions against the expected active
+Dispatch, read artifacts and decide settled terminal ownership. Record status,
+unresolved points and next actions without waiting for implementation to finish.
+
+On 1.4.268 `--types` is a wake condition for `--wait`, not a filter on a consuming
+batch; without `--wait` it has no effect on consuming checks. `--peek` and `--all`
+filter their rows and do not mark mail read. An observer or watcher uses `--peek`,
+including with `--wait`, and never consumes or acknowledges another agent's mail.
+If a check response is lost, use the exact host-issued `--retry-request` to replay
+that request's result; do not issue a new consuming request as if it were the same
+receipt. If the ID or result is unavailable, use the named mailbox `inbox --full`
+readback and keep missing or partial evidence unresolved. Multiple waiters can see
+the same Delivery, so identify duplicate observations before taking action.
+
+The pinned 1.4.217 upstream references describe the older explicit ACK protocol:
+process the complete Delivery before acknowledging and preserve that historical
+contract for older hosts. On 1.4.268 `--ack` is optional for older deliveries and
+is a no-op for a handled Delivery; it is not a prerequisite for advancing. Host
+delivery handling or an ACK proves neither successful work nor approval or resource
+settlement. A successful send proves enqueue, not reading, acceptance or turn start.
 
 The accepted team lead launches or reuses its members, reads their evidence and
 integrates the team result before reporting milestones, blockers or material
@@ -225,7 +239,6 @@ transfers cleanup ownership and must still meet model/context/independence needs
 
 ```text
 ORCA orchestration worker-release --dispatch <settled-dispatch-id> --json
-ORCA orchestration check --ack <delivery-id> --json
 ORCA orchestration worker-list --run <run-id> --terminal-state reclaimable --json
 ```
 

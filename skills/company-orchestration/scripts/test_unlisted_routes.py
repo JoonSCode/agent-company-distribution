@@ -13,10 +13,47 @@ import record_check
 import test_route_select
 
 
+def pin_agy_fixture_sources(root, packet):
+    """Create local test files in the formats consumed by the real prelaunch checker."""
+    selected = {k: packet['selected'][k] for k in ('route', 'family', 'model', 'effort')}
+    packet['label'] = 'real'
+    now = datetime.now(timezone.utc)
+    start, end = (now - timedelta(minutes=1)).isoformat(), (now + timedelta(minutes=10)).isoformat()
+    for evidence in packet['evidence'].values():
+        evidence['kind'] = 'host'
+    for key in ('unlisted-quality', 'quality'):
+        source = root / (key + '-fit.txt')
+        source.write_text('fixture task-fit evidence\n')
+        packet['evidence'][key].update(file=str(source), sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+    cache = root / 'models_cache.json'
+    cache.write_text(json.dumps({'models': packet['evidence']['inventory']['host_models']}))
+    inv = packet['evidence']['inventory']
+    inv.update(file=str(cache), sha256=hashlib.sha256(cache.read_bytes()).hexdigest(), host='fixture-host', observed_at=start, valid_until=end)
+    raw = root / 'raw-source.txt'
+    raw.write_text('fixture host source\n')
+    packet['evidence']['raw-source'] = {'ref': 'raw-source', 'kind': 'host', 'host': 'fixture-host', 'file': str(raw),
+        'sha256': hashlib.sha256(raw.read_bytes()).hexdigest(), 'observed_at': start, 'valid_until': end}
+    for key in ('unlisted-models', 'unlisted-support', 'unlisted-auth', 'unlisted-tools', 'unlisted-billing'):
+        source = root / (key + '.txt')
+        if key == 'unlisted-models':
+            source.write_text(f"{selected['model']}\tFixture ({selected['effort'].title()})\n")
+        else:
+            claim, value = {'unlisted-support': ('supported', True), 'unlisted-auth': ('authenticated', True), 'unlisted-tools': ('tools', 'supported'),
+                            'unlisted-billing': ('billing', 'subscription')}[key]
+            source.write_text(json.dumps({'format': 'company-runtime-observation/v1',
+                'candidate': selected, 'agent': 'antigravity', 'host': 'fixture-host',
+                'claim': claim, 'value': value, 'source_evidence': 'raw-source'}))
+        packet['evidence'][key].update(file=str(source), host='fixture-host', sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+                                       observed_at=start, valid_until=end)
+    return start, end
+
+
 class UnlistedRoutingTests(unittest.TestCase):
     def setUp(self):
         fixture = test_route_select.SelectionCLITests()
         fixture.setUp()
+        self.fixture = fixture
+        self.addCleanup(fixture.doCleanups)
         self.config = fixture.config
         self.config['configuration_sha256'] = 'a' * 64
         self.config['values']['services'] = ['codex', 'antigravity', 'grok', 'cursor']
@@ -37,6 +74,8 @@ class UnlistedRoutingTests(unittest.TestCase):
         self.packet['alternatives'] = [{**selected, 'disposition': 'selected',
                                         'reason': 'ordinary_assignment', 'evidence': row['runtime_evidence']}]
         self.packet['selected_reason'] = 'ordinary_assignment'
+        self.fixture.prepare_profile(self.packet)
+        self.fixture.authorize_profile(self.packet)
 
     def check(self, packet=None, base=None):
         with patch('record_check.resolve', return_value=self.config):
@@ -145,6 +184,8 @@ class UnlistedRoutingTests(unittest.TestCase):
         evidence = packet['evidence']['unlisted-quality']
         evidence['binds'] = self.identity(packet['selected'])
         evidence['task_binding'] = {k: packet['binding'][k] for k in ('task', 'scope', 'revision', 'attempt')}
+        self.fixture.prepare_profile(packet)
+        self.fixture.authorize_profile(packet)
         self.assertTrue(self.check(packet)['ok'], self.check(packet)['errors'])
         self.config['values']['excluded_models'] = [packet['selected']['model']]
         self.assertTrue(self.check(packet)['ok'], self.check(packet)['errors'])
@@ -170,6 +211,8 @@ class UnlistedRoutingTests(unittest.TestCase):
         self.assertTrue(any('dominated' in error['message'] for error in result['errors']), result['errors'])
         packet['selected'].update(model='gpt-6.1-terra', family='terra')
         packet['alternatives'][0].update(model='gpt-6.1-terra', family='terra')
+        self.fixture.prepare_profile(packet)
+        self.fixture.authorize_profile(packet)
         self.assertTrue(self.check(packet)['ok'], self.check(packet)['errors'])
 
     def test_legacy_record_remains_readable_without_authorizing_new_alias(self):
@@ -193,39 +236,28 @@ class UnlistedRoutingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             packet = copy.deepcopy(self.packet)
-            packet['label'] = 'real'
-            now = datetime.now(timezone.utc)
-            start, end = (now - timedelta(minutes=1)).isoformat(), (now + timedelta(minutes=10)).isoformat()
-            for evidence in packet['evidence'].values():
-                evidence['kind'] = 'host'
-            for key in ('unlisted-quality', 'quality'):
-                source = root / (key + '-fit.txt')
-                source.write_text('fixture task-fit evidence\n')
-                packet['evidence'][key].update(file=str(source), sha256=hashlib.sha256(source.read_bytes()).hexdigest())
-            cache = root / 'models_cache.json'
-            cache.write_text(json.dumps({'models': packet['evidence']['inventory']['host_models']}))
-            inv = packet['evidence']['inventory']
-            inv.update(file=str(cache), sha256=hashlib.sha256(cache.read_bytes()).hexdigest(), host='fixture-host', observed_at=start, valid_until=end)
-            raw = root / 'raw-source.txt'
-            raw.write_text('fixture host source\n')
-            packet['evidence']['raw-source'] = {'ref': 'raw-source', 'kind': 'host', 'host': 'fixture-host', 'file': str(raw),
-                'sha256': hashlib.sha256(raw.read_bytes()).hexdigest(), 'observed_at': start, 'valid_until': end}
-            for key in ('unlisted-models', 'unlisted-support', 'unlisted-auth', 'unlisted-tools', 'unlisted-billing'):
-                source = root / (key + '.txt')
-                if key == 'unlisted-models':
-                    source.write_text('gemini-3.8-flash-high\tFixture (High)\n')
-                else:
-                    claim, value = {'unlisted-support': ('supported', True), 'unlisted-auth': ('authenticated', True), 'unlisted-tools': ('tools', 'supported'),
-                                    'unlisted-billing': ('billing', 'subscription')}[key]
-                    source.write_text(json.dumps({'format': 'company-runtime-observation/v1',
-                        'candidate': self.identity(packet['selected']), 'agent': 'antigravity', 'host': 'fixture-host',
-                        'claim': claim, 'value': value, 'source_evidence': 'raw-source'}))
-                packet['evidence'][key].update(file=str(source), host='fixture-host', sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
-                                               observed_at=start, valid_until=end)
+            start, end = pin_agy_fixture_sources(root, packet)
             with patch('record_check.canonical_home', return_value=root):
                 packet['binding']['spec_sha256'] = 'b' * 64
                 preflight = self.check(packet, root)
                 self.assertTrue(preflight['ok'], preflight['errors'])
+                default = copy.deepcopy(packet)
+                row = default.pop('price_selection')['candidates'][-1]
+                fields = ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')
+                default['selected_runtime'] = {key: row[key] for key in fields}
+                default['binding']['inventory_evidence'] = 'inventory'
+                result = self.check(default, root)
+                self.assertTrue(result['ok'], result['errors'])
+                for mutation in ('missing_auth', 'expired_auth', 'wrong_source'):
+                    bad = copy.deepcopy(default)
+                    runtime = bad['evidence']['unlisted-runtime']['unlisted_runtime']
+                    if mutation == 'missing_auth':
+                        runtime['auth_evidence'] = 'missing'
+                    elif mutation == 'expired_auth':
+                        bad['evidence']['unlisted-auth']['valid_until'] = '2000-01-01T00:00:00+00:00'
+                    else:
+                        bad['evidence']['unlisted-auth']['sha256'] = '0' * 64
+                    self.assertFalse(self.check(bad, root)['ok'], mutation)
                 foreign = copy.deepcopy(packet)
                 foreign['evidence']['inventory']['host'] = 'fixture-other'
                 self.assertFalse(self.check(foreign, root)['ok'])
@@ -255,6 +287,8 @@ class UnlistedRoutingTests(unittest.TestCase):
                         'candidate': alternate_id, 'agent': 'cursor', 'host': 'fixture-host',
                         'claim': claim, 'value': value, 'source_evidence': 'raw-source'}))
                     alternate['evidence'][key].update(file=str(source), sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+                self.fixture.prepare_profile(alternate)
+                self.fixture.authorize_profile(alternate)
                 checked_alternate = self.check(alternate, root)
                 self.assertTrue(checked_alternate['ok'], checked_alternate['errors'])
                 alt_compared = next(item for item in checked_alternate['receipt']['price_selection']['compared']
@@ -311,6 +345,9 @@ class UnlistedRoutingTests(unittest.TestCase):
 
         agy = {'route': 'antigravity', 'model': 'fixture-model-high', 'effort': 'high'}
         agy_list = 'fixture-model-low\tFixture (Low)\nfixture-model-high\tFixture (High)\n'
+        mixed = agy_list + 'gemini-pro-orchestrator-neon\tOrchestrator (Neon)\n'
+        self.assertTrue(record_check.catalog_supports_candidate(mixed, agy))
+        self.assertFalse(record_check.catalog_supports_candidate(mixed, {**agy, 'model': 'gemini-pro-orchestrator-neon'}))
         self.assertTrue(record_check.catalog_supports_candidate(agy_list, agy))
         self.assertFalse(record_check.catalog_supports_candidate(agy_list, {**agy, 'effort': 'low'}))
         self.assertFalse(record_check.catalog_supports_candidate('error: fixture-model-high unavailable\n', agy))

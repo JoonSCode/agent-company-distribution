@@ -37,6 +37,13 @@ def command(args):
                 and decision['binding']['spec_sha256'] == digest(fixture['prompts'][actor].encode()),
                 'decision must bind the exact canary prompt and observed live routing evidence')
         decisions[actor] = decision
+    from native_operations import pinned
+    from native_storage import bound_enrollment
+    reference = {'path': str(args.enrollment_request.absolute()), 'sha256': args.expect_enrollment_sha256}
+    ep, _ = pinned(reference, Path.cwd())
+    enrollment, _, _, _ = bound_enrollment(ep)
+    require(args.record.absolute() == Path(enrollment['run']) / enrollment['record'], 'canary canonical record differs')
+    storage_flags = ['--enrollment-request', str(ep), '--expect-enrollment-sha256', reference['sha256']]
     base = [sys.executable, '-B']
     if args.action == 'prepare':
         plan = {'adapter': ADAPTER, 'collector': {'database': str(args.database), 'hooks': str(args.hooks),
@@ -46,10 +53,10 @@ def command(args):
                               'spec_sha256': decisions[actor]['binding']['spec_sha256']} for actor in fixture['actors']],
                 'limits': fixture['limits']}
         plan_path = args.record.parent / 'canary-plan.json'
-        write_once(plan_path, encoded(plan))
+        write_once(plan_path, encoded(plan), reference)
         return base + [str(SCRIPTS / 'measurement_lifecycle.py'), 'prepare', '--record', str(args.record),
                        '--plan', str(plan_path), '--ledger', str(args.record.parent / 'measurement-ledger'),
-                       '--orca', args.orca]
+                       '--orca', args.orca, *storage_flags]
     if args.action == 'launch':
         require(args.authorize_live, 'launch requires explicit --authorize-live; no automatic provider calls')
         require(args.actor in fixture['actors'], 'explicit canary actor required')
@@ -61,11 +68,11 @@ def command(args):
                         '--receipt', str(args.record.parent / ('launch-' + args.actor + '.json')),
                         '--result', str(args.record.parent / ('host-' + args.actor + '.json')),
                         '--from', args.sender, '--worktree', args.worktree, '--run', binding['run'],
-                        '--start-timeout', '60', '--declared-billing', 'subscription', '--declared-spend', '0']
+                        '--start-timeout', '60', '--declared-billing', 'subscription', '--declared-spend', '0', *storage_flags]
         if binding.get('parent_task'):
             result += ['--parent', binding['parent_task']]
         return result
-    result = base + [str(SCRIPTS / 'measurement_lifecycle.py'), args.action, '--record', str(args.record), '--orca', args.orca]
+    result = base + [str(SCRIPTS / 'measurement_lifecycle.py'), args.action, '--record', str(args.record), '--orca', args.orca, *storage_flags]
     if args.actor:
         result += ['--attempt', args.actor]
     return result
@@ -73,9 +80,9 @@ def command(args):
 
 def stop_owned(root, prep, attempt, executable, reason):
     """Fence ONLY this saved accepted dispatch. A stop request is not a proven stop."""
-    with locked(root):
+    with locked(root) as capability:
         append(root, 'halt', {'attempt': attempt, 'reason': reason,
-                             'hard_provider_deadline': False})
+                             'hard_provider_deadline': False}, capability)
     result = {'attempt': attempt, 'state': 'unknown', 'hard_provider_deadline': False}
     try:
         pending = [e for e in events(root) if e['kind'] == 'pending' and e['value']['attempt'] == attempt]
@@ -96,9 +103,9 @@ def stop_owned(root, prep, attempt, executable, reason):
                              (d['id'],)).fetchall()
         require(row == [(d['taskId'], d['runId'], d['processIncarnation'])], 'stop process binding mismatch')
         # Save intent first; never silently reissue an unknown stop mutation.
-        with locked(root):
+        with locked(root) as capability:
             append(root, 'stop_pending', {'attempt': attempt, 'dispatch': d['id'],
-                                         'process': d['processIncarnation']})
+                                         'process': d['processIncarnation']}, capability)
         stop_proc = subprocess.run([executable, 'orchestration', 'worker-stop', '--dispatch', d['id'], '--json'],
                                    check=False, capture_output=True, text=True, timeout=30)
         envelope = decode(stop_proc.stdout)
@@ -122,12 +129,12 @@ def stop_owned(root, prep, attempt, executable, reason):
     # Best-effort final capture uses an existing exact binding only. Unbound sources
     # are never guessed, and partial/cancelled accounting cannot authorize another start.
     try:
-        with locked(root):
-            close_attempt(root, prep, attempt, executable)
+        with locked(root) as capability:
+            close_attempt(root, prep, attempt, executable, capability)
     except (ValueError, OSError, KeyError, TypeError, sqlite3.Error, subprocess.SubprocessError) as exc:
         result['accounting'] = 'partial/unbound: ' + str(exc)
-    with locked(root):
-        append(root, 'stop_observed', result)
+    with locked(root) as capability:
+        append(root, 'stop_observed', result, capability)
     return result
 
 
@@ -176,7 +183,8 @@ def drive_attempt(args, fixture):
             else:
                 action = 'close'
             observe = subprocess.run([sys.executable, '-B', str(SCRIPTS/'measurement_lifecycle.py'),
-                        action, '--record', str(args.record), '--attempt', args.actor, '--orca', args.orca],
+                        action, '--record', str(args.record), '--attempt', args.actor, '--orca', args.orca,
+                        '--enrollment-request', str(args.enrollment_request), '--expect-enrollment-sha256', args.expect_enrollment_sha256],
                         check=False, capture_output=True, text=True,
                         timeout=max(0.001, deadline - time.monotonic()))
             if observe.returncode == 0 and action == 'close':
@@ -223,6 +231,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('prepare', 'run', 'launch', 'bind', 'close', 'settle'))
     parser.add_argument('--record', type=Path, required=True)
+    parser.add_argument('--enrollment-request', type=Path, required=True)
+    parser.add_argument('--expect-enrollment-sha256', required=True)
     parser.add_argument('--decisions', type=Path, required=True)
     parser.add_argument('--orca', default='orca')
     home = Path.home() / 'Library/Application Support/orca'

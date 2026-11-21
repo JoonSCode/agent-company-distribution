@@ -15,7 +15,7 @@ CONFIG_ROOT = Path(__file__).resolve().parents[1] / 'assets' / 'config'
 SERVICES = ('codex', 'claude-code', 'antigravity', 'grok', 'cursor')
 ROUTE_ALIASES = {'agy': 'antigravity', 'claude': 'claude-code'}
 FIELDS = {'schema_version', 'preset', 'services', 'updater', 'api_paid', 'head_model',
-          'head_effort', 'head_efforts', 'excluded_model_prefixes', 'excluded_models', 'service_order', 'max_workers', 'claude_home'}
+          'head_effort', 'head_efforts', 'excluded_model_prefixes', 'excluded_models', 'service_order', 'max_workers', 'claude_home', 'worker_table'}
 LISTS = {'services', 'excluded_models', 'excluded_model_prefixes', 'head_efforts', 'service_order'}
 
 
@@ -110,6 +110,12 @@ def validate(values: dict, *, partial=False):
         elif key == 'claude_home':
             if not isinstance(value, str) or not Path(value).is_absolute() or '..' in Path(value).parts:
                 raise ConfigError('claude_home must be an absolute explicit configuration root')
+        elif key == 'worker_table':
+            if not isinstance(value, str) or '#sha256=' not in value:
+                raise ConfigError('worker_table requires absolute path#sha256=<digest>')
+            path, digest = value.rsplit('#sha256=', 1)
+            if not Path(path).is_absolute() or '..' in Path(path).parts or not re.fullmatch(r'[0-9a-f]{64}', digest):
+                raise ConfigError('worker_table requires absolute path#sha256=<digest>')
         elif key == 'max_workers':
             if type(value) is not int or not 1 <= value <= 32:
                 raise ConfigError('max_workers must be an integer from 1 to 32')

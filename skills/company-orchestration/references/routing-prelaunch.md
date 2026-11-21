@@ -4,14 +4,16 @@
 records remain readable through `check` and the historical case suite; their
 successful validation does not certify a past prelaunch check.
 
-An unpinned fresh decision, and an unlisted non-Codex selection even if pinned,
-supplies `price_selection.inventory_evidence`. The
-referenced host evidence includes `candidate_inventory`, a list of route,
-family, model and effort objects. Legacy real evidence pins the current host's
+A fresh ordinary decision supplies `binding.inventory_evidence` and a
+`selected_runtime` row. Explicit comparison also supplies `price_selection`;
+its legacy inventory reference may be retained and must agree with the common
+reference when both are present. Comparison inventory evidence includes
+`candidate_inventory`, a list of route, family, model and effort objects.
+Legacy real evidence pins the current host's
 canonical Codex home's `models_cache.json`. The explicit
 [host-catalog opt-in](host-model-catalog.md) instead pins fresh exact-worktree
 metadata and semantic settings observations for local Orca 1.4.245, 1.4.261 or 1.4.263, through the
-same checker and checked launcher; it does not depend on that shared cache. For an unpinned Codex selection, the checker
+same checker and checked launcher; it does not depend on that shared cache. For an explicit comparison of an unpinned Codex selection, the checker
 independently intersects its models and supported efforts with the packaged
 table and requires each non-excluded known model at the selected effort and
 every known pair that dominates the selection on the benchmark prior in the
@@ -28,7 +30,7 @@ charges. A candidate dominated on score and cost is rejected; a nondominated
 choice is allowed. A fresh user pin binds task, scope, revision, attempt and
 the selected pair. A real pin requires human evidence and host support evidence.
 
-For an unlisted non-Codex selection, the inventory must include all available,
+For an explicit comparison with an unlisted non-Codex selection, the inventory must include all available,
 non-excluded Codex model/effort pairs with table priors; those pairs retain the
 same quality and runtime-exclusion rules. The unlisted candidate requires the
 separate current host, model, support, authentication, tool, billing and exact
@@ -38,10 +40,14 @@ and effort must appear together in one of the contract's supported catalog
 shapes. Unknown shapes do not establish support. These checks do not authenticate
 the host labels or raw source origin.
 Its price and benchmark comparison are unknown, so selecting it is a reasoned
-operator decision rather than a price or dominance result. The existing checked
-launcher remains Codex-only; use an actually supported Orca path for other agents.
+operator decision. Checked launch supports Codex and the subscription AGY path below.
 
-`routing_launch.py` supports new Codex workers and evidence-bound reuse. It requires the current
+`routing_launch.py` supports new Codex and subscription AGY workers and evidence-bound Codex reuse. All new
+checked launches also require an exact [storage enrollment](storage-lifecycle.md)
+request pin before result lock/state, reprepare/catalog/measurement allocations.
+Use `--enrollment-request PATH --expect-enrollment-sha256 SHA`; missing or changed
+Run/owner/record/session bindings stop before host probes or writes. This is a
+Company checked entry, not server-wide raw Orca interception. It requires the current
 record, a decision whose binding contains the SHA-256 of the exact UTF-8
 `--spec`, and unused prelaunch and host-result receipt paths. It checks before writing the receipt and
 invoking `orca orchestration worker-start`, using only the checked model and
@@ -51,6 +57,10 @@ bound to the prelaunch receipt; actual Task and Dispatch IDs are host output.
 Missing IDs or effective settings leave the readback unverified, and different
 effective settings fail it even if the host exits zero. Preserve the host result
 and inspect its resource effects before any recovery; never retry automatically.
+When a concise response lacks effective settings, the launcher may read the same
+Dispatch with `worker-show --full`; it requires matching Run, Task, Dispatch and
+effective settings. Original start and full-readback output are retained together.
+Missing, failed or conflicting readback does not authorize another start.
 For reuse, supply the original launch receipt, its dispatch and terminal. The
 decision binds the original hash and a pinned host observation that settings
 were unchanged, including `observed_at` and `valid_until` UTC timestamps. The
@@ -108,6 +118,22 @@ requiring the checked launcher. It checks recognized native `spawn_agent`
 calls against an existing current parent Task and Dispatch, the selected model,
 effort and exact message hash and writes a
 receipt keyed by the tool-use ID; that ID is not an Orca Task ID.
+If a recognized action has no routing binding, an independently registered
+Company completion session is denied rather than silently treated as unrelated.
+Run success or failure does not end the Company session. On explicit user exit,
+run `routing_hook.py exit --session <exact-host-session-id>`; if a routing binding
+already exists, supply its exact current SHA-256 with `--expected-sha256`. The
+exit marker is session-bound and does not alter the completion registration or
+erase its evidence. A later Company entry replaces it through `bind` with the
+marker hash. Missing completion registration cannot prove that a session is not
+Company. A recognized targeted worker `send` is denied within this scope because
+a settled target can create a new Task without an atomic active-state condition;
+coordinator Run messages and the distinct ask/reply/worker_done paths remain.
+For an authorized new contribution after worker completion, use a fresh checked
+`--spec` launch in the same Run with the retained evidence and explicit parent;
+the worker receives a new Task rather than the old terminal's implicit context.
+Preserve failed or unknown attempts; a new Task is not a substitute for an
+unverified retry. The hook does not intercept unsupported shell or host paths.
 
 The source installer has a separately owned registration and rollback entry;
 source definition and tests do not prove installed registration, trusted load
@@ -250,14 +276,71 @@ Media-generation rows are disabled. Named tools and positive context requirement
 remain unasserted and return NO_MATCH without a suitable external table. Table
 evidence is an editorial assertion plus narrow smoke observations, not host or
 universal quality proof. A proposal is not an
-authorization: complete the normal decision, price, host, task, authority and
-prelaunch checks; disagreement denies launch, without automatic runtime fallback. Older decisions
-without profile_binding retain their existing path.
+authorization: complete the normal decision, selected runtime, host, task, authority and
+prelaunch checks (plus price checks when comparison is requested); disagreement denies launch, without automatic runtime fallback.
+Fresh execution checks require a valid `profile_binding`; historical record reads
+remain readable without retroactively certifying the old execution. External tables
+may represent supported non-Codex routes and an observed native effort or null
+when there is no effort knob. A table is an untrusted proposal, not evidence of
+host support or launch authority; the existing unlisted route checks still apply.
+
+### Starting an ordinary AGY selection
+
+For visual/hard, tool_use/medium and tool_use/hard the packaged primary is
+respectively `gemini-4-neon-high`, `gemini-4-hydrogen-medium` and
+`gemini-4-hydrogen-high`. Keep the full catalog model ID, including its effort
+suffix, in the profile, decision and evidence. Supply the matching separate
+effort. Use `ordinary_assignment` for an ordinary proposal. No user pin or
+price comparison is needed.
+
+Use the normal checked launch with an enabled Antigravity service and a
+`selected_runtime` row with subscription billing. Supply the canonical local
+inventory plus the AGY model catalog and the pinned, fresh support, authentication,
+tools and billing observations required by the unlisted-runtime contract. Use
+the local Orca runtime ID from `orca status --json` as their common host. A
+supplied resource manifest names the service `antigravity` and the same host.
+The launcher verifies the runtime before sending `worker-start --agent antigravity
+--model <exact-id> --effort <effort> --full --json`. It checks the returned runtime,
+Task, Dispatch and effective agent/model/effort. Unknown or conflicting readback
+requires reconciliation. Codex-specific catalog refresh, inventory reprepare,
+terminal reuse and measurement bridges remain unavailable for AGY.
+
+On a Codex-only host, inspect the profile's `eligible_chain`. The first Codex
+alternatives for those three rows are respectively Sol/high, Terra/medium and
+Sol/high. For a standing Codex-only policy, retain the full source table, create
+a separate table with unavailable routes disabled, and configure its absolute
+path and byte hash using [worker table configuration](configuration.md#configured-worker-routing-table).
+Run `record_check.py profile-prepare PROFILE --unit UNIT` under that configuration.
+Alternatively, a genuine current-task user pin can explicitly select an eligible
+identity via `--pins PINS`. Prepare a fresh decision, runtime and inventory
+for the proposed Codex identity and pass the normal prelaunch checks. An old
+AGY pin, exhausted chain or missing replacement evidence blocks execution.
+
+### In-flight decisions across the routing table update
+
+Keep each original decision, table, priors, configuration, prelaunch and host
+receipt with the package revision that produced it. For historical replay use
+that retained revision and evidence. The current checker recomputes the profile
+and priors digest and can reject a valid older binding after a policy change.
+For a confirmed unstarted unit, prepare a separate decision against the current
+configured table and bind the exact selected identity and current evidence.
+For a live Dispatch, finish and reconcile it under its original bindings. For
+a pending invocation or unknown host result, reconcile the original Task and
+Dispatch before considering another launch. Preserve earlier receipts byte for
+byte, including refusals. A new preparation cannot certify or relabel earlier work.
+
+A fresh spec launch can have a planned profile unit different from the actual
+host-issued Task ID. Keep the original profile binding unchanged. A later record
+must reference a pinned original prelaunch receipt and observed original launch
+result with exact profile digest/unit, scope, revision, spec, selected identity,
+Run, actual Task and Dispatch bindings. Missing or mismatched evidence refuses
+the mapping. Historical validation never infers a successful start from an
+operator-written mapping, and a pinned file does not authenticate its origin.
 
 ### Local backups and shared final default (table v2)
 
 Each row has one primary and **at most two backups** (one to three local
-candidates). Sort by ascending `priority`, then `(route, model, effort)`;
+candidates). Sort by ascending `priority`, preserving listed order on ties;
 indices 0, 1 and 2 never renumber after filtering. Empty rows, three backups
 and duplicate model names (even at different efforts) are rejected.
 The separate required top-level `common_default` is codex/gpt-6.1-terra with
@@ -290,7 +373,8 @@ changing consultation, selection, evidence, source or ordering denies launch.
 Compatibility is intentionally fail-closed: table v1 and profile bindings v1/v2
 must be explicitly migrated/reprepared; the old four-local-candidate shape is
 not silently truncated or interpreted as the new shared-default contract.
-Decisions without profile_binding retain their existing path.
+An execution check without `profile_binding` fails; historical record reads do
+not add that requirement retroactively.
 
 This is **prelaunch eligibility selection, not runtime retry/failover**.
 `routing_launch.py` starts only the one checked selected identity, once. It
@@ -303,3 +387,17 @@ decision; this change adds no retry authority or provider failover.
 Price, host support, human pin, task and launch gates remain unchanged. The
 measurement-required I05 gate stays closed; no future usage, entitlement or
 model quality is established by this contract.
+
+## Execution table authority
+
+`profile-prepare` without `--table` uses the independently resolved configured
+worker table. An explicit `--table` prepares a proposal only; it grants no fresh
+execution authority. At prelaunch the embedded profile table must match the
+current configured table. The default is the packaged canonical table; a pinned
+external table must be explicitly configured under the normal configuration
+precedence described in [configuration](configuration.md#configured-worker-routing-table).
+The table is rechecked immediately before worker start; changed bytes, a missing
+source, or a configuration mismatch denies that start. Historical read does not
+substitute today's table for the original, while current readiness is checked
+against current configuration. External-table authorization does not authenticate
+its author or prove provider capability.

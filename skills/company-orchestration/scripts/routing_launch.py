@@ -9,7 +9,6 @@ import shutil
 import stat
 import secrets
 import sqlite3
-import tempfile
 import json
 import math
 import os
@@ -24,29 +23,13 @@ if __name__ == "__main__":
     import sys as _sys
     _sys.pycache_prefix = _os.path.join(_os.path.abspath(_os.path.expanduser("~")), ".cache", "agent-company", "python")
 
-from record_check import check_routing, read_json_snapshot
+from record_check import CHECKED_AGENTS, check_routing, read_json_snapshot
+from route_select import load_table
 from orca_contract import resolve_orca
 from company_config import resolve, resource_manifest_check
 
 
-def atomic_state(path, value):
-    """Replace a complete state and sync both its data and directory entry."""
-    fd, name = tempfile.mkstemp(prefix='.' + path.name + '.', dir=path.parent)
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as stream:
-            json.dump(value, stream, ensure_ascii=False, indent=2)
-            stream.write('\n')
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(name, path)
-        directory = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        if os.path.exists(name):
-            os.unlink(name)
+from atomic_persistence import atomic_state
 
 
 def timeout_stream_metadata(value):
@@ -140,18 +123,176 @@ def finite_timeout(value):
     return number
 
 
+def storage_launch_guard(args, reserve=False, capability=None):
+    """Exact enrolled producer + retained output contract, before every allocation.
+
+    This is the Company checked entry only, never a raw Orca/slash interceptor.
+    Still-live outputs are reserved, never hashed as finished disposable bytes.
+    """
+    import native_storage as storage
+    import run_completion as lifecycle
+    from native_operations import require, Blocked, regular, sha, valid_hash, decode
+    require(args.enrollment_request is not None, 'explicit storage enrollment request required', Blocked)
+    reference = {'path': str(args.enrollment_request.absolute()), 'sha256': valid_hash(args.expect_enrollment_sha256)}
+    require(sha(regular(args.enrollment_request)) == reference['sha256'], 'enrollment request pin changed', Blocked)
+    enrollment, _, manifest, current = storage.bound_enrollment(args.enrollment_request)
+    root = Path(enrollment['run'])
+    require(args.record.absolute() == root / enrollment['record'], 'checked record differs from enrollment', Blocked)
+    record = decode(regular(args.record))
+    require(isinstance(record, dict) and isinstance(record.get('goal'), dict), 'checked record goal object required', Blocked)
+    require(record['goal'].get('status') != 'succeeded' and 'artifact_retention' not in record, 'accepted canonical record cannot launch more work', Blocked)
+    if args.prepared_bundle is not None:
+        import routing_prepare
+        checked = routing_prepare.check_bundle(args.prepared_bundle)
+        bundle = decode(regular(args.prepared_bundle / 'manifest.json'))
+        require(bundle['format'] == routing_prepare.FORMAT and checked['ok'], 'prepared bundle stale/blocked', Blocked)
+        require(bundle['enrollment'] == reference and bundle['canonical_record'] == {'path': str(args.record.absolute()), 'sha256': sha(regular(args.record))}, 'prepared canonical enrollment differs', Blocked)
+        require(args.decision.absolute() == args.prepared_bundle.absolute() / 'decision.json' and args.spec is not None and args.spec.encode('utf-8') == regular(args.prepared_bundle / 'spec.txt'), 'prepared decision/spec differs', Blocked)
+    require(record.get('goal', {}).get('id') == enrollment['run_id'] and record.get('goal', {}).get('current_owner') == enrollment['owner'], 'checked goal/owner differs from enrollment', Blocked)
+    if capability is not None:
+        capability.verify()
+        require(capability.root == root, 'launch capability root differs', Blocked)
+    legacy_lock = args.result.absolute().with_name(args.result.name + '.lock')
+    require(not os.path.lexists(legacy_lock), 'legacy result lock requires owner recovery', Blocked)
+    paths = [args.receipt.absolute(), args.result.absolute()]
+    if args.reprepare_inventory:
+        directory = args.result.absolute().with_name(args.result.name + '.reprepare')
+        paths += [directory / name for name in ('inventory-before.json', 'inventory-current.json', 'decision-before.json', 'decision.json', 'provenance.json')]
+    if args.measurement_attempt:
+        ledger = root / record.get('measurement', {}).get('ledger', '')
+        require(ledger.is_relative_to(root) and ledger != root, 'measurement ledger outside enrolled Run', Blocked)
+        require('measurement-v2' in enrollment['consumers'], 'measurement consumer missing from enrollment', Blocked)
+        # The measurement producer reserves its exact next sequence before its
+        # own writer; speculative launcher reservations would claim its origin.
+    try:
+        decision = decode(regular(args.decision))
+    except FileNotFoundError:
+        # Enrollment still precedes all writes. Missing decision is an ordinary
+        # downstream prelaunch denial, not authority to probe or start a host.
+        decision = {}
+    if decision.get('binding', {}).get('host_catalog') is not None:
+        directory = args.result.absolute().with_name(args.result.name + '.catalog-refresh')
+        paths += [directory / name for name in ('status.json', 'response-1.json', 'response-2.json', 'manifest.json', 'failure.json')]
+    # Refuse an ambiguous/observed attempt before reserving renamed outputs.
+    # A malformed local packet still gets its pure pre-start diagnostic; this
+    # branch never probes a host, refreshes an inventory, or grants another start.
+    if reserve:
+        require(capability is not None, 'reservation requires held Run capability', Blocked)
+        capability.verify()
+        result_ref = args.result.absolute().relative_to(root).as_posix()
+        attempt_binding = decision.get('binding', {})
+        for prior_ref, prior_contract in manifest.get('launch_contract', {}).items():
+            if prior_ref != result_ref and prior_contract.get('attempt_binding') == attempt_binding:
+                prior = lifecycle.decode(lifecycle.read_file(capability.fd, prior_ref)[0])
+                if prior.get('launch_state') != 'not_started' or os.path.lexists(root / prior_contract['receipt']):
+                    checked = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
+                    require(checked['ok'], 'prelaunch validation denied: ' + json.dumps(checked), Blocked)
+                    raise Blocked('attempt has another unresolved or observed result; no renamed-result retry')
+    rows = []
+    for path in paths:
+        storage.lexical(str(path))
+        require(path.is_relative_to(root), 'checked output outside enrolled Run', Blocked)
+        ref = path.relative_to(root).as_posix()
+        import run_completion as lifecycle
+        lifecycle.parts(ref)
+        # Check every currently existing parent without resolving namespace links.
+        parent = path.parent
+        while parent != root:
+            if os.path.lexists(parent):
+                info = parent.lstat()
+                require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid() and not info.st_mode & 0o022, 'unsafe output parent', Blocked)
+            parent = parent.parent
+        declaration = manifest.get('creation_contract', {}).get(ref)
+        if declaration is not None:
+            require(declaration['class'] == 'preserve' and declaration['owner'] == enrollment['owner'] and declaration['origin'] == 'routing_launch.py' and declaration['state'] == 'reserved', 'launch output declaration is not live retained evidence', Blocked)
+        else:
+            require(reserve and not os.path.lexists(path), 'output must be reserved before allocation', Blocked)
+            rows.append(dict(path=ref, **{'class':'preserve'}, owner=enrollment['owner'], consumers=[], reason='checked_launch_evidence', origin='routing_launch.py', regeneration=None, next_use_or_recheck='freeze only after launch/measurement settlement'))
+        if os.path.lexists(path): regular(path)
+    if rows:
+        storage.classify_value(dict(enrollment=reference, expect_manifest_sha256=current, phase='reserve', artifacts=rows), args.enrollment_request.parent, reference, capability)
+    if reserve:
+        require(capability is not None, 'reservation requires held Run capability', Blocked)
+        capability.verify()
+        raw = lifecycle.read_file(capability.fd, lifecycle.MANIFEST, True)[0]
+        manifest = lifecycle.decode(raw)
+        launches = manifest.setdefault('launch_contract', {})
+        result_ref = args.result.absolute().relative_to(root).as_posix()
+        attempt_binding = decision.get('binding', {})
+        declaration = dict(receipt=args.receipt.absolute().relative_to(root).as_posix(),
+                           attempt_binding=attempt_binding,
+                           optional=[p.relative_to(root).as_posix() for p in paths[2:]
+                                     if '.catalog-refresh' in str(p)])
+        if result_ref in launches and launches[result_ref] != declaration:
+            prior = lifecycle.decode(lifecycle.read_file(capability.fd, result_ref)[0])
+            require(prior.get('launch_state') == 'not_started' and not os.path.lexists(root / launches[result_ref]['receipt']),
+                    'launch result/receipt contract changed after possible start', Blocked)
+        if launches.get(result_ref) != declaration:
+            launches[result_ref] = declaration
+            lifecycle.write_metadata(capability.fd, lifecycle.MANIFEST, manifest)
+            capability.verify()
+    return reference
+
+
+def full_launch_readback(executable, payload, selected, timeout, *, agent='codex', runtime_id=None):
+    """Read the host's exact Dispatch after a concise start response."""
+    result = {'status': 'unverified', 'reason': 'full host readback unavailable',
+              'exit_code': None, 'stdout': '', 'stderr': ''}
+    if not all(isinstance(payload.get(k), str) and payload[k] for k in ('runId', 'taskId', 'dispatchId')):
+        return result
+    try:
+        host = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch',
+                               payload['dispatchId'], '--full', '--json'],
+                              check=False, capture_output=True, text=True, timeout=timeout)
+        result.update(exit_code=host.returncode, stdout=host.stdout, stderr=host.stderr)
+        data = json.loads(host.stdout)
+        dispatch = data['result']['dispatch']
+        worker = data['result']['worker']
+        original_incarnation = payload.get('processIncarnation') or payload.get('prompt', {}).get('processIncarnation')
+        if (host.returncode != 0 or data.get('ok') is not True or
+                (runtime_id is not None and data.get('_meta', {}).get('runtimeId') != runtime_id) or
+                dispatch.get('id') != payload['dispatchId'] or
+                dispatch.get('taskId') != payload['taskId'] or
+                dispatch.get('runId') != payload['runId'] or
+                worker.get('dispatchId') != payload['dispatchId'] or
+                (original_incarnation is not None and dispatch.get('processIncarnation') != original_incarnation) or
+                (payload.get('terminal') is not None and
+                 (dispatch.get('assigneeHandle') != payload['terminal'] or
+                  data['result'].get('terminal', {}).get('handle') != payload['terminal']))):
+            return result
+        effective = worker['startOptions']['launch']['effective']
+        if not isinstance(effective, dict) or any(effective.get(k) is None for k in ('agent', 'model', 'effort')):
+            return result
+        if (effective['agent'], effective['model'], effective['effort']) != (agent, selected['model'], selected['effort']):
+            result.update(status='failed', reason='host effective launch settings differ from checked selection')
+        else:
+            result.update(status='observed', reason='host IDs and effective launch settings observed by full readback')
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        result['error'] = str(exc)
+    return result
+
+
 def main(argv=None):
     # Parse all arguments before creating the lock or result (including --help).
     args = argument_parser().parse_args(argv)
-    # The lock is stable across atomic replacement and covers all local prechecks.
+    # Validate the pinned enrollment before opening its existing lifecycle lock.
+    try:
+        import native_storage as storage
+        from native_operations import pinned
+        if args.enrollment_request is None: raise ValueError('explicit storage enrollment request required')
+        reference = dict(path=str(args.enrollment_request.absolute()), sha256=args.expect_enrollment_sha256)
+        ep, _ = pinned(reference, Path.cwd())
+        enrollment, _, _, _ = storage.bound_enrollment(ep)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(json.dumps({'ok': False, 'error': 'storage enrollment blocked', 'detail': str(exc)}))
+        return 1
+    # One stable Run capability covers reservation, pending, host and readback.
     path = args.result
     try:
-        with path.with_name(path.name + '.lock').open('a') as lock:
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                print(json.dumps({'ok': False, 'error': 'result locked; reconciliation required'}))
-                return 1
+        import run_completion as rc
+        with rc.lifecycle_lock(Path(enrollment['sejong_home']), Path(enrollment['run'])) as capability:
+            args.storage_capability = capability
+            storage_launch_guard(args, reserve=True, capability=capability)
             if args.reprepare_inventory and (path.exists() or args.receipt.exists() or
                     path.with_name(path.name + '.reprepare').exists()):
                 print(json.dumps({'ok': False, 'error': 'reprepare requires unused result and receipt paths; preserve prior attempts'}))
@@ -172,16 +313,16 @@ def main(argv=None):
                 except (OSError, ValueError, AttributeError):
                     print(json.dumps({'ok': False, 'error': 'result already exists; reconciliation required'}))
                     return 1
-            atomic_state(path, {'launch_state_version': 1, 'launch_state': 'not_started'})
+            atomic_state(path, {'launch_state_version': 1, 'launch_state': 'not_started'}, capability)
             from measurement_lifecycle import launch_guard
             try:
-                with launch_guard(args) as lifecycle:
+                with launch_guard(args, capability) as lifecycle:
                     args.lifecycle = lifecycle
                     return _main(args)
             except (ValueError, KeyError, TypeError, AttributeError, sqlite3.Error, subprocess.SubprocessError) as exc:
                 print(json.dumps({'ok': False, 'error': 'measurement lifecycle blocked', 'detail': str(exc)}))
                 return 1
-    except OSError as exc:
+    except (OSError, ValueError, KeyError, TypeError) as exc:
         print(json.dumps({'ok': False, 'error': 'result persistence failed', 'detail': str(exc)}))
         return 1
 
@@ -189,6 +330,9 @@ def main(argv=None):
 def argument_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--orca', help='single Orca executable (not a shell command)')
+    parser.add_argument('--enrollment-request', type=Path, help='exact storage enrollment request; required before supported writes')
+    parser.add_argument('--expect-enrollment-sha256')
+    parser.add_argument('--prepared-bundle', type=Path, help='exact retained v2 review bundle; canonical record remains live')
     parser.add_argument('--measurement-attempt', help='v2 prepared attempt ID; no fresh retry on unknown start')
     parser.add_argument('--decision', required=True, type=Path)
     parser.add_argument('--reprepare-inventory', type=Path,
@@ -248,7 +392,8 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
     def invalid_constant(value):
         raise ValueError('nonfinite inventory JSON value: ' + value)
 
-    ref = decision['price_selection']['inventory_evidence']
+    from host_model_catalog import inventory_reference
+    ref = inventory_reference(decision)
     inventory = decision['evidence'][ref]
     expected_errors = {('$.evidence.' + ref, 'hash_mismatch'),
                        ('$.price_selection', 'price_selection_invalid')}
@@ -363,6 +508,9 @@ def _main(args):
         result['errors'].append({'path': '$.binding.parent_task', 'code': 'parent_binding',
                                  'message': 'Parent Task must match the checked decision'})
     result['receipt']['spec_sha256'] = spec_hash
+    profile_binding = decision.get('profile_binding')
+    result['receipt']['profile_unit'] = profile_binding.get('unit_id') if isinstance(profile_binding, dict) else None
+    result['receipt']['requested_run'] = args.run
     if (args.run is not None or 'run' in binding or 'run' in record) and (
             not args.run or binding.get('run') != args.run or record.get('run') != args.run):
         result['ok'] = False
@@ -386,10 +534,25 @@ def _main(args):
         except (ValueError, OSError, KeyError, TypeError) as exc:
             print(json.dumps({'ok': False, 'error': 'catalog binding denied', 'detail': str(exc)}))
             return 1
-    if selected['route'] != 'codex':
+    agent = CHECKED_AGENTS.get(selected['route'])
+    if agent is None:
         result['ok'] = False
         result['errors'].append({'path': '$.selected.route', 'code': 'unsupported_launch_route',
-                                 'message': 'This launcher supports a new Codex worker only'})
+                                 'message': 'Checked launch supports Codex and subscription Antigravity workers'})
+    runtime_id = None
+    if result['ok'] and agent == 'antigravity':
+        runtime = decision.get('selected_runtime') or {}
+        efforts = load_table()[0]['worker_route_efforts']['agy'].get(selected['model'], [])
+        if (runtime.get('billing') != 'subscription' or args.declared_billing not in (None, 'subscription')
+                or selected['effort'] not in efforts
+                or args.terminal or args.origin_receipt or args.reuse_dispatch or args.reprepare_inventory
+                or catalog_context is not None or args.measurement_attempt or record.get('measurement') is not None):
+            result['ok'] = False
+            result['errors'].append({'path': '$.selected_runtime', 'code': 'unsupported_agy_launch',
+                                     'message': 'Require an exact supported AGY model/effort and subscription runtime '
+                                                'evidence for a new worker; Codex-only bridges cannot be used.'})
+        else:
+            runtime_id = decision['evidence'][runtime['runtime_evidence']]['unlisted_runtime']['host']
     if not result['ok']:
         print(json.dumps(result))
         return 1
@@ -403,7 +566,7 @@ def _main(args):
         manifest = resource_manifest_check(
             resolve(), root=manifest_path.absolute().parent if manifest_path else Path('.'),
             name=manifest_path.name if manifest_path else None,
-            required=args.require_resource_manifest, service=selected['route'],
+            required=args.require_resource_manifest, service=agent,
             host=args.declared_host, model=selected['model'], effort=selected['effort'],
             tools=args.declared_tool, billing=args.declared_billing, spend=args.declared_spend)
     except (ValueError, OSError, KeyError) as exc:
@@ -413,6 +576,25 @@ def _main(args):
     if manifest['status'] == 'denied':
         print(json.dumps({'ok': False, 'resource_manifest': manifest}))
         return 1
+    if runtime_id is not None:
+        if ((args.declared_host is not None and args.declared_host != runtime_id) or
+                os.environ.get('ORCA_ENVIRONMENT') not in (None, '', 'local') or
+                any(os.environ.get(k) for k in ('ORCA_PAIRING_CODE', 'ORCA_REMOTE_PAIRING', 'ORCA_DEV_REPO_ROOT'))):
+            print(json.dumps({'ok': False, 'error': 'AGY evidence requires the same local Orca runtime'}))
+            return 1
+        try:
+            probe = subprocess.run([executable, 'status', '--json'], check=False, capture_output=True,
+                                   text=True, timeout=args.probe_timeout)
+            status = json.loads(probe.stdout)
+            live = status['result']['runtime']
+            if (probe.returncode or status.get('ok') is not True or status['result']['target']['kind'] != 'local'
+                    or live.get('state') != 'ready' or live.get('reachable') is not True or live['runtimeId'] != runtime_id
+                    or status['_meta']['runtimeId'] != runtime_id):
+                raise ValueError('local runtime differs from the pinned AGY evidence')
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, AttributeError, TypeError) as exc:
+            print(json.dumps({'ok': False, 'error': 'AGY host identity unavailable', 'detail': str(exc)}))
+            return 1
+        result['receipt']['agy_runtime_id'] = runtime_id
     if args.task:
         current = next((item for item in record['tasks'] if item['id'] == args.task), None)
         if (binding.get('task') != args.task or current is None or
@@ -423,7 +605,7 @@ def _main(args):
             print(json.dumps({'ok': False, 'error': 'Task or retry binding does not match current record'}))
             return 1
         try:
-            probe = subprocess.run([executable, 'orchestration', 'task-list', '--run', args.run, '--from', args.sender, '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
+            probe = subprocess.run([executable, 'orchestration', 'task-list', '--run', args.run, '--from', args.sender, '--full', '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
             envelope = json.loads(probe.stdout)
             listed = envelope['result']
             task = next(item for item in listed['tasks'] if item['id'] == args.task)
@@ -434,7 +616,7 @@ def _main(args):
             if args.retry_of:
                 latest_probe = subprocess.run([executable, 'orchestration', 'dispatch-show', '--task', args.task, '--from', args.sender, '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
                 latest = json.loads(latest_probe.stdout)
-                failed_probe = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch', args.retry_of, '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
+                failed_probe = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch', args.retry_of, '--full', '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
                 failed = json.loads(failed_probe.stdout)
                 dispatch = failed['result']['dispatch']
                 valid = valid and latest_probe.returncode == 0 and latest.get('ok') is True and latest['result']['dispatch']['id'] == args.retry_of and failed_probe.returncode == 0 and failed.get('ok') is True and dispatch['id'] == args.retry_of and dispatch['taskId'] == args.task and dispatch['runId'] == args.run and dispatch['status'] == 'failed'
@@ -464,7 +646,7 @@ def _main(args):
             original = envelope['result']
             original_effective = original['launch']['effective']
             original_incarnation = original['prompt']['processIncarnation']
-            probe = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch', args.reuse_dispatch, '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
+            probe = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch', args.reuse_dispatch, '--full', '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
             observed = json.loads(probe.stdout)
             live = observed['result']
             terminal = live['terminal']
@@ -498,8 +680,10 @@ def _main(args):
                    '--worktree', args.worktree, '--terminal', args.terminal, '--json']
     else:
         command = [executable, 'orchestration', 'worker-start', '--from', args.sender, '--task' if args.task else '--spec', args.task or args.spec,
-                   '--worktree', args.worktree, '--agent', 'codex', '--model', selected['model'],
+                   '--worktree', args.worktree, '--agent', agent, '--model', selected['model'],
                    '--effort', selected['effort'], '--json']
+        if agent == 'antigravity':
+            command.append('--full')  # The concise projection omits the runtime identity.
     if args.run:
         command.extend(('--run', args.run))
     if args.retry_of:
@@ -533,7 +717,7 @@ def _main(args):
             return 1
     if catalog_context is not None:
         try:
-            from host_model_catalog import load as load_catalog, compare, require
+            from host_model_catalog import load as load_catalog, compare, require, inventory_reference
             refreshed_path = args.result.with_name(args.result.name + '.catalog-refresh')
             probe = subprocess.run(['node', str(Path(__file__).with_name('host_model_catalog.cjs')),
                                     str(refreshed_path), args.worktree],
@@ -555,23 +739,46 @@ def _main(args):
                     read_json_snapshot(args.record)[2] == record_hash, 'decision/record changed')
             bound_catalog(decision, args.decision.parent, resolve())
             result['receipt']['host_catalog'] = {
-                'prepared_manifest_sha256': decision['evidence'][decision['price_selection']['inventory_evidence']]['sha256'],
+                'prepared_manifest_sha256': decision['evidence'][inventory_reference(decision)]['sha256'],
                 'refreshed_manifest_sha256': manifest_hash, 'refreshed_directory': str(refreshed_path),
                 'runtime_id': fresh['runtime_id'], 'worktree': fresh['worktree']}
         except (ValueError, OSError, KeyError, TypeError, subprocess.SubprocessError) as exc:
             print(json.dumps({'ok': False, 'error': 'catalog prelaunch denied', 'detail': str(exc)}))
             return 1
+    try:
+        storage_launch_guard(args, reserve=False, capability=args.storage_capability)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(json.dumps({'ok': False, 'error': 'storage enrollment changed before start', 'detail': str(exc)}))
+        return 1
+    final_authority = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
+    if runtime_id is not None and (read_json_snapshot(args.decision)[2] != original_decision_hash or
+                                   read_json_snapshot(args.record)[2] != record_hash):
+        print(json.dumps({'ok': False, 'error': 'AGY decision or record changed before start'}))
+        return 1
+    if (not final_authority['ok'] or
+            final_authority['receipt'].get('worker_table_authority') != result['receipt'].get('worker_table_authority') or
+            final_authority['receipt'].get('configuration_sha256') != result['receipt'].get('configuration_sha256')):
+        print(json.dumps({'ok': False, 'error': 'configured worker table or configuration changed before start',
+                          'check': final_authority}))
+        return 1
     result['receipt']['launch_argv'] = command
-    with args.receipt.open('x', encoding='utf-8') as receipt:
+    import run_completion as rc
+    args.storage_capability.verify()
+    receipt_ref = args.receipt.absolute().relative_to(args.storage_capability.root).as_posix()
+    with rc.parent_fd(args.storage_capability.fd, receipt_ref) as (parent, name):
+        receipt_handle = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
+    with os.fdopen(receipt_handle, 'w', encoding='utf-8') as receipt:
         json.dump(result, receipt, ensure_ascii=False, indent=2)
         receipt.write('\n')
         receipt.flush()
         os.fsync(receipt.fileno())
     if args.lifecycle is not None:
         args.lifecycle.pending(command, args.receipt)
+    args.storage_capability.verify()
     atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'invocation_pending',
-                               'decision_sha256': decision_hash})
+                               'decision_sha256': decision_hash}, args.storage_capability)
     try:
+        args.storage_capability.verify()
         host = subprocess.run(command, check=False, capture_output=True, text=True, timeout=args.start_timeout)
     except subprocess.TimeoutExpired as exc:
         partial = {'format': 'company-launch-timeout/v1',
@@ -594,15 +801,18 @@ def _main(args):
         return 1
     except (OSError, subprocess.SubprocessError) as exc:
         atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'unknown',
-                                   'decision_sha256': decision_hash, 'error': str(exc)})
+                                   'decision_sha256': decision_hash, 'error': str(exc)}, args.storage_capability)
         print(json.dumps({'ok': False, 'error': 'host outcome unknown; reconciliation required'}))
         return 1
     status, reason = ('failed', 'host returned nonzero') if host.returncode else ('unverified', 'host result lacks required readback')
+    full_readback = None
     try:
         envelope = json.loads(host.stdout)
         payload = envelope['result']
         if host.returncode == 0 and envelope.get('ok') is False:
             status, reason = 'failed', 'host returned an unsuccessful result'
+        elif runtime_id is not None and envelope.get('_meta', {}).get('runtimeId') != runtime_id:
+            status, reason = 'unverified', 'host runtime does not match AGY evidence'
         elif host.returncode == 0 and envelope.get('ok') is True and isinstance(payload.get('taskId'), str) and payload['taskId'] and isinstance(payload.get('dispatchId'), str) and payload['dispatchId']:
             if args.task and (payload['taskId'] != args.task or payload['dispatchId'] == args.retry_of):
                 status, reason = 'failed', 'host Task or Dispatch differs from checked identity'
@@ -615,16 +825,26 @@ def _main(args):
             else:
                 effective = payload.get('launch', {}).get('effective')
                 if isinstance(effective, dict) and all(effective.get(field) is not None for field in ('agent', 'model', 'effort')):
-                    if effective.get('agent') == 'codex' and effective.get('model') == selected['model'] and effective.get('effort') == selected['effort']:
+                    if effective.get('agent') == agent and effective.get('model') == selected['model'] and effective.get('effort') == selected['effort']:
                         status, reason = 'observed', 'host IDs and effective launch settings observed'
                     else:
                         status, reason = 'failed', 'host effective launch settings differ from checked selection'
+                elif runtime_id is not None and isinstance(effective, dict) and any(
+                        effective.get(k) is not None and effective[k] != v for k, v in
+                        (('agent', agent), ('model', selected['model']), ('effort', selected['effort']))):
+                    status, reason = 'failed', 'partial host settings contradict checked AGY selection'
+                elif args.run:
+                    full_readback = full_launch_readback(executable, payload, selected, args.probe_timeout,
+                                                        agent=agent, runtime_id=runtime_id)
+                    status, reason = full_readback['status'], full_readback['reason']
     except (ValueError, KeyError, TypeError, AttributeError):
         pass
+    args.storage_capability.verify()
     atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'observed' if status == 'observed' else 'unknown',
                'decision_sha256': decision_hash, 'prelaunch_receipt_sha256': hashlib.sha256(args.receipt.read_bytes()).hexdigest(),
                'exit_code': host.returncode, 'readback_status': status, 'readback_reason': reason,
-               'stdout': host.stdout, 'stderr': host.stderr})
+               'stdout': host.stdout, 'stderr': host.stderr,
+               'full_readback': full_readback}, args.storage_capability)
     if status == 'observed' and args.lifecycle is not None:
         args.lifecycle.bind()
     sys.stdout.write(host.stdout)

@@ -18,7 +18,8 @@ from company_config import resolve
 from record_check import check_routing, unique_object, invalid_constant
 
 PACKAGE = Path(__file__).resolve().parents[1]
-FORMAT = 'company-routing-prepare/v1'
+LEGACY_FORMAT = 'company-routing-prepare/v1'
+FORMAT = 'company-routing-prepare/v2'
 FILES = ('original-record.json', 'original-decision.json', 'spec.txt', 'record.json',
          'decision.json', 'patch.json', 'routing-check.json', 'missing-fields.json')
 LIMITS = ('Supplied-evidence preparation only; not authenticated host readiness or launch permission. '
@@ -157,6 +158,13 @@ def prepare(args):
     root = args.output.absolute()
     if root.parent.resolve() != root.parent:
         raise ValueError('output parent must not contain symlinks')
+    from native_storage import reserve_producer
+    reference = {'path': str(args.enrollment_request.absolute()), 'sha256': args.expect_enrollment_sha256}
+    enrollment = reserve_producer(reference, [root / name for name in (*FILES, 'manifest.json')], 'routing_prepare.py')
+    canonical = Path(enrollment['run']) / enrollment['record']
+    # Reviewed snapshots are not a competing authoritative lifecycle record.
+    if regular(canonical) != regular(args.record):
+        raise ValueError('prepared snapshot differs from enrolled canonical record')
     root.mkdir(mode=0o700)  # atomic reservation; exists/dangling symlink/parallel caller denies
     os.chmod(root, 0o700)
     raw_record, raw_decision, spec = [regular(path) for path in (args.record, args.decision, args.spec_file)]
@@ -187,6 +195,7 @@ def prepare(args):
         write_private(root, name, raw)
     manifest = {**status(errors), 'worktree': args.worktree, 'configuration_sha256': configuration,
                 'source': source, 'inputs': inputs,
+                'enrollment': reference, 'canonical_record': {'path': str(canonical), 'sha256': digest(raw_record)},
                 'artifacts': {name: digest(raw) for name, raw in payloads.items()}}
     write_private(root, 'manifest.json', encoded(manifest))  # complete marker written last
     directory = os.open(root, os.O_RDONLY)
@@ -201,7 +210,7 @@ def check_bundle(root):
     root = root.absolute()
     manifest = decode(regular(root / 'manifest.json'))
     errors = []
-    if manifest['format'] != FORMAT or set(manifest['artifacts']) != set(FILES):
+    if manifest['format'] not in (LEGACY_FORMAT, FORMAT) or set(manifest['artifacts']) != set(FILES):
         raise ValueError('unknown or incomplete bundle format')
     if stat.S_IMODE(root.stat().st_mode) != 0o700:
         errors.append(issue('bundle_permissions', 'Bundle directory must be 0700'))
@@ -222,6 +231,14 @@ def check_bundle(root):
     _, missing = checked(decode(payloads['record.json']), decode(payloads['decision.json']), root,
                          payloads['spec.txt'], manifest['worktree'])
     errors.extend(missing)
+    if manifest['format'] == FORMAT:
+        from native_storage import bound_enrollment
+        from native_operations import pinned
+        ep, _ = pinned(manifest['enrollment'], root)
+        enrollment, _, _, _ = bound_enrollment(ep)
+        canonical = Path(enrollment['run']) / enrollment['record']
+        if manifest['canonical_record'] != {'path': str(canonical), 'sha256': digest(regular(canonical))} or regular(canonical) != payloads['original-record.json']:
+            errors.append(issue('canonical_record_drift', 'Enrolled canonical record changed; old preparation cannot launch'))
     # A denied bundle remains denied; checking it never repairs missing authority.
     errors.extend(decode(payloads['missing-fields.json']))
     return {**status(errors), 'bundle': str(root)}
@@ -234,6 +251,8 @@ def main(argv=None):
     for name in ('record', 'decision', 'spec-file', 'output'):
         item.add_argument('--' + name, type=Path, required=True)
     item.add_argument('--worktree', required=True)
+    item.add_argument('--enrollment-request', type=Path, required=True)
+    item.add_argument('--expect-enrollment-sha256', required=True)
     item = sub.add_parser('check', help='read-only current revalidation, never launch')
     item.add_argument('bundle', type=Path)
     args = parser.parse_args(argv)

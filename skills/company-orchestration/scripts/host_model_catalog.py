@@ -137,9 +137,24 @@ def require_launch_authority(metadata):
     raise ValueError('catalog_requires_checked_launcher: use routing_launch.py with bound host_catalog evidence')
 
 
+def inventory_reference(decision):
+    """Resolve the common inventory ID while retaining historical comparison inputs."""
+    binding = decision.get('binding', {})
+    selection = decision.get('price_selection', {})
+    require(isinstance(binding, dict) and isinstance(selection, dict), 'invalid inventory binding')
+    common = binding.get('inventory_evidence')
+    legacy = selection.get('inventory_evidence')
+    require(common is None or isinstance(common, str) and bool(common), 'invalid common inventory reference')
+    require(legacy is None or isinstance(legacy, str) and bool(legacy), 'invalid legacy inventory reference')
+    require(common is None or legacy is None or common == legacy, 'inventory references disagree')
+    ref = common if common is not None else legacy
+    require(isinstance(ref, str) and bool(ref), 'inventory reference required')
+    return ref
+
+
 def bound_catalog(decision, base, configuration, *, now=None):
     """Opt-in inventory consumer. Existing auth/billing/quality gates remain upstream."""
-    ref = decision['price_selection']['inventory_evidence']
+    ref = inventory_reference(decision)
     source = decision['evidence'][ref]
     require(source.get('source') == 'orca_model_catalog', 'not a host catalog source')
     context = decision['binding']['host_catalog']

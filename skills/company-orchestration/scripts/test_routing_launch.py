@@ -12,18 +12,46 @@ from types import SimpleNamespace
 
 import routing_launch
 import test_route_select
+from storage_test_support import enrolled_run, flags as enrollment_flags, fixture_goal
 
 
-class LaunchTests(unittest.TestCase):
+def launch_root(temp, record="record"):
+    # Exact synthetic inputs are reserved before the first fixture writer.
+    return enrolled_run(Path(temp), record=record, paths=(
+        "decision", "missing", "models_cache.json", "decision.json",
+        "unchanged.json", "origin.json", "manifest.json", "retry-decision",
+        "retry-record", "profile.json", "external-table.json", "profile", "table",
+        "table.json", "plan", "objective", "criteria"))
+
+
+def fresh_launch_case(root, args, base):
+    """Independent old oracle scenario, never retry an unresolved attempt.
+
+    Enroll/reserve a new empty Run before copying only fixture INPUT originals.
+    Results/receipts/pending state stay in their original Run until teardown.
+    In-scenario replay/concurrency continues to use its unchanged exact Run.
+    """
+    import run_completion as rc
+    record = Path(args[args.index('--record') + 1]).relative_to(root).as_posix()
+    fresh = launch_root(base, record=record)
+    manifest = json.loads((root / rc.MANIFEST).read_bytes())
+    inputs = {p for p, row in manifest['creation_contract'].items()
+              if row['origin'] == 'storage_test_support'} | {record}
+    for ref in inputs:
+        source = root / ref
+        if source.is_file():
+            target = fresh / ref
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+    local = [str(fresh) + x[len(str(root)):] if x.startswith(str(root) + '/') else x for x in args]
+    for flag, value in zip(('--enrollment-request', '--expect-enrollment-sha256'),
+                           enrollment_flags(fresh)[1::2]):
+        local[local.index(flag) + 1] = value
+    return fresh, local
+
+
+class LaunchFixture(unittest.TestCase):
     def setUp(self):
-        # Timeout diagnostics intentionally reject *any* writable/symlinked ancestor.
-        # Linux /tmp (1777) is therefore not a positive diagnostic fixture, even
-        # below a private child. Keep the production descriptor walk unchanged.
-        fixtures = tempfile.TemporaryDirectory(prefix='.launch-tests-', dir=Path(__file__).resolve().parent)
-        self.addCleanup(fixtures.cleanup)
-        temporary_root = patch.object(tempfile, 'tempdir', fixtures.name)
-        temporary_root.start()
-        self.addCleanup(temporary_root.stop)
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         root = Path(temp.name)
@@ -41,12 +69,176 @@ class LaunchTests(unittest.TestCase):
         executable.start()
         self.addCleanup(executable.stop)
 
+
+class AgyLaunchTests(LaunchFixture):
+    def agy_case(self, root, sources, family, difficulty, model):
+        import record_check
+        from test_unlisted_routes import pin_agy_fixture_sources
+
+        fixture = test_route_select.SelectionCLITests()
+        fixture.setUp()
+        packet = fixture.packet()
+        del packet['price_selection']
+        profile = json.loads((test_route_select.PACKAGE / 'assets/worker-profile-example.json').read_text())
+        unit = profile['units'][0]
+        visual = family == 'visual'
+        unit['profile'].update(family=family, difficulty=difficulty, input_modalities=['image' if visual else 'text'],
+                               required_capabilities=['vision.read' if visual else 'tool.call'])
+        table = json.loads((test_route_select.PACKAGE / 'assets/worker-routing-table.json').read_text())
+        binding = record_check.make_profile_binding(profile, table, unit['id'])
+        effort = 'medium' if difficulty == 'medium' else 'high'
+        self.assertEqual(binding['selected'], {'route': 'agy', 'model': model, 'effort': effort})
+        self.assertEqual(binding['fallback_index'], 0)
+        packet['profile_binding'] = binding
+        packet['binding'].update(task=unit['id'], planned=True, attempt='planned:' + unit['id'],
+                                 run='run-test', spec_sha256=hashlib.sha256(b'bounded test').hexdigest(),
+                                 inventory_evidence='inventory')
+        row = test_route_select.unlisted_candidate(packet['evidence'], **binding['selected'], family='other')
+        identity = {k: row[k] for k in ('route', 'family', 'model', 'effort')}
+        packet['selected_runtime'] = {k: v for k, v in row.items() if k not in ('quality', 'quality_evidence', 'usage_estimate')}
+        packet['selected_reason'] = 'ordinary_assignment'
+        packet['selected'] = {**identity, 'supported': True, 'evidence': row['runtime_evidence'],
+                              'reason_evidence': row['quality_evidence']}
+        packet['alternatives'] = [{**identity, 'disposition': 'selected', 'reason': 'ordinary_assignment',
+                                   'evidence': row['runtime_evidence']}]
+        pin_agy_fixture_sources(sources, packet)
+        (root / 'decision').write_text(json.dumps(packet))
+        record = json.loads((test_route_select.PACKAGE / 'assets/record-cases.json').read_text())['cases'][0]['record']
+        record['run'] = 'run-test'
+        (root / 'record').write_text(json.dumps(record))
+        args = [*enrollment_flags(root), '--decision', str(root / 'decision'), '--record', str(root / 'record'),
+                '--from', 'sender', '--spec', 'bounded test', '--run', 'run-test', '--worktree', 'current',
+                '--receipt', str(root / 'receipt'), '--result', str(root / 'result')]
+        return packet, args
+
+    def test_ordinary_agy_primary_checked_launch_and_codex_only_reproposal(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        import record_check
+
+        for family, difficulty, model in (('visual', 'hard', 'gemini-4-neon-high'),
+                                          ('tool_use', 'medium', 'gemini-4-hydrogen-medium'),
+                                          ('tool_use', 'hard', 'gemini-4-hydrogen-high')):
+            with self.subTest(family=family, difficulty=difficulty), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                root = launch_root(tmp)
+                packet, args = self.agy_case(root, base, family, difficulty, model)
+                self.enterContext(patch('record_check.canonical_home', return_value=base))
+                output = StringIO()
+                with patch('routing_launch.subprocess.run') as host, redirect_stdout(output):
+                    self.assertEqual(routing_launch.main(args), 1)
+                    host.assert_not_called()
+                errors = json.loads(output.getvalue())['errors']
+                self.assertTrue(any(e['code'] == 'reproposal_required' and 'profile-prepare --pins' in e['message']
+                                    for e in errors), errors)
+                cfg = base / 'scope.md'
+                cfg.write_text('---\nschema_version: 1\npreset: multiple\nservices: ["codex", "antigravity"]\n---\n')
+                meta = {'_meta': {'runtimeId': 'fixture-host'}, 'ok': True}
+                live = {**meta, 'result': {'target': {'kind': 'local'}, 'runtime': {
+                    'runtimeId': 'fixture-host', 'state': 'ready', 'reachable': True}}}
+                effort = packet['selected']['effort']
+                settings = {'agent': 'antigravity', 'model': model, 'effort': effort}
+                start = {**meta, 'result': {'taskId': 'issued-task', 'dispatchId': 'dispatch', 'runId': 'run-test'}}
+                detailed = {**meta, 'result': {'dispatch': {'id': 'dispatch', 'taskId': 'issued-task', 'runId': 'run-test',
+                                                            'processIncarnation': 'inc'},
+                            'worker': {'dispatchId': 'dispatch', 'startOptions': {'launch': {'effective': settings}}}}}
+                start['result']['processIncarnation'] = 'inc'
+                host_outputs = [live, start]
+                if difficulty == 'medium':
+                    host_outputs.append(detailed)
+                else:
+                    start['result']['launch'] = {'effective': settings}
+                responses = [SimpleNamespace(returncode=0, stdout=json.dumps(item), stderr='') for item in host_outputs]
+                with patch.dict(os.environ, {'AGENT_COMPANY_TASK_CONFIG': str(cfg)}), \
+                        patch('routing_launch.subprocess.run', side_effect=responses) as host:
+                    self.assertEqual(routing_launch.main(args), 0)
+                self.assertEqual(len(host.call_args_list), len(responses))
+                cmd = host.call_args_list[1].args[0]
+                self.assertIn('--full', cmd)
+                self.assertEqual(cmd[1:3], ['orchestration', 'worker-start'])
+                self.assertEqual({k: cmd[cmd.index('--' + k) + 1] for k in settings}, settings)
+                receipt = json.loads((root / 'receipt').read_bytes())['receipt']
+                self.assertEqual(receipt['agy_runtime_id'], 'fixture-host')
+                self.assertEqual(receipt['selected_runtime'], packet['selected_runtime'])
+                saved = json.loads((root / 'result').read_bytes())
+                self.assertEqual(saved['launch_state'], 'observed')
+
+                # Replay the planned-unit to host-issued Task mapping from the original bytes.
+                packet['binding'].update(task='issued-task', attempt='dispatch', planned=False)
+                checker = record_check.Checker(root)
+                for key, name in [('receipt_evidence', 'receipt'), ('launch_evidence', 'result')]:
+                    packet[key] = name
+                    checker.refs[name] = {'file': name, 'sha256': hashlib.sha256((root / name).read_bytes()).hexdigest()}
+                record_check.check_profile_binding(checker, packet, '$', historical={
+                    'run': 'run-test', 'task': 'issued-task', 'dispatch': 'dispatch'})
+                self.assertEqual(checker.errors, [])
+
+    def test_agy_denies_unknown_evidence_host_and_inexact_readback(self):
+        from contextlib import redirect_stdout, redirect_stderr
+        from io import StringIO
+
+        cfg = Path(os.environ['AGENT_COMPANY_CONFIG'])
+        cfg.write_text('---\nschema_version: 1\npreset: single\nservices: ["antigravity"]\napi_paid: true\n---\n')
+        # Each hypothetical host start gets its own enrolled Run and untouched receipts.
+        for case in ('stale_auth', 'paid', 'wrong_host', 'missing_runtime', 'wrong_agent', 'wrong_model',
+                     'wrong_effort', 'partial_conflict', 'missing_effective'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                root = launch_root(tmp)
+                model = 'gemini-4-neon-high'
+                packet, args = self.agy_case(root, base, 'visual', 'hard', model)
+                if case == 'stale_auth':
+                    packet['evidence']['unlisted-auth']['valid_until'] = '2000-01-01T00:00:00Z'
+                    (root / 'decision').write_text(json.dumps(packet))
+                elif case == 'paid':
+                    args.extend(('--declared-billing', 'paid_api'))
+                meta = {'runtimeId': 'fixture-host'}
+                live = {'ok': True, '_meta': meta, 'result': {'target': {'kind': 'local'}, 'runtime': {
+                    'state': 'ready', 'reachable': True, 'runtimeId': 'other' if case == 'wrong_host' else 'fixture-host'}}}
+                settings = {'agent': 'antigravity', 'model': model, 'effort': 'high'}
+                if case.startswith('wrong_') and case != 'wrong_host':
+                    settings[case.removeprefix('wrong_')] = 'different'
+                elif case == 'partial_conflict':
+                    settings = {'agent': 'codex'}
+                elif case == 'missing_effective':
+                    settings = {}
+                start = {'ok': True, '_meta': {} if case == 'missing_runtime' else meta,
+                         'result': {'runId': 'run-test', 'taskId': 't', 'dispatchId': 'd', 'launch': {'effective': settings}}}
+                outputs = [SimpleNamespace(returncode=0, stdout=json.dumps(item), stderr='')
+                           for item in (live, start, {'ok': False})]
+                with patch('record_check.canonical_home', return_value=base), redirect_stdout(StringIO()), \
+                        redirect_stderr(StringIO()), patch('routing_launch.subprocess.run', side_effect=outputs) as host:
+                    self.assertEqual(routing_launch.main(args), 1)
+                    state = (root / 'result').read_bytes()
+                    if case in ('stale_auth', 'paid', 'wrong_host'):
+                        self.assertEqual(host.call_count, int(case == 'wrong_host'))
+                        self.assertFalse((root / 'receipt').exists())
+                        self.assertEqual(json.loads(state)['launch_state'], 'not_started')
+                    else:
+                        self.assertEqual(host.call_count, 3 if case == 'missing_effective' else 2)
+                        self.assertEqual(json.loads(state)['launch_state'], 'unknown')
+                        host.reset_mock()
+                        self.assertEqual(routing_launch.main(args), 1)
+                        host.assert_not_called()
+                        self.assertEqual((root / 'result').read_bytes(), state)
+
+
+class LaunchTests(LaunchFixture):
+    def configure_fixture_table(self, table):
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        source = root / 'table.json'
+        source.write_text(json.dumps(table))
+        setting = str(source) + '#sha256=' + hashlib.sha256(source.read_bytes()).hexdigest()
+        config = root / 'task.md'
+        config.write_text('---\nschema_version: 1\nworker_table: "' + setting + '"\n---\n')
+        self.enterContext(patch.dict(os.environ, {'AGENT_COMPANY_TASK_CONFIG': str(config)}))
+
     def test_manifest_and_capacity_before_any_probe(self):
         from datetime import datetime, timedelta, timezone
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             decision = {'binding': {'task': 'task', 'planned': True, 'parent_task': None, 'run': 'run', 'spec_sha256': hashlib.sha256(b'x').hexdigest()}}
-            record = {'run': 'run', 'tasks': [{'id': 'task', 'current_dispatch': 'planned:task'}]}
+            record = {'goal': fixture_goal(), 'run': 'run', 'tasks': [{'id': 'task', 'current_dispatch': 'planned:task'}]}
             (root / 'decision').write_text(json.dumps(decision))
             (root / 'record').write_text(json.dumps(record))
             now = datetime.now(timezone.utc)
@@ -58,7 +250,7 @@ class LaunchTests(unittest.TestCase):
             manifest = root / 'manifest.json'
             def write(): manifest.write_text(json.dumps({'format': 'company-resource-manifest/v1', 'resources': [resource]}))
             write()
-            args = ['--decision', str(root/'decision'), '--record', str(root/'record'), '--receipt', str(root/'receipt'),
+            args = [*enrollment_flags(root), '--decision', str(root/'decision'), '--record', str(root/'record'), '--receipt', str(root/'receipt'),
                     '--result', str(root/'result'), '--from', 's', '--task', 'task', '--run', 'run', '--worktree', 'current']
             flags = ['--require-resource-manifest', '--resource-manifest', str(manifest), '--declared-host', 'host',
                      '--declared-tool', 'read', '--declared-billing', 'subscription', '--declared-spend', '0']
@@ -85,7 +277,7 @@ class LaunchTests(unittest.TestCase):
         import time
         import orca_contract
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             bindir = root / 'bin'
             bindir.mkdir()
             log = root / 'calls'
@@ -112,8 +304,8 @@ print(json.dumps({'ok': True, 'result': result}))
             decision = {'binding': {'planned': True, 'parent_task': None,
                                     'spec_sha256': hashlib.sha256(b'x').hexdigest()}}
             (root / 'decision').write_text(json.dumps(decision))
-            (root / 'record').write_text('{}')
-            args = ['--decision', str(root / 'decision'), '--record', str(root / 'record'),
+            (root / 'record').write_text(json.dumps({'goal': fixture_goal()}))
+            args = [*enrollment_flags(root), '--decision', str(root / 'decision'), '--record', str(root / 'record'),
                     '--receipt', str(root / 'receipt'), '--result', str(root / 'result'),
                     '--from', 's', '--spec', 'x', '--worktree', 'current']
             check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {'selected': {'route': 'codex', 'model': 'model', 'effort': 'high'}}}
@@ -125,22 +317,24 @@ print(json.dumps({'ok': True, 'result': result}))
                          ({'ORCA_DEV_REPO_ROOT': 'dev'}, [], 'orca-dev'),
                          ({}, [], 'orca-ide'), ({'ORCA_TERMINAL_HANDLE': 'managed'}, [], 'orca')]
                 for n, (variables, override, expected) in enumerate(cases):
-                    local = args.copy()
-                    local[local.index('--receipt') + 1] = str(root / f'r{n}')
-                    local[local.index('--result') + 1] = str(root / f's{n}')
+                    case_root, local = fresh_launch_case(root, args, Path(temp) / f'precedence-{n}')
+                    local[local.index('--receipt') + 1] = str(case_root / f'r{n}')
+                    local[local.index('--result') + 1] = str(case_root / f's{n}')
                     with patch.dict(os.environ, variables), patch('routing_launch.resolve_orca', wraps=orca_contract.resolve_orca) as resolver:
                         self.assertEqual(routing_launch.main(local + override), 0)
                         self.assertEqual(resolver.call_count, 1)
                     self.assertTrue(log.read_text().splitlines()[-1].startswith(expected + ':'))
                 retry_decision = {'binding': {'task': 'task', 'attempt': 'old', 'planned': False, 'parent_task': None, 'run': 'run', 'spec_sha256': hashlib.sha256(b'original').hexdigest()}}
-                retry_record = {'run': 'run', 'tasks': [{'id': 'task', 'current_dispatch': 'old', 'execution': {'state': 'settled', 'result': {'outcome': 'failed'}}}]}
+                retry_record = {'goal': fixture_goal(), 'run': 'run', 'tasks': [{'id': 'task', 'current_dispatch': 'old', 'execution': {'state': 'settled', 'result': {'outcome': 'failed'}}}]}
                 (root / 'retry-decision').write_text(json.dumps(retry_decision))
                 (root / 'retry-record').write_text(json.dumps(retry_record))
-                retry_args = ['--decision', str(root / 'retry-decision'), '--record', str(root / 'retry-record'), '--receipt', str(root / 'retry-receipt'), '--result', str(root / 'retry-result'), '--from', 's', '--task', 'task', '--retry-of', 'old', '--run', 'run', '--worktree', 'current', '--orca', 'explicit']
+                (root / 'record').write_text(json.dumps(retry_record))
+                retry_args = [*enrollment_flags(root), '--decision', str(root / 'retry-decision'), '--record', str(root / 'record'), '--receipt', str(root / 'retry-receipt'), '--result', str(root / 'retry-result'), '--from', 's', '--task', 'task', '--retry-of', 'old', '--run', 'run', '--worktree', 'current', '--orca', 'explicit']
                 self.assertEqual(routing_launch.main(retry_args), 0)
                 self.assertEqual(log.read_text().splitlines()[-4:], [
                     'explicit:orchestration task-list', 'explicit:orchestration dispatch-show',
                     'explicit:orchestration worker-show', 'explicit:orchestration worker-start'])
+                (root / 'record').write_text(json.dumps({'goal': fixture_goal()}))
                 # Two independent processes contest exactly the same state path.
                 ctx = multiprocessing.get_context('fork')
                 def launch():
@@ -166,14 +360,14 @@ print(json.dumps({'ok': True, 'result': result}))
         import sys
         import time
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             fake = root / 'fake'
             log = root / 'calls'
             fake.write_text('#!' + sys.executable + "\nimport sys,time\nfrom pathlib import Path\nPath(" + repr(str(log)) + ").write_text('started')\nprint('OFFLINE_STDOUT_MARKER',flush=True)\nprint('OFFLINE_STDERR_MARKER',file=sys.stderr,flush=True)\ntime.sleep(5)\n")
             fake.chmod(0o755)
             (root / 'decision').write_text(json.dumps({'binding': {'planned': True, 'parent_task': None, 'spec_sha256': hashlib.sha256(b'x').hexdigest()}}))
-            (root / 'record').write_text('{}')
-            args = ['--orca', str(fake), '--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'), '--result', str(root / 'result'), '--from', 's', '--spec', 'x', '--worktree', 'current', '--start-timeout', '0.8']
+            (root / 'record').write_text(json.dumps({'goal': fixture_goal()}))
+            args = [*enrollment_flags(root), '--orca', str(fake), '--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'), '--result', str(root / 'result'), '--from', 's', '--spec', 'x', '--worktree', 'current', '--start-timeout', '0.8']
             check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {'selected': {'route': 'codex', 'model': 'model', 'effort': 'high'}}}
             with patch('routing_launch.check_routing', side_effect=lambda *a, **k: copy.deepcopy(check)):
                 started = time.monotonic()
@@ -210,11 +404,11 @@ print(json.dumps({'ok': True, 'result': result}))
                   sentinel.encode(), sentinel, b'A' * (5 * 1024 * 1024) + b'END', Unsupported()]
         for index, value in enumerate(values):
             with self.subTest(index=index), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
+                root = launch_root(temp)
                 (root/'decision').write_text(json.dumps({'binding': {'planned': True,
                     'parent_task': None, 'spec_sha256': hashlib.sha256(b'x').hexdigest()}}))
-                (root/'record').write_text('{}')
-                args = ['--decision', str(root/'decision'), '--record', str(root/'record'),
+                (root/'record').write_text(json.dumps({'goal': fixture_goal()}))
+                args = [*enrollment_flags(root), '--decision', str(root/'decision'), '--record', str(root/'record'),
                         '--receipt', str(root/'receipt'), '--result', str(root/'result'),
                         '--from', 's', '--spec', 'x', '--worktree', 'current']
                 check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {
@@ -276,15 +470,15 @@ print(json.dumps({'ok': True, 'result': result}))
                  'replace', 'directory_sync', 'cleanup')
         for case in cases:
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temp, contextlib.ExitStack() as stack:
-                root = Path(temp)
+                root = launch_root(temp)
                 parent = root/'private'
                 parent.mkdir(mode=0o700)
                 result = parent/'result'
                 decision, record, receipt = root/'decision', root/'record', root/'receipt'
                 decision.write_text(json.dumps({'binding': {'planned': True, 'parent_task': None,
                     'spec_sha256': hashlib.sha256(b'x').hexdigest()}}))
-                record.write_text('{}')
-                args = ['--decision', str(decision), '--record', str(record), '--receipt', str(receipt),
+                record.write_text(json.dumps({'goal': fixture_goal()}))
+                args = [*enrollment_flags(root), '--decision', str(decision), '--record', str(record), '--receipt', str(receipt),
                         '--result', str(result), '--from', 's', '--spec', 'x', '--worktree', 'current']
                 check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {
                     'selected': {'route': 'codex', 'model': 'model', 'effort': 'high'}}}
@@ -376,39 +570,15 @@ print(json.dumps({'ok': True, 'result': result}))
                         host.assert_not_called()
                 parent.chmod(0o700)
 
-    def test_timeout_writable_ancestor_preserves_pending_and_blocks_retry(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            ancestor = root / 'shared'
-            ancestor.mkdir()
-            ancestor.chmod(0o1777)
-            private = ancestor / 'private'
-            private.mkdir(mode=0o700)
-            result = private / 'result'
-            routing_launch.atomic_state(result, {'launch_state_version': 1, 'launch_state': 'invocation_pending'})
-            before = result.read_bytes()
-            with self.assertRaisesRegex(ValueError, 'unsafe diagnostic directory'):
-                routing_launch.write_timeout_state(result, {'launch_state': 'unknown'})
-            self.assertEqual(result.read_bytes(), before)
-            self.assertEqual(ancestor.stat().st_mode & 0o7777, 0o1777)
-            self.assertEqual(sorted(p.name for p in private.iterdir()), ['result'])
-            args = ['--decision', str(root/'decision'), '--record', str(root/'record'),
-                    '--receipt', str(root/'receipt'), '--result', str(result),
-                    '--from', 's', '--spec', 'x', '--worktree', 'current']
-            with patch('routing_launch.subprocess.run') as host:
-                self.assertEqual(routing_launch.main(args), 1)
-                host.assert_not_called()
-            self.assertEqual(result.read_bytes(), before)
-
     def test_start_oserror_stays_unknown_and_never_retries(self):
         import contextlib
         import io
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             (root/'decision').write_text(json.dumps({'binding': {'planned': True, 'parent_task': None,
                 'spec_sha256': hashlib.sha256(b'x').hexdigest()}}))
-            (root/'record').write_text('{}')
-            args = ['--decision', str(root/'decision'), '--record', str(root/'record'),
+            (root/'record').write_text(json.dumps({'goal': fixture_goal()}))
+            args = [*enrollment_flags(root), '--decision', str(root/'decision'), '--record', str(root/'record'),
                     '--receipt', str(root/'receipt'), '--result', str(root/'result'),
                     '--from', 's', '--spec', 'x', '--worktree', 'current']
             checked = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {
@@ -448,9 +618,10 @@ print(json.dumps({'ok': True, 'result': result}))
     def test_durable_rejection_restart_and_lock(self):
         import fcntl
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
+            (root / 'record').write_text(json.dumps({'goal': fixture_goal()}))
             result = root / 'state'
-            args = ['--decision', str(root / 'missing'), '--record', str(root / 'record'),
+            args = [*enrollment_flags(root), '--decision', str(root / 'missing'), '--record', str(root / 'record'),
                     '--receipt', str(root / 'receipt'), '--result', str(result), '--from', 's',
                     '--spec', 'x', '--worktree', 'current']
             with patch('routing_launch.shutil.which', return_value=None), patch('routing_launch.subprocess.run') as run:
@@ -472,14 +643,14 @@ print(json.dumps({'ok': True, 'result': result}))
 
     def test_existing_task_retry_and_explicit_run(self):
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             decision = {'binding': {'task': 'task', 'attempt': 'old', 'planned': False, 'parent_task': None,
                                     'run': 'run', 'spec_sha256': hashlib.sha256(b'original').hexdigest()}}
             task = {'id': 'task', 'current_dispatch': 'old', 'execution': {'state': 'settled', 'result': {'outcome': 'failed'}}}
-            record = {'run': 'run', 'tasks': [task]}
+            record = {'goal': fixture_goal(), 'run': 'run', 'tasks': [task]}
             (root / 'decision').write_text(json.dumps(decision))
             (root / 'record').write_text(json.dumps(record))
-            args = ['--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'),
+            args = [*enrollment_flags(root), '--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'),
                     '--result', str(root / 'result'), '--from', 'sender', '--task', 'task', '--retry-of', 'old', '--run', 'run', '--worktree', 'current']
             args.extend(['--orca', '/synthetic/orca'])
             selected = {'route': 'codex', 'model': 'model', 'effort': 'high'}
@@ -490,7 +661,15 @@ print(json.dumps({'ok': True, 'result': result}))
             launched = {'ok': True, 'result': {'runId': 'run', 'taskId': 'task', 'dispatchId': 'new', 'launch': {'effective': {'agent': 'codex', 'model': 'model', 'effort': 'high'}}}}
             def response(value):
                 return SimpleNamespace(returncode=0, stdout=json.dumps(value), stderr='')
-            with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=[response(listed), response(latest), response(failed), response(launched)]) as host:
+            def actual_host_shape(argv, **kwargs):
+                kind = argv[2]
+                if kind == 'task-list':
+                    return response(listed if '--full' in argv else {'ok': True, 'result': {'runId': 'run', 'tasks': [{'id': 'task', 'status': 'failed', 'title': 'fixture'}]}})
+                if kind == 'dispatch-show': return response(latest)
+                if kind == 'worker-show':
+                    return response(failed if '--full' in argv else {'ok': True, 'result': {'dispatchId': 'old', 'state': 'failed'}})
+                return response(launched)
+            with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=actual_host_shape) as host:
                 self.assertEqual(routing_launch.main(args), 0)
                 command = host.call_args.args[0]
                 self.assertTrue(all(call.args[0][0] == '/synthetic/orca' for call in host.call_args_list))
@@ -500,7 +679,7 @@ print(json.dumps({'ok': True, 'result': result}))
                 self.assertEqual(command[command.index('--retry-of') + 1], 'old')
                 self.assertEqual(command[command.index('--run') + 1], 'run')
                 self.assertNotIn('--spec', command)
-            timeout_args = args.copy()
+            root, timeout_args = fresh_launch_case(root, args, Path(temp) / 'timeout-case')
             timeout_args[timeout_args.index('--receipt') + 1] = str(root / 'timeout-pre')
             timeout_args[timeout_args.index('--result') + 1] = str(root / 'timeout-result')
             with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=[response(listed), response(latest), response(failed), subprocess.TimeoutExpired('orca', 1)]):
@@ -510,7 +689,9 @@ print(json.dumps({'ok': True, 'result': result}))
             with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=[response(listed), response(latest), response(failed)]) as host:
                 self.assertEqual(routing_launch.main(timeout_args), 1)
                 self.assertEqual(host.call_count, 0)  # rejected before probes or receipt
+            args = timeout_args.copy()
             for index, (changed, expected_calls) in enumerate([('spec', 3), ('dispatch', 3), ('run', 0), ('record', 0)]):
+                root, args = fresh_launch_case(root, args, Path(temp) / f'mismatch-{index}')
                 args[args.index('--receipt') + 1] = str(root / f'receipt-{index}')
                 args[args.index('--result') + 1] = str(root / f'result-{index}')
                 bad_list, bad_latest = copy.deepcopy(listed), copy.deepcopy(latest)
@@ -529,6 +710,7 @@ print(json.dumps({'ok': True, 'result': result}))
             record['tasks'][0]['execution']['result']['outcome'] = 'failed'
             (root / 'record').write_text(json.dumps(record))
             for index, mutation in enumerate(('missing_run', 'wrong_run', 'wrong_task', 'same_dispatch', 'missing_settings', 'nonzero', 'empty', 'corrupt', 'signal')):
+                root, args = fresh_launch_case(root, args, Path(temp) / f'readback-{index}')
                 args[args.index('--receipt') + 1] = str(root / f'readback-pre-{index}')
                 result_path = root / f'readback-post-{index}'
                 args[args.index('--result') + 1] = str(result_path)
@@ -543,9 +725,12 @@ print(json.dumps({'ok': True, 'result': result}))
                 if mutation == 'signal': final.returncode = -9
                 if mutation == 'empty': final.stdout = ''
                 if mutation == 'corrupt': final.stdout = '{invalid'
-                with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=[response(listed), response(latest), response(failed), final]) as host:
+                responses = [response(listed), response(latest), response(failed), final]
+                if mutation == 'missing_settings':
+                    responses.append(response({'ok': False}))
+                with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=responses) as host:
                     self.assertEqual(routing_launch.main(args), 1)
-                    self.assertEqual(host.call_count, 4)
+                    self.assertEqual(host.call_count, 5 if mutation == 'missing_settings' else 4)
                     saved = json.loads(result_path.read_text())
                     self.assertEqual(saved['stdout'], final.stdout)
                     self.assertNotEqual(saved['readback_status'], 'observed')
@@ -566,6 +751,7 @@ print(json.dumps({'ok': True, 'result': result}))
                 self.assertEqual(routing_launch.main(initial_args), 0)
                 self.assertNotIn('--retry-of', host.call_args.args[0])
             initial_list['result']['tasks'][0]['status'] = 'ready'
+            root, initial_args = fresh_launch_case(root, initial_args, Path(temp) / 'ready-case')
             initial_args[initial_args.index('--receipt') + 1] = str(root / 'ready-pre')
             initial_args[initial_args.index('--result') + 1] = str(root / 'ready-post')
             with patch('routing_launch.check_routing', return_value=copy.deepcopy(check)), patch('routing_launch.subprocess.run', side_effect=[response(initial_list), response(launched)]) as host:
@@ -578,10 +764,15 @@ print(json.dumps({'ok': True, 'result': result}))
         packet = fixture.packet()
         packet['binding'].update(task='new', attempt='planned:new', planned=True,
                                  spec_sha256=hashlib.sha256(b'reuse task').hexdigest())
+        from record_check import make_profile_binding
+        profile = json.loads((test_route_select.PACKAGE / 'assets/worker-profile-example.json').read_text())
+        profile['units'][0]['id'] = 'new'
+        table = json.loads((test_route_select.PACKAGE / 'assets/worker-routing-table.json').read_text())
+        packet['profile_binding'] = make_profile_binding(profile, table, 'new')
         record = copy.deepcopy(json.loads((test_route_select.PACKAGE / 'assets/record-cases.json').read_text())['cases'][0]['record'])
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            cache_home = patch('record_check.canonical_home', return_value=root)
+            root = launch_root(temp, record='record.json')
+            cache_home = patch('record_check.canonical_home', side_effect=lambda: root)
             cache_home.start()
             self.addCleanup(cache_home.stop)
             packet['label'] = 'real'
@@ -606,7 +797,7 @@ print(json.dumps({'ok': True, 'result': result}))
             decision, current = root / 'decision.json', root / 'record.json'
             decision.write_text(json.dumps(packet))
             current.write_text(json.dumps(record))
-            args = ['--decision', str(decision), '--record', str(current), '--receipt', str(root / 'receipt.json'),
+            args = [*enrollment_flags(root), '--decision', str(decision), '--record', str(current), '--receipt', str(root / 'receipt.json'),
                     '--result', str(root / 'result.json'), '--from', 'sender', '--spec', 'reuse task',
                     '--worktree', 'current', '--terminal', 'term', '--reuse-dispatch', 'origin', '--origin-receipt', str(origin_path)]
             live = {'ok': True, 'result': {'terminal': {'handle': 'term', 'incarnationId': 'inc'},
@@ -615,11 +806,16 @@ print(json.dumps({'ok': True, 'result': result}))
                     'observation': {'status': 'live', 'exactWorker': True}}}
             probe = SimpleNamespace(returncode=0, stdout=json.dumps(live), stderr='')
             result = SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {'taskId': 'new-task', 'dispatchId': 'new-dispatch', 'effects': [{'kind': 'terminal', 'id': 'term'}]}}), stderr='')
-            with patch('routing_launch.subprocess.run', side_effect=[probe, result]) as host:
+            def actual_reuse_shape(argv, **kwargs):
+                if argv[2] == 'worker-show':
+                    return probe if '--full' in argv else SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {'dispatchId': 'origin', 'state': 'ready'}}), stderr='')
+                return result
+            with patch('routing_launch.subprocess.run', side_effect=actual_reuse_shape) as host:
                 self.assertEqual(routing_launch.main(args), 0)
                 command = host.call_args.args[0]
                 self.assertIn('--terminal', command)
                 self.assertNotIn('--model', command)
+            root, args = fresh_launch_case(root, args, Path(temp) / 'reuse-denial')
             live['result']['terminal']['incarnationId'] = 'different'
             probe.stdout = json.dumps(live)
             args[args.index('--receipt') + 1] = str(root / 'receipt-2.json')
@@ -635,16 +831,24 @@ print(json.dumps({'ok': True, 'result': result}))
                 self.assertEqual(host.call_count, 1)
 
     def test_rejected_and_valid_packet_before_fake_host(self):
+        from record_check import make_profile_binding
         fixture = test_route_select.SelectionCLITests()
         fixture.setUp()
         packet = fixture.packet()
         packet['binding'].update(task='new', attempt='planned:new', planned=True)
         packet['binding']['spec_sha256'] = hashlib.sha256(b'bounded test').hexdigest()
         packet['binding']['parent_task'] = 'parent-task'
+        profile = json.loads((test_route_select.PACKAGE / 'assets/worker-profile-example.json').read_text())
+        profile['units'][0]['id'] = 'new'
+        table = json.loads((test_route_select.PACKAGE / 'assets/worker-routing-table.json').read_text())
+        for row in table['entries']:
+            row['candidates'][0].update(input_modalities=['text'], output_modalities=['text'], capabilities=['general.execute'], evidence=['synthetic assertion'])
+        self.configure_fixture_table(table)
+        packet['profile_binding'] = make_profile_binding(profile, table, 'new')
         record = copy.deepcopy(json.loads((test_route_select.PACKAGE / 'assets/record-cases.json').read_text())['cases'][0]['record'])
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            cache_home = patch('record_check.canonical_home', return_value=root)
+            root = launch_root(temp, record='record.json')
+            cache_home = patch('record_check.canonical_home', side_effect=lambda: root)
             cache_home.start()
             self.addCleanup(cache_home.stop)
             packet['label'] = 'real'
@@ -656,7 +860,7 @@ print(json.dumps({'ok': True, 'result': result}))
             packet['evidence']['inventory'].update(file='models_cache.json', sha256=hashlib.sha256(inventory.read_bytes()).hexdigest(), observed_at='2020-01-01T00:00:00Z', valid_until='2100-01-01T00:00:00Z')
             decision, current, receipt = root / 'decision.json', root / 'record.json', root / 'receipt.json'
             current.write_text(json.dumps(record))
-            args = ['--decision', str(decision), '--record', str(current), '--receipt', str(receipt), '--result', str(root / 'host.json'),
+            args = [*enrollment_flags(root), '--decision', str(decision), '--record', str(current), '--receipt', str(receipt), '--result', str(root / 'host.json'),
                     '--from', 'term-example', '--spec', 'bounded test', '--worktree', 'current', '--parent', 'parent-task']
             invalid = copy.deepcopy(packet)
             invalid['price_selection']['candidates'].pop()
@@ -688,7 +892,7 @@ print(json.dumps({'ok': True, 'result': result}))
             decision.write_text(json.dumps(packet))
             with patch('routing_launch.subprocess.run') as host:
                 host.return_value.returncode = 0
-                host.return_value.stdout = json.dumps({'ok': True, 'result': {'taskId': 'task-host', 'dispatchId': 'dispatch-host',
+                host.return_value.stdout = json.dumps({'ok': True, 'result': {'taskId': 'task-host', 'dispatchId': 'dispatch-host', 'runId': 'run-host',
                     'launch': {'effective': {'agent': 'codex', 'model': packet['selected']['model'], 'effort': packet['selected']['effort']}}}})
                 host.return_value.stderr = ''
                 self.assertEqual(routing_launch.main(args), 0)
@@ -700,8 +904,9 @@ print(json.dumps({'ok': True, 'result': result}))
                 self.assertIn('task-host', (root / 'host.json').read_text())
             for index, (payload, expected) in enumerate([
                 ({'ok': True, 'result': {'taskId': 'task', 'dispatchId': 'dispatch'}}, 'unverified'),
-                ({'ok': True, 'result': {'taskId': 'task', 'dispatchId': 'dispatch', 'launch': {'effective': {'agent': 'codex', 'model': 'wrong', 'effort': packet['selected']['effort']}}}}, 'failed'),
+                ({'ok': True, 'result': {'taskId': 'task', 'dispatchId': 'dispatch', 'runId': 'run-host', 'launch': {'effective': {'agent': 'codex', 'model': 'wrong', 'effort': packet['selected']['effort']}}}}, 'failed'),
             ]):
+                root, args = fresh_launch_case(root, args, Path(temp) / f'packet-readback-{index}')
                 args[args.index('--receipt') + 1] = str(root / ('pre-' + str(index)))
                 result_path = root / ('post-' + str(index))
                 args[args.index('--result') + 1] = str(result_path)
@@ -709,6 +914,32 @@ print(json.dumps({'ok': True, 'result': result}))
                     self.assertEqual(routing_launch.main(args), 1)
                     self.assertEqual(host.call_count, 1)
                     self.assertEqual(json.loads(result_path.read_text())['readback_status'], expected)
+
+            with tempfile.TemporaryDirectory() as other:
+                fresh, full_args = fresh_launch_case(root, args, Path(other))
+                decision_path = Path(full_args[full_args.index('--decision') + 1])
+                record_path = Path(full_args[full_args.index('--record') + 1])
+                fresh_decision = json.loads(decision_path.read_text())
+                fresh_decision['binding']['run'] = 'run-host'
+                decision_path.write_text(json.dumps(fresh_decision))
+                fresh_record = json.loads(record_path.read_text())
+                fresh_record['run'] = 'run-host'
+                record_path.write_text(json.dumps(fresh_record))
+                full_args.extend(['--run', 'run-host'])
+                start = {'ok': True, 'result': {'runId': 'run-host', 'taskId': 'task-host',
+                                                'dispatchId': 'dispatch-host'}}
+                full = {'ok': True, 'result': {'dispatch': {'id': 'dispatch-host', 'runId': 'run-host',
+                         'taskId': 'task-host'}, 'worker': {'dispatchId': 'dispatch-host', 'startOptions':
+                         {'launch': {'effective': {'agent': 'codex', 'model': packet['selected']['model'],
+                                                   'effort': packet['selected']['effort']}}}}}}
+                responses = [SimpleNamespace(returncode=0, stdout=json.dumps(item), stderr='') for item in (start, full)]
+                with patch('record_check.canonical_home', return_value=fresh), patch('routing_launch.subprocess.run', side_effect=responses) as host:
+                    self.assertEqual(routing_launch.main(full_args), 0)
+                    self.assertEqual(host.call_count, 2)
+                saved = json.loads(Path(full_args[full_args.index('--result') + 1]).read_text())
+                self.assertEqual(saved['stdout'], json.dumps(start))
+                self.assertEqual(saved['full_readback']['stdout'], json.dumps(full))
+                self.assertEqual(saved['readback_status'], 'observed')
 
     def test_profile_binding_fake_host_and_tampering(self):
         import record_check
@@ -722,8 +953,9 @@ print(json.dumps({'ok': True, 'result': result}))
         for row in table['entries']:
             row['candidates'][0].update(input_modalities=['text'], output_modalities=['text'],
                 capabilities=['general.execute'], evidence=['synthetic assertion'])
+        self.configure_fixture_table(table)
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             (root/'profile.json').write_text(json.dumps(profile)); (root/'external-table.json').write_text(json.dumps(table))
             cli = [__import__('sys').executable, '-B', str(test_route_select.CLI), 'profile-prepare', str(root/'profile.json'), '--unit', 'one', '--table', str(root/'external-table.json')]
             prepared = subprocess.run(cli, text=True, capture_output=True, check=True)
@@ -735,7 +967,7 @@ print(json.dumps({'ok': True, 'result': result}))
             inventory.write_text(json.dumps({'models': packet['evidence']['inventory']['host_models']}))
             packet['evidence']['inventory'].update(file=inventory.name, sha256=hashlib.sha256(inventory.read_bytes()).hexdigest(), observed_at='2020-01-01T00:00:00Z', valid_until='2100-01-01T00:00:00Z')
             decision=root/'decision'; current=root/'record'; current.write_text(json.dumps(record))
-            args=['--decision',str(decision),'--record',str(current),'--receipt',str(root/'receipt'), '--result',str(root/'result'), '--from','sender','--spec','bounded test','--worktree','current']
+            args=[*enrollment_flags(root), '--decision',str(decision),'--record',str(current),'--receipt',str(root/'receipt'), '--result',str(root/'result'), '--from','sender','--spec','bounded test','--worktree','current']
             with patch('record_check.canonical_home', return_value=root):
                 for field in ('profile', 'table', 'selected', 'eligible_chain', 'fallback_index', 'selection_reasons', 'selected_source', 'default_provenance'):
                     altered=copy.deepcopy(packet)
@@ -748,20 +980,50 @@ print(json.dumps({'ok': True, 'result': result}))
                     with patch('routing_launch.subprocess.run') as host:
                         self.assertEqual(routing_launch.main(args),1); host.assert_not_called()
                 decision.write_text(json.dumps(packet))
-                result={'ok':True,'result':{'taskId':'task-host','dispatchId':'dispatch-host','launch':{'effective':{'agent':'codex','model':packet['selected']['model'],'effort':packet['selected']['effort']}}}}
+                result={'ok':True,'result':{'taskId':'task-host','dispatchId':'dispatch-host','runId':'run-host','launch':{'effective':{'agent':'codex','model':packet['selected']['model'],'effort':packet['selected']['effort']}}}}
                 with patch('routing_launch.subprocess.run',return_value=SimpleNamespace(returncode=0,stdout=json.dumps(result),stderr='')) as host:
                     self.assertEqual(routing_launch.main(args),0)
                     command=host.call_args.args[0]
                     self.assertEqual(command[command.index('--model')+1],packet['selected']['model'])
                     self.assertEqual(command[command.index('--effort')+1],packet['selected']['effort'])
+                    receipt = json.loads((root/'receipt').read_text())['receipt']
+                    self.assertEqual(receipt['profile_unit'], 'one')
+                    self.assertEqual(receipt['spec_sha256'], hashlib.sha256(b'bounded test').hexdigest())
+                with tempfile.TemporaryDirectory() as other:
+                    fresh, missing_run_args = fresh_launch_case(root, args, Path(other))
+                    fresh_decision = json.loads((fresh/'decision').read_text())
+                    fresh_decision['binding']['run'] = 'run-host'
+                    (fresh/'decision').write_text(json.dumps(fresh_decision))
+                    fresh_record = json.loads((fresh/'record').read_text())
+                    fresh_record['run'] = 'run-host'
+                    (fresh/'record').write_text(json.dumps(fresh_record))
+                    missing_run_args.extend(['--run', 'run-host'])
+                    missing_run = copy.deepcopy(result)
+                    del missing_run['result']['runId']
+                    with patch('record_check.canonical_home', return_value=fresh), patch('routing_launch.subprocess.run', return_value=SimpleNamespace(returncode=0, stdout=json.dumps(missing_run), stderr='')):
+                        self.assertEqual(routing_launch.main(missing_run_args), 1)
+                    state = json.loads((fresh/'result').read_text())
+                    self.assertEqual(state['launch_state'], 'unknown')
+                    self.assertEqual(state['readback_status'], 'unverified')
 
     def test_profile_three_levels_fake_host(self):
         for level, family, effort in [('easy','terra','low'), ('medium','terra','medium'), ('hard','sol','high'), ('shared','terra','medium')]:
             with self.subTest(level=level), tempfile.TemporaryDirectory() as temp:
-                root=Path(temp)
+                root=launch_root(temp)
                 fixture=test_route_select.SelectionCLITests(); fixture.setUp()
                 fixture.selection['candidates']=[test_route_select.candidate(family,effort)]
                 packet=fixture.packet()
+                if level == 'hard':
+                    # The new canonical hard model has routing metadata but no
+                    # price prior; test its normal path without inventing one.
+                    candidate = packet.pop('price_selection')['candidates'][0]
+                    candidate['model'] = 'gpt-6.2-sol'
+                    packet['selected']['model'] = candidate['model']
+                    packet['selected_reason'] = packet['alternatives'][0]['reason'] = 'ordinary_assignment'
+                    packet['alternatives'][0]['model'] = candidate['model']
+                    packet['binding']['inventory_evidence'] = 'inventory'
+                    packet['selected_runtime'] = {k: candidate[k] for k in ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')}
+                    packet['evidence']['inventory']['host_models'][0]['slug'] = candidate['model']
                 packet['binding'].update(task='one',attempt='planned:one',planned=True,spec_sha256=hashlib.sha256(b'bounded test').hexdigest())
                 packet['label']='real'
                 for item in packet['evidence'].values():
@@ -776,13 +1038,14 @@ print(json.dumps({'ok': True, 'result': result}))
                     for candidate, model in zip(table['entries'][0]['candidates'], ['gpt-6-luna', 'gpt-6.1-sol', 'gpt-6-astra']):
                         candidate['identity']['model'] = model
                         candidate['enabled'] = False
+                self.configure_fixture_table(table)
                 (root/'profile').write_text(json.dumps(profile));(root/'table').write_text(json.dumps(table))
                 cli=[__import__('sys').executable,'-B',str(test_route_select.CLI),'profile-prepare',str(root/'profile'),'--table',str(root/'table'),'--unit','one']
                 packet['profile_binding']=json.loads(subprocess.run(cli,capture_output=True,text=True,check=True).stdout)['profile_binding']
                 decision=root/'decision';decision.write_text(json.dumps(packet))
                 record=json.loads((test_route_select.PACKAGE/'assets/record-cases.json').read_text())['cases'][0]['record'];(root/'record').write_text(json.dumps(record))
-                args=['--decision',str(decision),'--record',str(root/'record'),'--receipt',str(root/'receipt'),'--result',str(root/'result'),'--from','sender','--spec','bounded test','--worktree','current']
-                result={'ok':True,'result':{'taskId':'task-host','dispatchId':'dispatch-host','launch':{'effective':{'agent':'codex','model':packet['selected']['model'],'effort':effort}}}}
+                args=[*enrollment_flags(root), '--decision',str(decision),'--record',str(root/'record'),'--receipt',str(root/'receipt'),'--result',str(root/'result'),'--from','sender','--spec','bounded test','--worktree','current']
+                result={'ok':True,'result':{'taskId':'task-host','dispatchId':'dispatch-host','runId':'run-host','launch':{'effective':{'agent':'codex','model':packet['selected']['model'],'effort':effort}}}}
                 with patch('record_check.canonical_home',return_value=root), patch('routing_launch.subprocess.run',return_value=SimpleNamespace(returncode=0,stdout=json.dumps(result),stderr='')) as host:
                     self.assertEqual(routing_launch.main(args),0)
                     command=host.call_args.args[0];self.assertEqual(command[command.index('--effort')+1],effort);self.assertEqual(command[command.index('--model')+1],packet['selected']['model'])
@@ -808,8 +1071,9 @@ print(json.dumps({'ok': True, 'result': result}))
         # Replace the configured row; do not manufacture a duplicate table key.
         table['entries'] = [r for r in table['entries'] if (r['family'], r['difficulty']) != ('code', 'easy')]
         table['entries'].append({'family': 'code', 'difficulty': 'easy', 'candidates': [candidate]})
+        self.configure_fixture_table(table)
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
+            root = launch_root(temp)
             inventory = root / 'models_cache.json'
             inventory.write_text(json.dumps({'models': packet['evidence']['inventory']['host_models']}))
             packet['evidence']['inventory'].update(file=inventory.name, sha256=hashlib.sha256(inventory.read_bytes()).hexdigest(), observed_at='2020-01-01T00:00:00Z', valid_until='2100-01-01T00:00:00Z')
@@ -820,8 +1084,8 @@ print(json.dumps({'ok': True, 'result': result}))
             binding = json.loads(good.stdout)['profile_binding']
             record = json.loads((test_route_select.PACKAGE / 'assets/record-cases.json').read_text())['cases'][0]['record']
             (root / 'record').write_text(json.dumps(record))
-            args = ['--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'), '--result', str(root / 'result'), '--from', 'sender', '--spec', 'bounded test', '--worktree', 'current']
-            fake = {'ok': True, 'result': {'taskId': 'task-host', 'dispatchId': 'dispatch-host', 'launch': {'effective': {'agent': 'codex', 'model': packet['selected']['model'], 'effort': packet['selected']['effort']}}}}
+            args = [*enrollment_flags(root), '--decision', str(root / 'decision'), '--record', str(root / 'record'), '--receipt', str(root / 'receipt'), '--result', str(root / 'result'), '--from', 'sender', '--spec', 'bounded test', '--worktree', 'current']
+            fake = {'ok': True, 'result': {'taskId': 'task-host', 'dispatchId': 'dispatch-host', 'runId': 'run-host', 'launch': {'effective': {'agent': 'codex', 'model': packet['selected']['model'], 'effort': packet['selected']['effort']}}}}
             packet['profile_binding'] = binding
             (root / 'decision').write_text(json.dumps(packet))
             with patch('record_check.canonical_home', return_value=root), patch('routing_launch.subprocess.run', return_value=SimpleNamespace(returncode=0, stdout=json.dumps(fake), stderr='')) as host:
@@ -864,8 +1128,14 @@ print(json.dumps({'ok': True, 'result': result}))
         table=json.loads((test_route_select.PACKAGE/'assets/worker-routing-table.json').read_text())
         for row in table['entries']:
             row['candidates'][0].update(input_modalities=['text'],output_modalities=['text'],capabilities=['general.execute'],evidence=['synthetic assertion'])
+        self.configure_fixture_table(table)
         ident={k:packet['selected'][k] for k in ('route','model','effort')}
-        del packet['price_selection'];packet['selected_reason']='user_pin';packet['alternatives'][0]['reason']='user_pin'
+        comparison = packet.pop('price_selection')
+        candidate = comparison['candidates'][0]
+        packet['binding']['inventory_evidence'] = comparison['inventory_evidence']
+        packet['selected_runtime'] = {k: candidate[k] for k in ('route', 'family', 'model', 'effort',
+                                      'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')}
+        packet['selected_reason']='user_pin';packet['alternatives'][0]['reason']='user_pin'
         packet['evidence']['quality']['binds']={k:packet['selected'][k] for k in ('route','family','model','effort')}
         packet['evidence']['quality']['task_binding']={k:packet['binding'][k] for k in ('task','scope','revision','attempt')}
         packet['profile_binding']=record_check.make_profile_binding(profile,table,packet['binding']['task'],{packet['binding']['task']:ident})
@@ -881,7 +1151,9 @@ print(json.dumps({'ok': True, 'result': result}))
         fixture = MeasurementGateTests()
         fixture.setUp()
         self.addCleanup(fixture.doCleanups)
-        root = fixture.base
+        root = launch_root(self.enterContext(tempfile.TemporaryDirectory()), record='record.json')
+        for name in ('plan', 'objective', 'criteria'):
+            (root / name).write_bytes((fixture.base / name).read_bytes())
         select = test_route_select.SelectionCLITests()
         select.setUp()
         self.addCleanup(select.doCleanups)
@@ -898,7 +1170,7 @@ print(json.dumps({'ok': True, 'result': result}))
                                                observed_at='2020-01-01T00:00:00Z', valid_until='2100-01-01T00:00:00Z')
         decision, record = root / 'decision.json', root / 'record.json'
         decision.write_text(json.dumps(packet))
-        args = ['--decision', str(decision), '--record', str(record), '--receipt', str(root / 'receipt.json'),
+        args = [*enrollment_flags(root), '--decision', str(decision), '--record', str(record), '--receipt', str(root / 'receipt.json'),
                 '--result', str(root / 'host.json'), '--from', 'term-example', '--spec', 'bounded test',
                 '--worktree', 'current', '--parent', 'parent-task']
         for missing in (False, True):
@@ -919,3 +1191,50 @@ print(json.dumps({'ok': True, 'result': result}))
 
 if __name__ == '__main__':
     unittest.main()
+
+class FullReadbackTests(unittest.TestCase):
+    def test_exact_binding_and_mismatch(self):
+        payload = {'runId': 'run', 'taskId': 'task', 'dispatchId': 'dispatch'}
+        selected = {'model': 'model', 'effort': 'medium'}
+        full = {'ok': True, 'result': {'dispatch': {'id': 'dispatch', 'runId': 'run', 'taskId': 'task'},
+                'worker': {'dispatchId': 'dispatch', 'startOptions': {'launch': {'effective':
+                           {'agent': 'codex', 'model': 'model', 'effort': 'medium'}}}}}}
+        for changed, expected in ((None, 'observed'), ('task', 'unverified'), ('model', 'failed')):
+            with self.subTest(changed=changed):
+                item = copy.deepcopy(full)
+                if changed == 'task': item['result']['dispatch']['taskId'] = 'other'
+                if changed == 'model': item['result']['worker']['startOptions']['launch']['effective']['model'] = 'other'
+                response = SimpleNamespace(returncode=0, stdout=json.dumps(item), stderr='')
+                with patch('routing_launch.subprocess.run', return_value=response) as host:
+                    result = routing_launch.full_launch_readback('orca', payload, selected, 3)
+                self.assertEqual(result['status'], expected)
+                self.assertEqual(result['stdout'], response.stdout)
+                host.assert_called_once()
+
+    def test_missing_identity_and_timeout_remain_unverified(self):
+        selected = {'model': 'model', 'effort': 'medium'}
+        with patch('routing_launch.subprocess.run') as host:
+            result = routing_launch.full_launch_readback('orca', {'dispatchId': 'dispatch'}, selected, 3)
+            host.assert_not_called()
+        self.assertEqual(result['status'], 'unverified')
+        payload = {'runId': 'run', 'taskId': 'task', 'dispatchId': 'dispatch'}
+        with patch('routing_launch.subprocess.run', side_effect=subprocess.TimeoutExpired('orca', 3)) as host:
+            result = routing_launch.full_launch_readback('orca', payload, selected, 3)
+            host.assert_called_once()
+        self.assertEqual(result['status'], 'unverified')
+        self.assertIn('timed out', result['error'])
+
+    def test_terminal_and_start_incarnation_must_match_full(self):
+        payload = {'runId': 'run', 'taskId': 'task', 'dispatchId': 'dispatch',
+                   'terminal': 'term', 'processIncarnation': 'inc'}
+        full = {'ok': True, 'result': {'dispatch': {'id': 'dispatch', 'runId': 'run',
+                'taskId': 'task', 'assigneeHandle': 'term', 'processIncarnation': 'inc'},
+                'terminal': {'handle': 'term'}, 'worker': {'dispatchId': 'dispatch',
+                'startOptions': {'launch': {'effective': {'agent': 'codex', 'model': 'model', 'effort': 'medium'}}}}}}
+        for changed, expected in ((None, 'observed'), ('terminal', 'unverified'), ('incarnation', 'unverified')):
+            item = copy.deepcopy(full)
+            if changed == 'terminal': item['result']['terminal']['handle'] = 'other'
+            if changed == 'incarnation': item['result']['dispatch']['processIncarnation'] = 'other'
+            with patch('routing_launch.subprocess.run', return_value=SimpleNamespace(returncode=0, stdout=json.dumps(item), stderr='')):
+                result = routing_launch.full_launch_readback('orca', payload, {'model': 'model', 'effort': 'medium'}, 3)
+            self.assertEqual(result['status'], expected)

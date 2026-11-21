@@ -63,7 +63,7 @@ class ContinuityTests(unittest.TestCase):
             safe.assert_not_called()
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="company-continuity-")
+        self.temp = tempfile.TemporaryDirectory(dir="/private/tmp", prefix="company-continuity-")
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name)
         self.store = continuity.Continuity(self.base / "work-note")

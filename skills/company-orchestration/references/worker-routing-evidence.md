@@ -149,8 +149,9 @@ requirement returns NO_MATCH, not an inferred advertised window. `constraints: [
 and `tools: []` assert no hard guarantees/runner integrations. All mandatory
 input AND output, capabilities, tools, context, hard constraints, enabled and exact
 pin filters apply identically to every local backup and the shared default. Exact pin mismatch never substitutes.
-A default MATCH proposes an assignment; host/tool/price/authority checks and
-independent output acceptance still apply. No launch retry behavior changes.
+A default MATCH proposes an assignment; host/tool/authority checks and
+independent output acceptance still apply. Price comparison is checked when
+explicitly requested. No launch retry behavior changes.
 
 ## Observed pilot receipt (2026-11-07)
 
@@ -179,3 +180,25 @@ pilot evidence bundle; hashes are integrity references, not public raw logs):
 Source snapshot hashes:
 - `policies/model-profile-registry.json`: `86b453d9be94b7692bac75363ae395e74d832f3da3e946a817f8c4e799cb60f6`
 - `skills/company-orchestration/assets/model-choice-priors.json`: `5c40a83bb02b9988556a08d6491bce42e51833fdc3d25713dfa4845771ed55aa`
+
+## November refresh
+
+The November 19 table supersedes the older order above. The pilot informed retention of Terra for bounded tasks and the unsupported media boundary. Its scores do not transfer to the new models. Sol and Astra successors fill their respective broad and demanding roles based on [OpenAI's published comparison](https://openai.com/index/introducing-gpt-6-2-astra-sol/). For hard code, [DeepMind's FrontierCode 2.0 comparison](https://deepmind.google/models/gemini/) reports Neon 46.2% and Sol 43.8%. This motivates trying Neon first, without predicting a margin at the routed effort. Argon is an alternative for synthesis and data work based on the document-analysis evidence on the same page. For bounded language and tool tasks the [Hydrogen release evaluation](https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/) supports considering Hydrogen before its Flash predecessor. Tool access still requires runner evidence. Exact AGY IDs include the effort suffix. Provider evaluations inform editorial ordering; backend identity and local task quality require separate observations.
+
+## Benchmark update
+
+2026-11-19. For hard structured data and research, try Astra before Sol. OpenAI reports 62.5% five-attempt consistency on AA-AnalystAgent spreadsheet/report questions and leading results on Terminal-Bench-Science. Mapping those tasks to data transformation and evidence synthesis is an editorial inference. For hard code retain Neon first and Astra second, and give Sol the third slot. DeepMind reports FrontierCode 2.0 at 46.2% for Neon and 43.8% for Sol, and Terminal-Bench 4.1 at 65.2% and 61.5%. OpenAI reports Sol within 0.5 points of Astra on FrontierCode at max. Neither publication establishes this three-way order at Company high effort. The four-model local interval-repair exercise tied on all eight function checks in both repetitions. Its difficulty and trace coverage do not establish a winner for hard code. Other rows retain their prior ordering pending comparable task-specific evidence.
+
+Sources: [OpenAI release evaluation](https://openai.com/index/introducing-gpt-6-2-astra-sol/) and [DeepMind benchmark table](https://deepmind.google/models/gemini/).
+
+## API cost proxy
+
+Use published USD per benchmark task as the cost proxy alongside task-specific performance. The 2026-11-19 Artificial Analysis comparisons report High effort Sol $0.56, Astra $2.07 and Neon $3.74 per task. For hard coding try Sol, Astra, then Neon. Sol's FrontierCode score is close to Astra at max, while Neon retains a different subscription route and stronger reported coding results than Sol on some tasks. These are static proposal priorities; subscription debit and per-success cost remain unknown. Sources: [Astra / Sol](https://artificialanalysis.ai/models/comparisons/gpt-6-2-astra-vs-gpt-6-2-sol), [Neon / Sol](https://artificialanalysis.ai/models/comparisons/gemini-4-neon-vs-gpt-6-2-sol).
+
+## All-family cost policy
+
+This order supersedes earlier orders for all 30 cells. Use AA's published cost per benchmark task (USD), not the token price column. Low/medium/high observations are Terra 0.0713/0.17/0.26, Sol 0.18/0.41/0.56, Astra 0.66/1.62/2.07, Hydrogen 0.29/0.80/1.87 and Neon 0.75/1.90/3.74. Argon medium/high are 4.31/4.97. Sources: [Terra and Argon](https://artificialanalysis.ai/models/comparisons/gpt-6-1-terra-vs-gemini-4-argon), [Hydrogen](https://artificialanalysis.ai/models/comparisons/gemini-4-hydrogen-vs-gpt-oss-120b) and the Astra/Sol and Neon/Sol comparisons above. These are editorial cost proxies, not family-specific expected bills.
+
+Compare both subscriptions in every supported row using the same task-fit and benchmark-cost criteria. The proposal uses explicit candidate priority and preserves table order on ties. For general, language and bounded implementation tasks Terra's cost favors it. For hard reasoning, code and design, Sol's cost favors it. Design evidence is indirect. Hard research and structured data favor Astra's analytical results, with Argon available for document synthesis. For medium and hard tool use, Hydrogen's published automation results justify its higher proxy cost. For hard visual interpretation, Neon's multimodal results justify trying it before Sol. These are task-family judgments. Effort-matched local evidence is incomplete, and chart reading alone may favor Sol. See the [Hydrogen evaluation](https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/) and [DeepMind model comparisons](https://deepmind.google/models/gemini/). Media generation requires a verified output path. The shared last-resort Terra/medium carries the same $0.17 reference and still requires eligibility.
+
+For tool use, AA AutomationBench-AA at medium shows Hydrogen 72.0% and Sol 70.3%. At high it shows Hydrogen 74.4%, Sol 69.9%, Astra 76.0% and Neon 79.2%. Hydrogen sits between Sol and the more expensive high-scoring models. Zapier's stricter task pass rate at high shows Hydrogen 51.1% and Sol 41.2%. For visual work, DeepMind reports Neon ahead of Sol on MKA and LVBench, while Sol leads Chartography 75.1% to 73.5%. The hard visual order represents a broad multimodal prior with limited evidence at matching effort. [AA Hydrogen and Sol](https://artificialanalysis.ai/models/comparisons/gpt-6-2-sol-vs-gemini-4-hydrogen), [Zapier comparison](https://zapier.com/benchmarks/gemini-neon-4-report), [DeepMind model evaluation](https://storage.googleapis.com/deepmind-media/gemini/gemini_4_neon_model_evaluation.pdf).

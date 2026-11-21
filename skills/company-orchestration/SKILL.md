@@ -315,6 +315,9 @@ does not establish overall success. Preserve unregistered/unfinished/invalid Run
 
 Before actual Orca coordination, read [Orca contract](references/orca-contract.md).
 Use its single-attempt authority, inbox processing and resource settlement.
+The pinned upstream documents are historical 1.4.217 source, not the current
+host's delivery contract. For inbox handling use the version-scoped Orca contract
+and current host help, including its consuming-check and legacy ACK distinction.
 For runtime/guide drift, follow [update policy](references/update-policy.md).
 The package's Python tools inspect and compare evidence; they do not schedule,
 launch, retry, stop, update or approve work on the operator's behalf.

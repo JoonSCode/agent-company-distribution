@@ -106,7 +106,7 @@ python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /pri
 
 ## 기존 출처 결합 입력 v1 (`--manifest` / 선택 `--metadata`)
 
-공개 pure seams ([넓은 카드 배치](../scripts/status_tui_wide.py), [범위·선택 탐색](../scripts/status_tui_navigation.py)):
+공개 pure seams ([넓은 카드 배치](../scripts/status_tui_wide.py), [범위·선택 탐색](../scripts/status_tui_navigation.py), 넓은 지도 회귀 테스트):
 
 ```python
 status_tui_data.load_snapshot(manifest_path)  # -> company-status-tui/v1 dict
@@ -126,6 +126,20 @@ status_tui.page_count(snapshot, width, height, mode='combined', *, layout='wide'
 
 projection은 `binding/organization/tasks/dependencies/warnings/sources/generated_at/captured_at/live_host_state:'unknown'`, 기존 view의 `goal/check/summary/overall_goal_acceptance/historical_integrity/current_readiness`와 stage별 원문 검사를 보존한다. invalid record를 UI 성공으로 덮지 않는다. source pin은 bytes 대조이지 작성자/승인 인증이 아니다.
 
-## Verification and package boundary
+## 검증·패키지 경계
 
-Regression suites are maintained in the development source and are not included in this runtime distribution.
+```sh
+# company-orchestration/scripts 안에서
+python3.13 -B -m unittest test_status_tui_data test_status_tui -v
+python3.13 -B -m unittest test_status_tui_input -v
+python3.13 -B -m unittest test_status_tui_context -v
+python3.13 -B -m unittest test_status_tui_wide -v
+```
+
+synthetic source-bound multi-team DAG와 actual CLI owned PTY tests가 분리돼 있다. renderer80×12/120×20/48×12/short,80×24/120×40, paging/control-injection/empty; CLI JSON/errors; 실제 PTY update/idle/no-redraw/modes/page/resize/NO_COLOR/ASCII/error-last-good/recovery/q/SIGINT/SIGTERM와 termios semantic/exact/프로세스 회수를 검사한다. optional `COMPANY_TUI_TEST_EVIDENCE=/owned/path`는 테스트 harness의 원본 PTY bytes/restore receipt 저장용이며 제품 실행 경로는 audit/log 파일을 쓰지 않는다.
+
+새 adapter suite는 기존 Company schema corpus의 record를 실제 `--record` CLI와 소유 PTY에 공급한다. manifest 없이 record-only 상태 변경, malformed/revision/evidence 오류와 last-good 복구, byte-identical 교체 identity race, optional metadata의 활용/불변 pin, 미상 필드와 무쓰기를 검사한다. 실제 staffed Run capture나 실제 host pane 설치를 뜻하지 않는다.
+
+context suite는 explicit capture/new-file guard와 원래 source/assignment 충돌 거부, 무쓰기 refresh, checker 오류 보존, 실제 CLI 및80×12 PTY에서 작업 검토 통과→제출·검토 대기→통과의 enriched fields/실제 경계 간선 유지와 mismatch ERROR+last-good/cleanup을 검사한다. 기존 표현 token만 한국어/지도 기하로 교체하며 부정 시험은 유지한다. 가산 graph suite는 chain/fork/fan-in/diamond/교차 팀/분리 작업, 모든 작업·간선·양 끝 쪽, 상태 안정성, 모델/전문가 unknown/none,10개 분류, 긴 공통-prefix ID, CJK/주입, NO_COLOR/영어 ASCII와 신규 helper managed bytecode poison을 검사한다. 최종 source/official stage policy·closure·public maintenance 증거는 정확한 후보별로 별도 보존한다.
+
+이 새 skills 하위 파일은 기존 installer의 recursive COPY_ENTRIES에 포함된다. source tests는 installed host lower-pane/upper input 보존이나 실제 Company staffing의 증거가 아니다. 실제 staging/closure/managed activation/host pane/fleet는 각각 담당자가 확인해야 한다.
