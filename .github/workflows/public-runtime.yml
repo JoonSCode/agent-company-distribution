@@ -19,8 +19,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install the controlled PTY test shell
-        run: sudo apt-get update && sudo apt-get install --yes zsh
+      - name: Install the controlled PTY shell and activity probe
+        run: sudo apt-get update && sudo apt-get install --yes zsh lsof
       - name: Exact public inventory, imports, links, tests, policy and demo
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -28,4 +28,4 @@ jobs:
           UV_OFFLINE: '1'
           UV_PYTHON_DOWNLOADS: never
           PIP_NO_INDEX: '1'
-        run: python -B scripts/check_public_distribution.py
+        run: TMPDIR="$RUNNER_TEMP" python -B scripts/check_public_distribution.py

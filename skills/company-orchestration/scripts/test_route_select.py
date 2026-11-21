@@ -3,6 +3,8 @@
 import copy
 from datetime import datetime, timedelta, timezone
 import json
+import hashlib
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -279,6 +281,35 @@ class SelectionTests(SelectionFixture, unittest.TestCase):
 
 
 class SelectionCLITests(SelectionFixture, unittest.TestCase):
+    def authorize_profile(self, packet):
+        if not hasattr(self, '_authority_dir'):
+            self._authority_dir = tempfile.TemporaryDirectory()
+            self.addCleanup(self._authority_dir.cleanup)
+            self._authority_config = Path(self._authority_dir.name) / 'task.md'
+            env = patch.dict(os.environ, {'AGENT_COMPANY_TASK_CONFIG': str(self._authority_config)})
+            env.start()
+            self.addCleanup(env.stop)
+        table_path = Path(self._authority_dir.name) / 'table.json'
+        table_path.write_text(json.dumps(packet['profile_binding']['table']))
+        setting = str(table_path) + '#sha256=' + hashlib.sha256(table_path.read_bytes()).hexdigest()
+        self._authority_config.write_text('---\nschema_version: 1\nworker_table: "' + setting + '"\n---\n')
+        if hasattr(self, 'config'):
+            self.config['values']['worker_table'] = setting
+            self.config.setdefault('sources', {})['worker_table'] = str(self._authority_config)
+
+    def prepare_profile(self, packet):
+        profile = json.loads((PACKAGE / 'assets/worker-profile-example.json').read_text())
+        unit = profile['units'][0]
+        unit['id'] = packet['binding']['task']
+        table = json.loads((PACKAGE / 'assets/worker-routing-table.json').read_text())
+        row = next(r for r in table['entries'] if r['family'] == 'general' and r['difficulty'] == 'easy')
+        chosen = copy.deepcopy(row['candidates'][0])
+        selected = {k: packet['selected'][k] for k in ('route', 'model', 'effort')}
+        chosen['identity'] = selected
+        row['candidates'] = [chosen]
+        pins = {unit['id']: selected} if packet.get('selected_reason') == 'user_pin' else None
+        packet['profile_binding'] = record_check.make_profile_binding(profile, table, unit['id'], pins)
+
     def test_prelaunch_requires_selection_for_ordinary_assignment(self):
         packet = self.packet()
         del packet['price_selection']
@@ -286,7 +317,65 @@ class SelectionCLITests(SelectionFixture, unittest.TestCase):
         packet['alternatives'][0]['reason'] = 'ordinary_assignment'
         self.assertTrue(record_check.check_routing(packet, PACKAGE, prelaunch=False)['ok'])
         result = record_check.check_routing(packet, PACKAGE, prelaunch=True)
-        self.assertIn('price_selection_required', [e['code'] for e in result['errors']])
+        self.assertIn('selected_runtime_invalid', [e['code'] for e in result['errors']])
+
+    def test_default_selected_runtime_and_negative_inputs(self):
+        packet = self.packet()
+        self.authorize_profile(packet)
+        row = packet.pop('price_selection')['candidates'][0]
+        packet['binding']['inventory_evidence'] = 'inventory'
+        packet['selected_reason'] = packet['alternatives'][0]['reason'] = 'ordinary_assignment'
+        fields = ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')
+        packet['selected_runtime'] = {key: row[key] for key in fields}
+        self.config['configuration_sha256'] = 'a' * 64
+        with patch('record_check.resolve', return_value=self.config):
+            result = record_check.check_routing(packet, PACKAGE, prelaunch=True)
+            self.assertTrue(result['ok'], result['errors'])
+            for field, value in (('authenticated', False), ('supported', False), ('tools', 'unknown'), ('billing', 'unknown'), ('model', 'forged'), ('effort', 'high'), ('runtime_evidence', 'missing')):
+                bad = copy.deepcopy(packet)
+                bad['selected_runtime'][field] = value
+                self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'], field)
+            bad = copy.deepcopy(packet)
+            del bad['binding']['inventory_evidence']
+            self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'])
+            bad = copy.deepcopy(packet)
+            bad['evidence']['inventory']['host_models'] = []
+            self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'])
+
+    def test_comparison_remains_active_and_inventory_references_match(self):
+        packet = self.packet()
+        self.authorize_profile(packet)
+        row = packet['price_selection']['candidates'][0]
+        fields = ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')
+        packet['selected_runtime'] = {key: row[key] for key in fields}
+        packet['binding']['inventory_evidence'] = 'inventory'
+        self.config['configuration_sha256'] = 'a' * 64
+        with patch('record_check.resolve', return_value=self.config):
+            self.assertTrue(record_check.check_routing(packet, PACKAGE, prelaunch=True)['ok'])
+            bad = copy.deepcopy(packet)
+            bad['selected_runtime']['authenticated'] = False
+            self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'])
+            bad = copy.deepcopy(packet)
+            bad['binding']['inventory_evidence'] = 'runtime'
+            self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'])
+            bad = copy.deepcopy(packet)
+            bad['price_selection']['candidates'][0]['quality'] = 'unknown'
+            self.assertFalse(record_check.check_routing(bad, PACKAGE, prelaunch=True)['ok'])
+            common = copy.deepcopy(packet)
+            del common['price_selection']['inventory_evidence']
+            self.assertFalse(record_check.check_routing(common, PACKAGE, prelaunch=True)['ok'])
+
+    def test_historical_user_pin_remains_readable(self):
+        packet = self.packet()
+        del packet['price_selection']
+        packet['selected_reason'] = packet['alternatives'][0]['reason'] = 'user_pin'
+        packet['evidence']['quality']['binds'] = {k: packet['selected'][k] for k in ('route', 'family', 'model', 'effort')}
+        packet['evidence']['quality']['task_binding'] = {k: packet['binding'][k] for k in ('task', 'scope', 'revision', 'attempt')}
+        packet['receipt_evidence'] = 'runtime'
+        checker = record_check.Checker(PACKAGE)
+        checker.evidence_map(packet['evidence'], '$.evidence', 'synthetic')
+        checker.routing(packet, '$', None, require_receipt=True)
+        self.assertFalse(checker.errors, checker.errors)
 
     def test_prelaunch_complexity_does_not_exclude_adequate_terra(self):
         self.selection['task'].update(complexity='complex', coupling='coupled')
@@ -325,6 +414,7 @@ class SelectionCLITests(SelectionFixture, unittest.TestCase):
     def test_three_known_medium_candidates_select_terra(self):
         self.selection['candidates'] = [candidate('terra', 'medium'), candidate('sol', 'medium'), candidate('astra', 'medium')]
         packet = self.packet()
+        self.authorize_profile(packet)
         result = record_check.check_routing(packet, PACKAGE, prelaunch=True)
         self.assertTrue(result['ok'], result['errors'])
         self.assertEqual(result['receipt']['selected']['model'], 'gpt-6.1-terra')
@@ -349,17 +439,23 @@ class SelectionCLITests(SelectionFixture, unittest.TestCase):
 
     def test_prelaunch_preserves_explicit_bound_user_pin(self):
         packet = self.packet()
-        del packet['price_selection']
+        row = packet.pop('price_selection')['candidates'][0]
+        fields = ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')
+        packet['selected_runtime'] = {key: row[key] for key in fields}
+        packet['binding']['inventory_evidence'] = 'inventory'
         packet['selected_reason'] = 'user_pin'
         packet['alternatives'][0]['reason'] = 'user_pin'
         packet['evidence']['quality']['binds'] = {k: packet['selected'][k] for k in ('route', 'family', 'model', 'effort')}
         packet['evidence']['quality']['task_binding'] = {k: packet['binding'][k] for k in ('task', 'scope', 'revision', 'attempt')}
+        self.prepare_profile(packet)
+        self.authorize_profile(packet)
         self.assertTrue(record_check.check_routing(packet, PACKAGE, prelaunch=True)['ok'])
         packet['evidence']['quality']['task_binding']['task'] = 'other-task'
         self.assertIn('unbound_pin', [e['code'] for e in record_check.check_routing(packet, PACKAGE, prelaunch=True)['errors']])
 
     def test_prelaunch_accepts_bound_task_failure(self):
         packet = self.packet()
+        self.authorize_profile(packet)
         row = packet['price_selection']['candidates'][1]
         row['quality'] = 'insufficient'
         row['quality_evidence'] = 'failure'
@@ -370,6 +466,7 @@ class SelectionCLITests(SelectionFixture, unittest.TestCase):
 
     def test_prelaunch_accepts_bound_tool_unavailability(self):
         packet = self.packet()
+        self.authorize_profile(packet)
         row = packet['price_selection']['candidates'][1]
         row['tools'] = 'unsupported'
         row['runtime_evidence'] = 'unavailable'
@@ -392,9 +489,13 @@ class SelectionCLITests(SelectionFixture, unittest.TestCase):
         packet['evidence']['inventory'] = {'ref': 'synthetic://inventory', 'sha256': None, 'kind': 'synthetic',
             'candidate_inventory': [{k: row[k] for k in ('route', 'family', 'model', 'effort')} for row in self.selection['candidates']],
             'host_models': [{'slug': row['model'], 'supported_reasoning_levels': [{'effort': row['effort']}]} for row in self.selection['candidates']]}
+        self.prepare_profile(packet)
         return packet
 
     def invoke(self, command, packet, expected=0, record=None):
+        if command == 'routing-check':
+            self.prepare_profile(packet)
+            self.authorize_profile(packet)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'route.json'
             path.write_text(json.dumps(packet))

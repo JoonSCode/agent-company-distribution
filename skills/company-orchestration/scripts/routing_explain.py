@@ -5,10 +5,17 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import stat
+import subprocess
+import sys
+
+sys.dont_write_bytecode = True
+from orca_contract import resolve_orca
 
 LIMIT = 4 * 1024 * 1024
 STATES = {'not_started', 'invocation_pending', 'unknown', 'observed'}
+ORCA_ID = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', re.IGNORECASE)
 
 
 def _unique(pairs):
@@ -86,7 +93,97 @@ def inspect_directory(path):
     return info
 
 
-def explain(result_path, receipt_path):
+def start_request(state, receipt):
+    """Read only structured Orca fields from the original, receipt-bound reply."""
+    try:
+        checked = receipt['receipt']
+        argv = checked['launch_argv']
+        if (receipt['ok'] is not True or receipt['label'] != 'real' or
+                checked['decision_sha256'] != state['decision_sha256'] or
+                argv[1:4] != ['orchestration', 'worker-start', '--from'] or
+                argv[5] not in ('--spec', '--task')):
+            return None
+        reply = json.loads(state['stdout'], object_pairs_hook=_unique, parse_constant=_constant)
+        runtime = reply.get('_meta', {}).get('runtimeId')
+        if not isinstance(runtime, str) or not ORCA_ID.fullmatch(runtime):
+            runtime = None
+        pinned_runtime = checked.get('agy_runtime_id') or checked.get('host_catalog', {}).get('runtime_id')
+        if pinned_runtime is not None and runtime != pinned_runtime:
+            return None
+        expected = {'runId': checked.get('requested_run'), 'taskId': argv[6] if argv[5] == '--task' else None,
+                    'dispatchId': None}
+        if reply.get('ok') is True:
+            payload = reply['result']
+            mutation = payload['mutation']
+            if not runtime or type(mutation.get('replayed')) is not bool:
+                return None
+            request = mutation['requestId']
+            for key, prior in expected.items():
+                actual = payload.get(key)
+                if prior is not None and actual is not None and prior != actual:
+                    return None
+                expected[key] = prior or actual
+            source = 'orca_full_start_response'
+        elif reply.get('ok') is False and state['exit_code'] != 0:
+            data = reply['error']['data']
+            request = data['orchestrationRequestId']
+            if (data['originalCommand'][1:] != argv[1:] or data.get('requestSent') is False or
+                    'server' in data):
+                return None
+            recovery = data.get('recovery')
+            if recovery is not None and (recovery.get('orchestrationRequestId') != request or
+                                         recovery.get('disposition') == 'not_sent'):
+                return None
+            expected['dispatchId'] = data.get('dispatchId')
+            source = 'orca_cli_start_error'
+        else:
+            return None
+        if (not isinstance(request, str) or not ORCA_ID.fullmatch(request) or request == reply.get('id') or
+                any(value is not None and (not isinstance(value, str) or not value) for value in expected.values())):
+            return None
+        return {'request_id': request, 'runtime_id': runtime, 'source': source}, expected
+    except (KeyError, IndexError, TypeError, AttributeError, ValueError, RecursionError):
+        return None
+
+
+def query_request(request, expected):
+    """Observe the original request in the same runtime through Orca's caller-scoped lookup."""
+    if request['runtime_id'] is None:
+        return {'status': 'original_runtime_unavailable'}
+    try:
+        child = subprocess.run([resolve_orca(None), 'orchestration', 'request-show', '--request',
+                                request['request_id'], '--environment', 'local', '--full', '--json'],
+                               capture_output=True, timeout=30, check=False)
+        if child.returncode != 0 or len(child.stdout) > LIMIT:
+            return {'status': 'query_unavailable'}
+        response = json.loads(child.stdout, object_pairs_hook=_unique, parse_constant=_constant)
+        body = response['result']
+        if response['ok'] is not True or body['requestId'] != request['request_id']:
+            return {'status': 'request_mismatch'}
+        if response['_meta']['runtimeId'] != request['runtime_id']:
+            return {'status': 'runtime_mismatch'}
+        observed = body['state']
+        if observed == 'absent' and 'method' not in body and 'receipt' not in body:
+            return {'status': 'absent', 'method': None}
+        if body.get('method') != 'orchestration.workerStart':
+            return {'status': 'method_mismatch'}
+        if observed == 'pending':
+            return {'status': 'pending', 'method': body['method']}
+        if observed != 'completed':
+            return {'status': 'query_unavailable'}
+        saved = body['receipt']
+        if saved['mutation']['requestId'] != request['request_id'] or type(saved['mutation']['replayed']) is not bool:
+            return {'status': 'request_mismatch'}
+        if any(value is not None and saved.get(key) != value for key, value in expected.items()):
+            return {'status': 'start_identity_mismatch'}
+        ids = {key: saved.get(key) for key in expected}
+        return {'status': 'completed', 'method': body['method'],
+                'recorded_start_ids': ids if all(isinstance(value, str) and value for value in ids.values()) else None}
+    except (OSError, subprocess.SubprocessError, KeyError, TypeError, AttributeError, ValueError, RecursionError):
+        return {'status': 'query_unavailable'}
+
+
+def explain(result_path, receipt_path, *, query=False):
     result_path = Path(os.path.abspath(result_path))
     receipt_path = Path(os.path.abspath(receipt_path))
     state_file, state = inspect_file(result_path)
@@ -134,19 +231,26 @@ def explain(result_path, receipt_path):
                              for directory in (refresh, archive) for entry in directory['entries'])
     invalid = invalid or (state_file['status'] == 'present' and not valid_state)
     invalid = invalid or (receipt_file['status'] == 'present' and not receipt_valid) or receipt_binding == 'mismatch'
+    bound_request = (start_request(state, receipt) if not invalid and receipt_binding == 'matches' and
+                     local_state in ('unknown', 'observed') else None)
+    request, expected = bound_request or (None, None)
+    lookup = (query_request(request, expected) if request is not None else {'status': 'request_unavailable'}) if query else None
     return {'format': 'company-routing-explain/v1', 'ok': not invalid,
             'read_only': True, 'launch_authorized': False, 'local_state': local_state,
             'artifacts': artifacts, 'receipt_binding': receipt_binding,
             'last_observed_stage': stage, 'host_no_start': 'unknown',
             'new_attempt_allowed': False, 'same_attempt_retry_allowed': False,
-            'reconcile_plan': {'status': 'blocked', 'reasons': reasons, 'steps': [
+            'reconcile_plan': {'status': 'blocked', 'reasons': reasons, 'orca_request': request,
+                               'request_lookup': lookup, 'steps': [
                 'Preserve exact result, receipt, refresh and archive artifacts; do not delete, overwrite or reset.',
+                'Use --query-request in the original local Orca caller context when the original request and runtime were retained.',
                 'Have the responsible host owner reconcile the exact prior Task/Dispatch and establish authoritative settlement or no-start evidence.',
                 'Only after authoritative reconciliation and separate approval, prepare fresh inputs at entirely unused paths and run the existing live gates.']},
             'limits': ['Local artifact observations are not authenticated host evidence.',
                        'Directory presence proves neither refresh completion nor the exact denial stage.',
                        'Lock presence does not report lock ownership; concurrent snapshots are not atomic.',
-                       'No host evidence importer or retry authorization is implemented here.']}
+                       'Request lookup observes an Orca receipt under its current caller identity. Absence does not prove no start.',
+                       'Request completion does not prove worker liveness, consumer exit, or settlement.']}
 
 
 def main(argv=None):
@@ -154,8 +258,11 @@ def main(argv=None):
     parser.add_argument('command', choices=('explain', 'reconcile-plan'))
     parser.add_argument('--result', required=True, type=Path)
     parser.add_argument('--receipt', required=True, type=Path)
+    parser.add_argument('--query-request', action='store_true', help='reconcile-plan only: read the retained exact request from local Orca')
     args = parser.parse_args(argv)
-    report = explain(args.result, args.receipt)
+    if args.query_request and args.command != 'reconcile-plan':
+        parser.error('--query-request requires reconcile-plan')
+    report = explain(args.result, args.receipt, query=args.query_request)
     print(json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2))
     return 0 if report['ok'] else 1
 

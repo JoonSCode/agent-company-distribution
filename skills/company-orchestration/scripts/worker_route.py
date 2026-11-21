@@ -9,10 +9,44 @@ CLI: worker_route.py prepare PROFILE.json [--table TABLE.json] [--pins PINS.json
 import argparse
 import hashlib
 import json
+from pathlib import Path
 from worker_profile import ASSETS, ProfileError, load_json, validate_profile_document, validate_schema
+from company_config import SERVICES, ROUTE_ALIASES, resolve
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest()
+
+def configured_table(configuration):
+    """Read independent configuration authority, not a table supplied by a decision."""
+    setting = configuration['values'].get('worker_table')
+    if setting is None:
+        path = ASSETS / 'worker-routing-table.json'
+        expected = None
+        source = 'packaged canonical table'
+    else:
+        if not isinstance(setting, str) or '#sha256=' not in setting:
+            raise ProfileError('INVALID_TABLE_AUTHORITY', 'invalid configured table reference')
+        name, expected = setting.rsplit('#sha256=', 1)
+        path = Path(name)
+        if not path.is_absolute() or '..' in path.parts or len(expected) != 64 or any(c not in '0123456789abcdef' for c in expected):
+            raise ProfileError('INVALID_TABLE_AUTHORITY', 'invalid configured table reference')
+        source = configuration.get('sources', {}).get('worker_table', 'configured document')
+    if path.is_symlink() or not path.is_file():
+        raise ProfileError('INVALID_TABLE_AUTHORITY', 'configured table is missing or not a regular file')
+    raw = path.read_bytes()
+    actual = hashlib.sha256(raw).hexdigest()
+    if expected is not None and actual != expected:
+        raise ProfileError('INVALID_TABLE_AUTHORITY', 'configured table bytes changed')
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ProfileError('INVALID_TABLE_AUTHORITY', 'duplicate table key')
+            result[key] = value
+        return result
+    table = json.loads(raw, object_pairs_hook=unique, parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+    validate_table(table)
+    return table, {'path': str(path), 'sha256': actual, 'source': source}
 
 def validate_table(table, priors=None):
     validate_schema(table, load_json(ASSETS / 'worker-routing-table.schema.json'))
@@ -28,7 +62,16 @@ def validate_table(table, priors=None):
             identities.add(ident_key)
             if ident['model'] in models: raise ProfileError('INVALID_TABLE', f'duplicate model {ident["model"]}')
             models.add(ident['model'])
-            if ident['route'] != 'codex' or ident['model'] not in priors['models'] or ident['effort'] not in priors['models'][ident['model']]['efforts']:
+            if ident['route'] not in SERVICES and ident['route'] not in ROUTE_ALIASES:
+                raise ProfileError('INVALID_TABLE', f'unknown policy identity {ident_key}')
+            policy_route = 'agy' if ident['route'] == 'antigravity' else ident['route']
+            efforts = priors.get('worker_route_efforts', {}).get(policy_route, {}).get(ident['model'], [])
+            if ident['route'] == 'codex' and ident['model'] in priors['models']:
+                efforts = priors['models'][ident['model']]['efforts']
+            # Codex identities require an explicit policy entry; known native
+            # identities keep their declared effort set. Other configured
+            # provider identities remain proposals subject to runtime evidence.
+            if (ident['route'] == 'codex' or efforts) and ident['effort'] not in efforts:
                 raise ProfileError('INVALID_TABLE', f'unknown policy identity {ident_key}')
     ident = table['common_default']['identity']
     if (ident['route'] != 'codex' or ident['model'] != 'gpt-6.1-terra' or
@@ -50,7 +93,7 @@ def prepare(document, table, pins=None):
     rows = {(r['family'],r['difficulty']):r for r in table['entries']}; results = []
     for unit in document['units']:
         p = unit['profile']; row = rows.get((p['family'],p['difficulty'])); rejected = []; eligible = []
-        chain = sorted(row['candidates'] if row else [], key=lambda c: (c['priority'], *(c['identity'][k] for k in ('route', 'model', 'effort'))))
+        chain = sorted(row['candidates'] if row else [], key=lambda c: c['priority'])
         def rejection_reasons(c):
             reasons = []
             if not c['enabled']: reasons.append('disabled')
@@ -92,10 +135,11 @@ def prepare(document, table, pins=None):
     return {'version':2,'profile_sha256':digest(document),'table_sha256':digest(table),'source_sha256':digest(priors),'pins_sha256':digest(pins),'hash_format':'sha256 of UTF-8 canonical JSON (sorted keys, compact separators, unescaped Unicode)','results':results,'authority':'proposal only; table evidence is unverified; existing host and policy checks remain required'}
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('command',choices=['prepare','validate']); parser.add_argument('profile'); parser.add_argument('--table',default=str(ASSETS / 'worker-routing-table.json')); parser.add_argument('--pins')
+    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('command',choices=['prepare','validate']); parser.add_argument('profile'); parser.add_argument('--table', help='Proposal-only table override'); parser.add_argument('--pins')
     args = parser.parse_args()
     try:
-        result = prepare(load_json(args.profile),load_json(args.table),load_json(args.pins) if args.pins else None)
+        table = load_json(args.table) if args.table else configured_table(resolve())[0]
+        result = prepare(load_json(args.profile),table,load_json(args.pins) if args.pins else None)
         print(json.dumps(result,sort_keys=True,indent=2)); return 0 if all(r['status']=='MATCH' for r in result['results']) else 2
     except (ProfileError, OSError, ValueError) as exc:
         print(json.dumps({'status':'error','code':getattr(exc,'code','INVALID_JSON'),'detail':str(exc)})); return 1

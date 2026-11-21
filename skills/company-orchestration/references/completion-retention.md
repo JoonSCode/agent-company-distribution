@@ -7,6 +7,16 @@ and Doctor evidence must prove registration; source tests cannot. No Core change
 timer, historical sweep or worker completion trigger is involved. Stop is only a
 wakeup. It never supplies an acceptance decision.
 
+## Supported storage producer
+
+New supported producers use [native enroll/classify/closeout](storage-lifecycle.md)
+before intermediate/result allocation. The low-level init/register primitives
+remain for compatibility; they do not prove new producer enrollment. Normal
+Stop, native apply and direct complete now share the same bounded Git/source,
+UID/shared-directory/target preflight and per-action quarantine rechecks.
+Historical Runs are not adopted or repaired. The distinct current maintenance
+operation never changes old acceptance or waives those guards.
+
 ## Ordinary producer and callback
 
 For [measurement v2](measurement-lifecycle.md), completion additionally requires

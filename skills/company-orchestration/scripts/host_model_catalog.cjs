@@ -4,6 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const root = '/Applications/Orca.app/Contents/Resources/app.asar.unpacked/out';
+const reviewedVersions = ['1.4.245', '1.4.261', '1.4.263', '1.4.268'];
+const coherentCatalog = 'agent-session.coherent-model-catalog.v1';
+const modelEfforts = 'agent-session.model-catalog.model-efforts.v1';
+const savedOnlyCatalog = 'agent-session.model-catalog.saved-only.v1';
 
 // Function-only seams: no CLI/env/module-path injection, no host load on import.
 function transport(call, save, now, receipts) {
@@ -17,23 +21,32 @@ function transport(call, save, now, receipts) {
 
 async function status(call) {
   const value = await call('status.get', {}, 'status.json');
-  if (value.ok !== true || !['1.4.245', '1.4.261', '1.4.263'].includes(value.result?.appVersion) ||
-      value.result.runtimeId !== value._meta?.runtimeId ||
-      !value.result.capabilities?.includes('agent-session.coherent-model-catalog.v1')) {
+  const {appVersion, runtimeId, capabilities} = value.result ?? {};
+  if (value.ok !== true || !reviewedVersions.includes(appVersion) ||
+      typeof runtimeId !== 'string' || !runtimeId || runtimeId !== value._meta?.runtimeId ||
+      !Array.isArray(capabilities) || !capabilities.includes(coherentCatalog) ||
+      (appVersion === '1.4.268' &&
+        [modelEfforts, savedOnlyCatalog].some(capability => !capabilities.includes(capability)))) {
     throw new Error('Unreviewed host version or missing coherent catalog capability');
   }
   return value;
 }
 
 async function catalog(call, parseParams, worktree, hostStatus) {
-  const params = parseParams({agent: 'codex', worktree});
-  let response = await call('agentSession.modelCatalog', params, 'response-1.json');
-  if (response.result?.listingInProgress === true) {
-    response = await call('agentSession.modelCatalog',
-      parseParams({...params, waitForListing: true}), 'response-2.json');
+  // 1.4.268 can return partial progress even with waitForListing. A saved-only
+  // read avoids starting a listing and can expose a settled workspace observation.
+  const savedOnly = hostStatus.result.appVersion === '1.4.268';
+  const params = parseParams({agent: 'codex', worktree, ...(savedOnly ? {savedOnly: true} : {})});
+  async function read(request, file) {
+    const response = await call('agentSession.modelCatalog', request, file);
+    if (response.ok !== true || response._meta?.runtimeId !== hostStatus._meta.runtimeId) {
+      throw new Error('Catalog unsuccessful or runtime changed');
+    }
+    return response;
   }
-  if (response.ok !== true || response._meta?.runtimeId !== hostStatus._meta.runtimeId) {
-    throw new Error('Catalog unsuccessful or runtime changed');
+  const response = await read(params, 'response-1.json');
+  if (!savedOnly && response.result?.listingInProgress === true) {
+    return read(parseParams({...params, waitForListing: true}), 'response-2.json');
   }
   return response;
 }

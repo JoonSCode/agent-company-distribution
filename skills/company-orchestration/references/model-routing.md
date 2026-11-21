@@ -102,22 +102,16 @@ heads. No head or child model/effort pin is imposed by this boundary.
 
 ## Checked assignments and failure recovery
 
-For the packaged model table, run `record_check.py routing-select decision.json
---json` using the LLM's `price_selection` input, then place its selected identity
-in the existing version-1 decision with `selected_reason: price_informed`.
-`routing-check` rejects a dominated candidate or incomplete decomposition and
-requires the supplied candidate inventory for a fresh unpinned assignment. It
-allows a nondominated choice other than the advice's cheapest choice. The selector is local, pure advice: it makes no API
-or Orca calls. Unknown/malformed capabilities, runtime support or billing do not
-trigger an inferred model, effort or paid fallback. For an unlisted provider/model,
-include the known Codex inventory and candidate comparison, bind actual route,
-host, support, authentication, tools, billing and exact task fit to current pinned
-evidence, and use an ordinary evidence-based reason rather than `price_informed`.
-Its price, benchmark comparison and tokens remain unknown; do not substitute a
-table alias or rank it by an invented value. Another route offering the same
-model ID needs independent evidence and does not inherit the Codex price. The
-checker verifies supplied files and bindings, not the truth of an operator's
-interpretation or live execution.
+For an ordinary assignment, prepare the profile binding and provide the selected
+runtime and current inventory evidence described in [routing prelaunch](routing-prelaunch.md).
+This path does not require a price or benchmark comparison. An explicit
+`routing-select` remains available when comparison is wanted. If a decision
+contains `price_selection` or claims `price_informed`, the comparison is checked
+and cannot be silently ignored. Unknown runtime support, tools or billing do not
+justify an inferred model, paid fallback or fabricated pin. A different service
+offering the same model ID is a distinct route and requires its own evidence.
+The checker validates supplied evidence and structure, not provider identity or
+the truth of an operator's declaration.
 See [record fields and limits](record-contract.md#price-informed-selection).
 
 Use a version-1 routing decision and record_check.py routing-check before a

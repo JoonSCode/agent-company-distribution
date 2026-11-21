@@ -146,23 +146,30 @@ def main(argv=None):
     try:
         parser = Parser(description=__doc__)
         families = parser.add_subparsers(dest='family', required=True)
-        for family, commands in (('storage', ('report', 'plan', 'apply')),
+        for family, commands in (('storage', ('report', 'plan', 'apply', 'enroll', 'classify', 'settle-launch', 'closeout', 'maintenance-plan', 'maintenance-apply', 'maintenance-closeout')),
                                  ('usage', ('report',)), ('reasoning', ('prepare', 'check'))):
             sub = families.add_parser(family).add_subparsers(dest='command', required=True)
             for command in commands:
                 item = sub.add_parser(command)
-                if command in ('report', 'plan', 'prepare'):
+                if command in ('report', 'plan', 'prepare', 'enroll', 'classify', 'settle-launch', 'closeout', 'maintenance-plan', 'maintenance-closeout'):
                     item.add_argument('--request', required=True, type=Path)
                 if command == 'prepare': item.add_argument('--output', required=True, type=Path)
                 if command == 'check': item.add_argument('--bundle', required=True, type=Path)
-                if command == 'apply':
+                if command in ('apply', 'maintenance-apply'):
                     item.add_argument('--plan', required=True, type=Path)
                     item.add_argument('--expect-plan-sha256', required=True)
+                    if command == 'maintenance-apply':
+                        item.add_argument('--authorization', required=True, type=Path)
+                        item.add_argument('--review', required=True, type=Path)
         args = parser.parse_args(argv)
         if args.family == 'storage':
             import native_storage as module
-            result = (module.apply(args.plan, args.expect_plan_sha256) if args.command == 'apply'
-                      else getattr(module, args.command)(args.request))
+            if args.command == 'maintenance-apply':
+                result = module.maintenance_apply(args.plan, args.expect_plan_sha256, args.authorization, args.review)
+            elif args.command == 'apply':
+                result = module.apply(args.plan, args.expect_plan_sha256)
+            else:
+                result = getattr(module, args.command.replace('-', '_'))(args.request)
         elif args.family == 'usage':
             import native_usage
             result = native_usage.report(args.request)

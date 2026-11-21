@@ -17,10 +17,11 @@ if __name__ == "__main__":
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from company_config import ConfigError, canonical_home, resolve, route_errors
-from route_select import SelectionError, load_table, select as select_by_price
+from route_select import SelectionError, load_table, select as select_by_price, validate_runtime_observation
 from worker_profile import ASSETS, ProfileError, validate_profile_document
-from worker_route import prepare as prepare_profile, digest as profile_digest
+from worker_route import prepare as prepare_profile, digest as profile_digest, configured_table
 
+CHECKED_AGENTS = {'codex': 'codex', 'agy': 'antigravity', 'antigravity': 'antigravity'}
 ROUTES = ('agy', 'antigravity', 'claude-code', 'claude', 'grok', 'codex', 'cursor', 'other')
 FAMILIES = ('flash', 'claude', 'grok', 'luna', 'terra', 'sol', 'astra', 'other', 'excluded_pro')
 FAILURES = ('capacity', 'auth', 'tools', 'quality')
@@ -41,6 +42,11 @@ ROUTING_LIMITS = (
     'authenticate supplied semantic/price evidence, require every candidate, mandate a model, equate models, or convert quota to tokens.'
 )
 NO_RECORD = object()
+INVENTORY_HASH_CHANGED = 'canonical_inventory_hash_changed'
+
+
+class InventoryHashChanged(SelectionError):
+    """The canonical Codex inventory disagrees with its preparation pin."""
 
 
 def identity(candidate):
@@ -68,6 +74,9 @@ def catalog_supports_candidate(contents, candidate):
 
     if candidate['route'] in ('agy', 'antigravity'):
         lines = contents.splitlines()
+        orchestrators = {'gemini-pro-orchestrator-neon\tOrchestrator (Neon)',
+                         'gemini-pro-orchestrator-g1-pro\tOrchestrator (Argon)'}
+        lines = [line for line in lines if line not in orchestrators]
         rows = [re.fullmatch(r'([A-Za-z0-9_.-]+)-(low|medium|high|xhigh|max)\t[^\t\r\n]+ \((low|medium|high|xhigh|max)\)',
                              line, re.IGNORECASE) for line in lines]
         return bool(rows) and all(row is not None and row.group(2).lower() == row.group(3).lower() for row in rows) and any(
@@ -92,6 +101,7 @@ class Checker:
         self.errors = []
         self.refs = {}
         self.price_result = None
+        self.table_authority = None
         try:
             self.configuration = resolve()
         except (ConfigError, OSError) as exc:
@@ -247,6 +257,14 @@ class Checker:
                 'limits': ROUTING_LIMITS}
         if self.price_result is not None:
             receipt['price_selection'] = self.price_result
+        if self.table_authority is not None:
+            receipt['worker_table_authority'] = self.table_authority
+        if isinstance(decision.get('profile_binding'), dict):
+            receipt['profile_binding_sha256'] = profile_digest(decision['profile_binding'])
+            receipt['profile_unit'] = decision['profile_binding'].get('unit_id')
+        if 'selected_runtime' in decision:
+            receipt['selected_runtime'] = decision['selected_runtime']
+            receipt['inventory_evidence'] = binding.get('inventory_evidence')
         return receipt
 
     def price_selection(self, decision, path, require_selected=True, prelaunch=False, pinned=False, recorded_prelaunch=False, legacy_record=False):
@@ -273,7 +291,7 @@ class Checker:
                     if host_models is None:
                         inventory_bytes = inventory_path.read_bytes()
                         if hashlib.sha256(inventory_bytes).hexdigest() != inventory.get('sha256'):
-                            raise SelectionError('Candidate inventory hash changed before comparison')
+                            raise InventoryHashChanged('Candidate inventory hash changed before comparison')
                         contents = json.loads(inventory_bytes)
                         if not isinstance(contents, dict) or not isinstance(contents.get('models'), list):
                             raise SelectionError('Pinned Codex inventory must contain the host models array')
@@ -308,7 +326,7 @@ class Checker:
             elif (prelaunch or recorded_prelaunch) and label == 'synthetic' and isinstance(selection, dict):
                 inventory = self.refs.get(selection.get('inventory_evidence'), {})
                 host_models = inventory.get('host_models') if isinstance(inventory, dict) else None
-            result = select_by_price(decision.get('price_selection'), self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch or recorded_prelaunch,
+            result = select_by_price(selection, self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch or recorded_prelaunch,
                                      requested=decision.get('selected') if (prelaunch or recorded_prelaunch) and (not pinned or decision.get('selected', {}).get('route') != 'codex') else None,
                                      host_models=host_models, current_runtime=not recorded_prelaunch,
                                      explicit_pin=pinned, legacy_record=legacy_record)
@@ -361,6 +379,9 @@ class Checker:
                         any(previous[group] != result[group] for group in ('compared', 'rejected')) or
                         previous['comparison_basis'] != result['comparison_basis']):
                     raise SelectionError('Recorded candidate table or comparison differs from prelaunch receipt')
+        except InventoryHashChanged as exc:
+            self.error(path, INVENTORY_HASH_CHANGED, str(exc))
+            return None
         except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
             self.error(path, 'price_selection_invalid', str(exc))
             return None
@@ -368,6 +389,93 @@ class Checker:
         if require_selected and result['status'] != 'selected':
             self.error(path, 'price_selection_incomplete', 'Decompose the complex outcome before an executable selection')
         return result
+
+    def selected_runtime(self, decision, path, selected, constraints, pinned):
+        try:
+            row = decision['selected_runtime']
+            fields = ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')
+            if not isinstance(row, dict) or set(row) != set(fields) or identity(row) != identity(selected):
+                raise SelectionError('Selected runtime must bind the exact selected candidate')
+            if row['supported'] is not True or row['authenticated'] is not True or row['tools'] != 'supported' or row['billing'] not in ('subscription', 'paid_api'):
+                raise SelectionError('Selected runtime support, authentication, tools or billing unavailable')
+            if row['billing'] != constraints.get('billing') or constraints.get('tool') != 'supported' or constraints.get('quality') != 'met':
+                raise SelectionError('Selected runtime conflicts with decision constraints')
+            label = decision.get('label', getattr(self, 'label', None))
+            synthetic = label == 'synthetic'
+            runtime_ref = self.refs.get(row['runtime_evidence'])
+            if not isinstance(runtime_ref, dict) or runtime_ref.get('kind') != ('synthetic' if synthetic else 'host'):
+                raise SelectionError('Selected runtime requires host evidence')
+            if selected.get('evidence') != row['runtime_evidence']:
+                raise SelectionError('Selected runtime evidence differs from selected candidate')
+            binding = decision['binding']
+            inventory_id = binding['inventory_evidence']
+            legacy = decision.get('price_selection', {}).get('inventory_evidence')
+            if not isinstance(inventory_id, str) or not inventory_id or (legacy is not None and legacy != inventory_id):
+                raise SelectionError('Inventory references are missing or disagree')
+            inventory = self.refs[inventory_id]
+            if inventory.get('kind') != ('synthetic' if synthetic else 'host'):
+                raise SelectionError('Selected inventory requires host evidence')
+            if synthetic:
+                host_models = inventory['host_models']
+            elif inventory.get('source') == 'orca_model_catalog':
+                from host_model_catalog import bound_catalog
+                host_models = bound_catalog(decision, self.base, self.configuration)['models']
+            else:
+                source = (self.base / inventory['file']).resolve()
+                if source != (canonical_home() / 'models_cache.json').resolve():
+                    raise SelectionError('Codex inventory must reference this host canonical models_cache.json')
+                raw = source.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != inventory['sha256']:
+                    raise InventoryHashChanged('Host inventory hash changed')
+                observed = datetime.fromisoformat(inventory['observed_at'].replace('Z', '+00:00'))
+                until = datetime.fromisoformat(inventory['valid_until'].replace('Z', '+00:00'))
+                if observed.tzinfo is None or until.tzinfo is None or not observed <= datetime.now(timezone.utc) <= until:
+                    raise SelectionError('Host inventory freshness is expired or unknown')
+                host_models = json.loads(raw)['models']
+            model_policy = load_table()[0]
+            models = model_policy['models']
+            if row['route'] == 'codex':
+                model = models.get(row['model'])
+                family = model['family'] if model else model_policy.get('worker_route_families', {}).get('codex', {}).get(row['model'])
+                efforts = model['efforts'] if model else model_policy.get('worker_route_efforts', {}).get('codex', {}).get(row['model'], [])
+                if not family or row['family'] != family or row['effort'] not in efforts:
+                    raise SelectionError('Unsupported table model/effort/family combination')
+                if not isinstance(host_models, list) or not any(isinstance(item, dict) and item.get('slug') == row['model'] and isinstance(item.get('supported_reasoning_levels'), list) and any(isinstance(level, dict) and level.get('effort') == row['effort'] for level in item['supported_reasoning_levels']) for item in host_models):
+                    raise SelectionError('Selected model/effort absent from current host inventory')
+            else:
+                runtime = validate_runtime_observation(row, self.refs, synthetic=synthetic, observation_key='unlisted_runtime')
+                if not synthetic:
+                    if inventory.get('host') != runtime['host']:
+                        raise SelectionError('Runtime host differs from inventory host')
+                    source = self.refs[runtime['model_evidence']]
+                    suffix = re.search(r'-(low|medium|high|xhigh|max)$', row['model'])
+                    if suffix and row['effort'] != suffix.group(1):
+                        raise SelectionError('Model effort disagrees with observed model identifier')
+                    if not catalog_supports_candidate((self.base / source['file']).read_text(), row):
+                        raise SelectionError('Selected model/effort absent from supported catalog')
+                    for field, claim, value in (('support_evidence', 'supported', row['supported']), ('auth_evidence', 'authenticated', row['authenticated']), ('tools_evidence', 'tools', row['tools']), ('billing_evidence', 'billing', row['billing'])):
+                        ref = runtime[field]
+                        observation = json.loads((self.base / self.refs[ref]['file']).read_text())
+                        if not isinstance(observation, dict) or observation.get('format') != 'company-runtime-observation/v1' or identity(observation.get('candidate')) != identity(row) or observation.get('agent') != runtime['agent'] or observation.get('host') != runtime['host'] or observation.get('claim') != claim or observation.get('value') != value:
+                            raise SelectionError('Runtime observation missing or mismatched')
+                        source_id = observation.get('source_evidence')
+                        raw = self.refs.get(source_id)
+                        if source_id == ref or not isinstance(raw, dict) or raw.get('kind') != 'host' or raw.get('host') != runtime['host'] or not isinstance(raw.get('file'), str) or not isinstance(raw.get('sha256'), str):
+                            raise SelectionError('Runtime observation needs separate pinned host source')
+                        start = datetime.fromisoformat(raw['observed_at'].replace('Z', '+00:00'))
+                        end = datetime.fromisoformat(raw['valid_until'].replace('Z', '+00:00'))
+                        if start.tzinfo is None or end.tzinfo is None or not start <= datetime.now(timezone.utc) <= end:
+                            raise SelectionError('Runtime source freshness expired or unknown')
+            config = self.configuration
+            if synthetic and config['state'] != 'configured':
+                config = {**config, 'values': {**config['values'], 'services': ['codex', 'claude-code', 'antigravity', 'grok', 'cursor']}}
+            problems = route_errors(config, route=row['route'], model=row['model'], effort=row['effort'], billing=row['billing'], head=constraints.get('task') == 'head_orchestration', explicit_pin=pinned is not None)
+            if problems:
+                raise SelectionError('; '.join(problems))
+        except InventoryHashChanged as exc:
+            self.error(path, INVENTORY_HASH_CHANGED, str(exc))
+        except (SelectionError, ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
+            self.error(path, 'selected_runtime_invalid', str(exc))
 
     def routing(self, decision, path, expected, require_receipt, prelaunch=False):
         required = ['version', 'binding', 'trigger', 'failure_class', 'prior', 'selected', 'alternatives',
@@ -472,6 +580,14 @@ class Checker:
                                     head=constraints.get('task') == 'head_orchestration', explicit_pin=pinned is not None)
             for problem in problems:
                 self.error(path + '.selected', 'configuration_gate', problem)
+            if (prelaunch and selected.get('route') in ('agy', 'antigravity') and
+                    'antigravity' not in route_config['values']['services'] and
+                    'codex' in route_config['values']['services']):
+                self.error(path + '.profile_binding', 'reproposal_required',
+                           'Antigravity is not enabled. Review the Codex alternatives in the profile eligible_chain. '
+                           'Prepare a new decision with an independently configured Codex-only worker table '
+                           'or a genuine current-task user pin via profile-prepare --pins. '
+                           'Bind fresh evidence for the exact replacement; do not reuse the AGY receipt.')
         boundary = self.obj(decision.get('boundary'), path + '.boundary',
                             ['review', 'reconsider', 'scope', 'next', 'inherits'])
         self.enum(boundary.get('review'), path + '.boundary.review', REVIEWS)
@@ -503,6 +619,27 @@ class Checker:
                        'Selected reason evidence still binds to another candidate')
         if require_receipt:
             self.evidence(decision.get('receipt_evidence'), path + '.receipt_evidence', True)
+            receipt_ref = self.refs.get(decision.get('receipt_evidence'), {})
+            if isinstance(receipt_ref, dict) and isinstance(receipt_ref.get('file'), str):
+                receipt_body = None
+                try:
+                    recorded = json.loads((self.base / receipt_ref['file']).read_bytes())
+                    receipt_body = recorded['receipt']
+                    if 'selected_runtime' in decision or 'selected_runtime' in receipt_body:
+                        if (recorded.get('ok') is not True or
+                                receipt_body.get('selected_runtime') != decision.get('selected_runtime') or
+                                receipt_body.get('inventory_evidence') != binding.get('inventory_evidence') or
+                                not isinstance(binding.get('spec_sha256'), str) or
+                                receipt_body.get('spec_sha256') != binding.get('spec_sha256') or
+                                any(receipt_body.get('binding', {}).get(k) != binding.get(k) for k in ('scope', 'revision')) or
+                                identity(receipt_body.get('selected')) != identity(selected)):
+                            raise ValueError('Recorded runtime, inventory, spec or selection differs from prelaunch receipt')
+                except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+                    if 'selected_runtime' in decision or isinstance(receipt_body, dict) and 'selected_runtime' in receipt_body:
+                        self.error(path + '.receipt_evidence', 'selected_runtime_receipt_invalid', str(exc))
+            elif 'selected_runtime' in decision:
+                self.error(path + '.receipt_evidence', 'selected_runtime_receipt_invalid',
+                           'Selected runtime history requires a pinned receipt file')
         if 'tokens' in decision:
             tokens = self.obj(decision.get('tokens'), path + '.tokens', ['input', 'output', 'basis'])
             if tokens.get('basis') == 'quota':
@@ -524,8 +661,19 @@ class Checker:
         unlisted = selected.get('route') != 'codex' and not legacy_record
         if unlisted and decision.get('selected_reason') == 'price_informed':
             self.error(path + '.selected_reason', 'unknown_price_basis', 'An unlisted model with unknown price is not a price-informed selection')
-        if prelaunch and (pinned is None or unlisted) and 'price_selection' not in decision:
-            self.error(path + '.price_selection', 'price_selection_required', 'Fresh unpinned assignment requires a candidate comparison')
+        if prelaunch and ('price_selection' not in decision or 'selected_runtime' in decision):
+            self.selected_runtime(decision, path + '.selected_runtime', selected, constraints, pinned)
+        if prelaunch and 'price_selection' in decision and 'selected_runtime' in decision:
+            rows = selection.get('candidates', []) if isinstance(selection, dict) else []
+            matching = [row for row in rows if isinstance(row, dict) and identity(row) == identity(selected)]
+            runtime = decision.get('selected_runtime')
+            if len(matching) != 1 or not isinstance(runtime, dict) or any(matching[0].get(k) != runtime.get(k) for k in ('route', 'family', 'model', 'effort', 'supported', 'authenticated', 'tools', 'billing', 'runtime_evidence')):
+                self.error(path + '.selected_runtime', 'selected_runtime_mismatch', 'Selected runtime conflicts with comparison candidate')
+        if prelaunch and isinstance(selection, dict):
+            common = binding.get('inventory_evidence')
+            legacy = selection.get('inventory_evidence')
+            if common is not None and legacy is not None and common != legacy:
+                self.error(path + '.binding.inventory_evidence', 'inventory_mismatch', 'Inventory references disagree')
         if 'price_selection' in decision or decision.get('selected_reason') == 'price_informed':
             recorded_prelaunch = (not prelaunch and require_receipt and isinstance(decision.get('price_selection'), dict)
                                   and 'inventory_evidence' in decision['price_selection'])
@@ -896,7 +1044,9 @@ class Checker:
                         'attempt': t.get('current_dispatch'),
                         'model': t.get('model') if isinstance(t.get('model'), dict) else {}}, True)
                     if isinstance(t.get('routing_decision'), dict):
-                        check_profile_binding(self, t['routing_decision'], p + '.routing_decision')
+                        check_profile_binding(self, t['routing_decision'], p + '.routing_decision',
+                                              historical={'task': t.get('id'), 'dispatch': t.get('current_dispatch'),
+                                                          'run': r.get('run')})
         usage = self.obj(r.get('usage'), '$.usage', ['coverage', 'expected', 'entries'])
         self.enum(usage.get('coverage'), '$.usage.coverage', ['unknown', 'partial', 'complete'])
         expected = []
@@ -1034,8 +1184,11 @@ def make_profile_binding(profile, table, unit, pins=None):
             **{key: matches[0][key] for key in ('eligible_chain', 'fallback_index', 'selection_reasons', 'selected_source', 'default_provenance')}}
 
 
-def check_profile_binding(checker, decision, path):
+def check_profile_binding(checker, decision, path, *, required=False, historical=None):
     if 'profile_binding' not in decision:
+        if required:
+            checker.error(path + '.profile_binding', 'profile_binding_required',
+                          'Execution requires a prepared profile binding')
         return
     p = path + '.profile_binding'
     value = decision['profile_binding']
@@ -1045,8 +1198,77 @@ def check_profile_binding(checker, decision, path):
         if not isinstance(value, dict) or set(value) != fields or type(value['version']) is not int or value['version'] != 3:
             raise ValueError('Invalid profile binding shape or version')
         binding = decision.get('binding', {})
-        if not isinstance(binding, dict) or value['unit_id'] != binding.get('task'):
-            raise ValueError('Profile unit must match the decision task')
+        if not isinstance(binding, dict):
+            raise ValueError('Profile binding requires a decision task')
+        if value['unit_id'] != binding.get('task'):
+            if not isinstance(historical, dict):
+                raise ValueError('Profile unit must match the decision task')
+            receipt_ref = checker.refs[decision['receipt_evidence']]
+            launch_ref = checker.refs[decision['launch_evidence']]
+            def pinned(ref):
+                if not isinstance(ref, dict) or not isinstance(ref.get('file'), str) or not isinstance(ref.get('sha256'), str):
+                    raise ValueError('Historical profile mapping requires pinned original files')
+                data = (checker.base / ref['file']).read_bytes()
+                if hashlib.sha256(data).hexdigest() != ref['sha256']:
+                    raise ValueError('Historical profile mapping source hash mismatch')
+                return json.loads(data)
+            receipt = pinned(receipt_ref)
+            launch = pinned(launch_ref)
+            checked = receipt['receipt']
+            start = json.loads(launch['stdout'])
+            actual = start['result']
+            if (receipt.get('ok') is not True or launch.get('launch_state') != 'observed' or
+                    launch.get('readback_status') != 'observed' or launch.get('exit_code') != 0 or
+                    launch.get('prelaunch_receipt_sha256') != receipt_ref['sha256'] or
+                    not re.fullmatch(r'[0-9a-f]{64}', str(checked.get('decision_sha256', ''))) or
+                    launch.get('decision_sha256') != checked.get('decision_sha256') or
+                    checked.get('profile_binding_sha256') != profile_digest(value) or
+                    checked.get('profile_unit') != value['unit_id'] or
+                    checked.get('binding', {}).get('task') != value['unit_id'] or
+                    checked.get('binding', {}).get('planned') is not True or
+                    checked.get('spec_sha256') != binding.get('spec_sha256') or
+                    not isinstance(binding.get('spec_sha256'), str) or
+                    any(checked.get('binding', {}).get(k) != binding.get(k) for k in ('scope', 'revision')) or
+                    identity(checked.get('selected')) != identity(decision.get('selected')) or
+                    start.get('ok') is not True or not historical.get('run') or
+                    checked.get('requested_run') != historical['run'] or
+                    actual.get('runId') != historical['run'] or actual.get('taskId') != historical.get('task') or
+                    actual.get('dispatchId') != historical.get('dispatch') or
+                    binding.get('task') != historical.get('task') or binding.get('attempt') != historical.get('dispatch')):
+                raise ValueError('Historical planned profile and host launch do not match')
+            agent = CHECKED_AGENTS[decision['selected']['route']]
+            expected_settings = {'agent': agent, 'model': decision['selected']['model'],
+                                 'effort': decision['selected']['effort']}
+            runtime_id = checked.get('agy_runtime_id')
+            if agent == 'antigravity' and (not isinstance(runtime_id, str) or not runtime_id or
+                    start.get('_meta', {}).get('runtimeId') != runtime_id):
+                raise ValueError('Historical Antigravity runtime mismatch')
+            effective = actual.get('launch', {}).get('effective')
+            if agent == 'antigravity' and isinstance(effective, dict) and any(
+                    effective.get(k) is not None and effective[k] != v for k, v in expected_settings.items()):
+                raise ValueError('Historical host effective selection mismatch')
+            if not isinstance(effective, dict) or (agent == 'antigravity' and
+                                                   any(effective.get(k) is None for k in expected_settings)):
+                full = launch.get('full_readback')
+                if not isinstance(full, dict) or full.get('status') != 'observed' or full.get('exit_code') != 0:
+                    raise ValueError('Historical host effective readback is missing')
+                detail = json.loads(full['stdout'])
+                dispatch = detail['result']['dispatch']
+                worker = detail['result']['worker']
+                if (detail.get('ok') is not True or dispatch.get('id') != actual['dispatchId'] or
+                        (agent == 'antigravity' and detail.get('_meta', {}).get('runtimeId') != runtime_id) or
+                        dispatch.get('taskId') != actual['taskId'] or dispatch.get('runId') != actual['runId'] or
+                        worker.get('dispatchId') != actual['dispatchId'] or
+                        (actual.get('terminal') is not None and
+                         (dispatch.get('assigneeHandle') != actual['terminal'] or
+                          detail['result'].get('terminal', {}).get('handle') != actual['terminal']))):
+                    raise ValueError('Historical full readback identity mismatch')
+                from run_completion import launch_incarnation
+                if not launch_incarnation(actual, launch):
+                    raise ValueError('Historical full readback incarnation mismatch')
+                effective = worker['startOptions']['launch']['effective']
+            if not isinstance(effective, dict) or any(effective.get(k) != v for k, v in expected_settings.items()):
+                raise ValueError('Historical host effective selection mismatch')
         pins = value['pins']
         selected = decision.get('selected', {})
         if not isinstance(selected, dict):
@@ -1059,6 +1281,15 @@ def check_profile_binding(checker, decision, path):
         expected = make_profile_binding(value['profile'], value['table'], value['unit_id'], pins)
         if profile_digest(expected) != profile_digest(value) or value['selected'] != ident:
             raise ValueError('Profile, table, digest or selected identity mismatch')
+        if required:
+            if checker.configuration is None:
+                raise ProfileError('INVALID_TABLE_AUTHORITY', 'resolved configuration unavailable')
+            configured, authority = configured_table(checker.configuration)
+            if profile_digest(configured) != profile_digest(value['table']):
+                checker.error(p + '.table', 'profile_table_authority',
+                              'Profile table differs from the independently configured worker table')
+            else:
+                checker.table_authority = authority
     except (ProfileError, ValueError, TypeError, KeyError, OSError, RecursionError) as exc:
         checker.error(p, 'profile_binding_invalid', str(exc))
 
@@ -1094,7 +1325,7 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaun
         if expected is not None and 'label' not in decision:
             checker.error('$.label', 'required', 'Missing field')
         checker.routing(decision, '$', expected, False, prelaunch=prelaunch)
-        check_profile_binding(checker, decision, '$')
+        check_profile_binding(checker, decision, '$', required=prelaunch)
     return {'ok': not checker.errors, 'label': label, 'errors': checker.errors,
             'receipt': checker.routing_receipt(decision)}
 
@@ -1168,7 +1399,7 @@ def main(argv=None):
         item.add_argument('path', type=Path)
         item.add_argument('--json', action='store_true')
         if command == 'profile-prepare':
-            item.add_argument('--table', type=Path, default=ASSETS / 'worker-routing-table.json')
+            item.add_argument('--table', type=Path, help='Proposal-only table override; execution uses configured authority')
             item.add_argument('--pins', type=Path)
             item.add_argument('--unit', required=True)
     args = parser.parse_args(argv)
@@ -1180,8 +1411,11 @@ def main(argv=None):
                 validate_profile_document(profile)
                 result = {'ok': True, 'status': 'valid'}
             else:
-                table, error, _ = read_json_snapshot(args.table)
-                if error: raise ValueError(error['message'])
+                if args.table is None:
+                    table, _ = configured_table(resolve())
+                else:
+                    table, error, _ = read_json_snapshot(args.table)
+                    if error: raise ValueError(error['message'])
                 pins, error, _ = read_json_snapshot(args.pins) if args.pins else ({}, None, None)
                 if error: raise ValueError(error['message'])
                 result = {'ok': True, 'profile_binding': make_profile_binding(profile, table, args.unit, pins),

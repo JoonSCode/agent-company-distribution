@@ -339,15 +339,26 @@ do not authenticate a self-authored ledger or establish actual independent revie
 
 ### Price-informed selection
 
-For the packaged current model table, add `price_selection` to the existing
-version-1 routing decision; historical record checks remain readable.
-`routing-select decision.json --json` returns advice, not a launch receipt.
-`routing-check` is the fresh prelaunch check. It requires a candidate comparison
-for unpinned decisions and checks the selected identity and quality/tool/billing
-constraints. A nondominated choice may differ from the advice's cheapest choice.
-The receipt includes the table hash and comparison basis. See the
-[prelaunch contract and limits](routing-prelaunch.md). Existing
-Task/Dispatch, source hashes and optional `--record` binding still apply.
+The fresh ordinary assignment uses `binding.inventory_evidence` and
+`selected_runtime`; it does not require `price_selection`. The runtime row has
+exactly `route`, `family`, `model`, `effort`, `supported`, `authenticated`,
+`tools`, `billing`, and `runtime_evidence`. It must match the selected identity
+and supplied host evidence; current inventory, configuration and freshness are
+checked before launch. For Codex, authentication, tools and billing retain the
+existing host-evidence and declaration boundary, not provider verification.
+Codex identities in `worker_route_efforts` and `worker_route_families` can be
+checked against current host inventory even when `models` has no price entry.
+That routing metadata does not supply a comparison value or an API price.
+Non-Codex routes retain the stricter existing unlisted-runtime evidence contract.
+Fresh prelaunch receipts retain the runtime row and inventory ID. A recorded decision
+with this row is checked against its pinned receipt; historical records that never
+had the row remain readable. These checks do not authenticate the source.
+
+`routing-select decision.json --json` remains optional advice. Supplying
+`price_selection`, or declaring `price_informed`, invokes the complete existing
+comparison check. If both comparison and runtime rows are present they must agree.
+If both common and legacy inventory references are present they must match.
+See [prelaunch contract and limits](routing-prelaunch.md).
 
 `price_selection` contains integer `version: 1`, `task`, `cost_basis`
 (`benchmark_prior` or `whole_work_estimate`), boolean `scope_api_authorized`, and
@@ -542,4 +553,15 @@ A record can require this check by adding `"goal_evidence": {"mode":"required", 
 
 The exact sidecar object has `format` (`company-goal-evidence/v1`), `run_id` (the nonempty `record.run`, not goal ID), `goal` (`id`, `revision`, `scope` matching the record), and `tasks`. Each task object has exactly `task`, `dispatch`, `candidate`, `result_evidence`, `technical_evidence`, `integration_evidence`, and `predecessors`. It must cover every current record task exactly once, match the current dispatch/candidate and the evidence IDs in its result, technical review, and parent integration. Each predecessor is exactly `{"task":"TASK_ID", "handoff_evidence":"EVIDENCE_ID"}`. Every edge must have exactly one matching record `handoffs` entry containing `evidence`, `from_task`, `from_dispatch`, `from_candidate`, `to_task`, `to_dispatch`, `to_candidate`, matching both current task nodes; its evidence must exist, be unique to the edge, and differ from all result/review/integration IDs. Every declared record handoff must appear in the sidecar. Duplicate edges, missing handoffs, dangling references and cycles fail. The DAG is an explicit declaration; the checker cannot infer omitted real-world dependencies. `structurally_valid` means these bindings are consistent, not that issuers, independent review, handoff contents, host execution, or goal success are authenticated. Existing record validation and completion criteria remain in force.
 
-Optional routing decision `profile_binding` is the exact object emitted by `record_check.py profile-prepare`; see [routing prelaunch](routing-prelaunch.md). Its snapshots and digests are recomputed and checked against the selected identity and task. It does not replace the existing decision checks.
+A fresh execution requires `profile_binding`, the exact object emitted by `record_check.py profile-prepare`; historical records may omit it. see [routing prelaunch](routing-prelaunch.md). Its snapshots and digests are recomputed and checked against the selected identity and task. It does not replace the existing decision checks.
+
+## Planned profile and host-issued Task
+
+If the original planned profile unit differs from the host-issued Task ID, the
+recorded routing decision retains the original `profile_binding` and refers to
+its pinned prelaunch receipt using `receipt_evidence` and to the pinned original
+launch result using `launch_evidence`. The receipt carries `profile_unit` and
+`profile_binding_sha256`; the launch result must be observed and bind that
+receipt hash and exact Run, Task and Dispatch. The checker also verifies scope,
+revision, spec and selection. Missing or mismatched originals deny this mapping;
+legacy records without a profile binding are not retroactively certified.

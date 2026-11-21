@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Bounded, read-only Orca 1.4.245 settings observation; prints hashes only."""
+"""Bounded, read-only Orca profile settings observation; prints hashes only."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 import sqlite3
+from host_model_catalog import SAVED_ONLY_VERSION, strict_json
 
 KIND = 'orca-profile-settings/v1'
+LEGACY_VERSION = '1.4.245'
 MAX_BYTES = 1024 * 1024
 COLUMNS = [('domain', 'TEXT', 1, 1), ('payload', 'TEXT', 1, 0),
            ('domain_version', 'INTEGER', 1, 0), ('revision', 'INTEGER', 1, 0),
@@ -40,8 +42,8 @@ def external_files(database):
             ('auth_policy', app / 'codex-hook-trust.json')]
 
 
-def observe(database, worktree):
-    from host_model_catalog import strict_json
+def observe(database, worktree, *, app_version=LEGACY_VERSION):
+    require(app_version in (LEGACY_VERSION, SAVED_ONLY_VERSION), 'unreviewed settings observation version')
     path, app = authority(database)
     require(isinstance(worktree, str) and worktree.startswith('id:') and '::/' in worktree,
             'exact worktree required')
@@ -67,7 +69,7 @@ def observe(database, worktree):
             raw = connection.execute("SELECT payload FROM profile_state_documents WHERE domain='settings'").fetchone()[0]
             settings = strict_json(raw)
             require(isinstance(settings, dict), 'settings must be an object')
-            value = {'kind': KIND, 'app_version': '1.4.245', 'path': str(path),
+            value = {'kind': KIND, 'app_version': app_version, 'path': str(path),
                      'profile': path.parent.name, 'worktree': worktree,
                      'namespace': 'profile_state_documents/settings', 'domain_version': 1,
                      'schema': schema, 'settings': settings}
@@ -80,15 +82,15 @@ def observe(database, worktree):
     return {'kind': KIND, 'role': 'config', 'path': str(path), 'sha256': digest}
 
 
-def prepare(database, worktree):
-    rows: list[dict] = [observe(database, worktree)]
+def prepare(database, worktree, *, app_version=LEGACY_VERSION):
+    rows: list[dict] = [observe(database, worktree, app_version=app_version)]
     for role, path in external_files(database):
         rows.append({'role': role, 'path': str(path),
                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None})
     return rows
 
 
-def validate_rows(rows, worktree):
+def validate_rows(rows, worktree, *, app_version=LEGACY_VERSION):
     semantic = [row for row in rows if row.get('kind') == KIND]
     require(len(semantic) == 1, 'exactly one semantic settings observation required')
     row = semantic[0]
@@ -100,16 +102,18 @@ def validate_rows(rows, worktree):
     require(required <= actual, 'required external config/auth observations missing')
     require(not any(r is not row and r.get('path') in (str(path), str(path)+'-wal', str(path)+'-shm') for r in rows),
             'do not byte-pin mutable database/WAL alongside semantic settings')
-    require(observe(path, worktree) == row, 'observed semantic settings changed; reprepare')
+    require(observe(path, worktree, app_version=app_version) == row,
+            'observed semantic settings changed; reprepare')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database', required=True)
     parser.add_argument('--worktree', required=True)
+    parser.add_argument('--app-version', choices=(LEGACY_VERSION, SAVED_ONLY_VERSION), default=LEGACY_VERSION)
     args = parser.parse_args()
     try:
-        print(json.dumps(prepare(args.database, args.worktree), indent=2))
+        print(json.dumps(prepare(args.database, args.worktree, app_version=args.app_version), indent=2))
         return 0
     except (ValueError, OSError, TypeError, KeyError, RecursionError):
         print(json.dumps({'ok': False, 'error': 'semantic settings observation denied'}))

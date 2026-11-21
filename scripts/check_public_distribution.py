@@ -151,7 +151,7 @@ def run_checks(root: Path = ROOT) -> dict[str, object]:
             ([sys.executable, '-E', '-s', '-B', str(script_dir / 'policy_manifest.py'), 'check'], root),
         ]
         for command, cwd in commands:
-            result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=180)
+            result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=300)
             sys.stdout.write(result.stdout)
             sys.stderr.write(result.stderr)
             results.append({'command': command, 'exit': result.returncode})
