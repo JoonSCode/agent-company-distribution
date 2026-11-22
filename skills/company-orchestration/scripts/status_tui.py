@@ -191,6 +191,8 @@ def _legacy_frame(snapshot, width, height, mode='combined', page=0, color=False,
 def _provenance(snapshot, ascii=False):
     if snapshot.get('input_mode') == 'orca_run':
         return 'Local Orca | Task list | Acceptance unknown' if ascii else '로컬 Orca · Task 조회 · 수락 미확인'
+    if snapshot.get('live_host_state') == 'orca_task_list':
+        return 'Orca Tasks | Recorded reviews' if ascii else 'Orca 작업 관측 · 검토는 기록 기준'
     synthetic = 'synthetic' in snapshot.get('input_label', '') or snapshot.get('record_label') == 'synthetic'
     partial = snapshot.get('dependency_coverage') == 'partial'
     return ((('SYNTHETIC DEMO' if synthetic else 'Recorded claims') + ' | ' +
@@ -203,6 +205,8 @@ def _compact_provenance(snapshot, width, ascii=False):
     if cell_width(_provenance(snapshot, ascii)) <= width: return []
     if snapshot.get('input_mode') == 'orca_run':
         return ['ORCA', 'NO VERDICT'] if ascii else ['로컬 Orca', '수락 미확인']
+    if snapshot.get('live_host_state') == 'orca_task_list':
+        return ['Orca Tasks', 'Review log'] if ascii else ['Orca 관측', '검토 기록']
     synthetic = 'synthetic' in snapshot.get('input_label', '') or snapshot.get('record_label') == 'synthetic'
     partial = snapshot.get('dependency_coverage') == 'partial'
     words = (['SYNTHETIC' if synthetic else 'RECORDED', 'PART LINKS' if partial else 'LINKS ?', 'NO LIVE'] if ascii else
@@ -318,7 +322,8 @@ def render_details(snapshot, width, height, mode='combined', page=0, color=False
     screen_label = (current.screen + '/' + current.layout) if ascii else {
         'map': '넓은 지도' if current.layout == 'wide' else '초점 지도', 'overview': '전체 개요',
         'teams': '팀 선택', 'regions': '구간 선택', 'links': '이름 있는 연결', 'source': '원본·배정 근거'}[current.screen]
-    label = (screen_label + (' | ' if ascii else ' · ') + scope + ' ' + ('선택 ' if not ascii else 'selected ') + team + ' | page:' +
+    selected_team = ((' selected ' if ascii else ' 선택 ') + team) if team else ''
+    label = (screen_label + (' | ' if ascii else ' · ') + scope + selected_team + ' | page:' +
              str(index + 1) + '/' + str(len(view['pages'])))
     # Current screen always names the actual applicable actions; f remains flow.
     keys = ('o/f/c n/p j/k x focus w wide v overview' if ascii else 'o/f/c n/p j/k x 초점 w 넓게 v 개요')
@@ -370,18 +375,21 @@ def render_frame(snapshot, width, height, mode='combined', page=0, color=False, 
 
 class RefreshState:
     """Bounded read-only refresh. A rejected candidate cannot mutate last-good."""
-    def __init__(self, manifest, interval: float = 1, *, record=False, metadata=None, context=None, run_id=None):
+    def __init__(self, manifest, interval: float = 1, *, record=False, metadata=None, context=None, run_id=None, orca_run=None):
         if not math.isfinite(interval) or interval < .25: raise ValueError('interval must be finite and >=0.25')
         self.manifest, self.interval = manifest, interval
         self.record, self.metadata, self.context, self.run_id = record, metadata, context, run_id
+        self.orca_run = orca_run
         self.snapshot, self.error, self.fingerprint = None, None, None
         self.last_good_at, self.next_read, self.idle = None, 0, interval
+        self.run_settings_cache = {}
 
     def read_snapshot(self):
         if self.run_id is not None:
-            return load_run_snapshot(self.run_id)
+            return load_run_snapshot(self.run_id, self.run_settings_cache)
         if self.record:
-            return load_record_snapshot(self.manifest, self.metadata, context_path=self.context)
+            return load_record_snapshot(self.manifest, self.metadata, context_path=self.context,
+                                        orca_run=self.orca_run)
         return load_snapshot(self.manifest)
 
     def refresh(self, now):
@@ -389,7 +397,7 @@ class RefreshState:
         old_error = self.error
         try:
             incoming = self.read_snapshot()
-            comparable = {k:v for k,v in incoming.items() if k != 'generated_at'}
+            comparable = {k:v for k,v in incoming.items() if k not in ('generated_at', 'view_timing')}
             digest = hashlib.sha256(json.dumps(comparable,sort_keys=True,ensure_ascii=True).encode()).hexdigest()
             changed = digest != self.fingerprint
             if changed: self.snapshot = incoming
@@ -503,6 +511,7 @@ def main(argv=None):
     inputs.add_argument('--run',help='explicit local Orca Run ID; observe only that Run')
     parser.add_argument('--metadata',type=Path,help='optional immutable manifest-v1 enrichment; requires --record')
     parser.add_argument('--context',type=Path,help='immutable captured planning context; requires --record')
+    parser.add_argument('--orca-run',help='observe this exact local Orca Run; requires its --record')
     parser.add_argument('--capture-context',type=Path,help='explicitly capture --record/--metadata to a NEW private file, then exit')
     parser.add_argument('--mode',choices=MODES,default='combined')
     parser.add_argument('--layout',choices=('wide','focus','legacy'),default='wide',help='viewport-filled cards; focus is optional; legacy preserves old slices')
@@ -518,6 +527,8 @@ def main(argv=None):
     if args.metadata is not None and args.record is None: parser.error('--metadata requires --record')
     if args.context is not None and (args.record is None or args.metadata is not None):
         parser.error('--context requires --record and excludes --metadata')
+    if args.orca_run is not None and (args.record is None or args.context is not None or args.capture_context is not None):
+        parser.error('--orca-run requires --record and excludes planning-context replay/capture')
     if args.capture_context is not None and (args.record is None or args.metadata is None or args.context is not None or args.once or args.json):
         parser.error('--capture-context requires --record/--metadata only, without --context/--once/--json')
     if not math.isfinite(args.interval) or args.interval < .25: parser.error('--interval must be finite and >=0.25')
@@ -529,7 +540,7 @@ def main(argv=None):
             print(json.dumps(capture_context(args.record,args.metadata,args.capture_context),ensure_ascii=False))
             return 0
         reader = RefreshState(args.record or args.manifest, args.interval, record=args.record is not None,
-                              metadata=args.metadata, context=args.context, run_id=args.run)
+                              metadata=args.metadata, context=args.context, run_id=args.run, orca_run=args.orca_run)
         if args.once:
             snapshot = reader.read_snapshot()
             if args.json: print(json.dumps(snapshot,ensure_ascii=False,indent=2))

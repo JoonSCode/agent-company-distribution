@@ -29,6 +29,7 @@ from record_check import (CHECKED_AGENTS, INVENTORY_HASH_CHANGED, check_routing,
                           invalid_constant, read_json_snapshot, unique_object)
 from route_select import load_table
 from orca_contract import resolve_orca
+from orca_task_graph import dependencies, task_graph
 from company_config import resolve, resource_manifest_check
 
 
@@ -413,12 +414,16 @@ def main(argv=None):
                 print(json.dumps({'ok': False, 'error': 'reprepare requires unused result and receipt paths; preserve prior attempts'}))
                 return 1
             if args.reprepare_inventory:
-                # This narrow opt-in cannot follow a host probe, reuse or lifecycle start.
+                # Select the existing spec mode or the fresh measured Task mode.
                 current, error, _ = read_json_snapshot(args.record)
-                if (error or not isinstance(current, dict) or current.get('measurement') is not None or
-                        args.task or args.retry_of or args.terminal or args.reuse_dispatch or
-                        args.origin_receipt or args.measurement_attempt):
-                    print(json.dumps({'ok': False, 'error': 'inventory reprepare supports only a fresh non-measurement spec launch'}))
+                measurement = current.get('measurement') if isinstance(current, dict) else None
+                spec_launch = isinstance(current, dict) and measurement is None and not (args.task or args.measurement_attempt)
+                measured_task = (isinstance(measurement, dict) and measurement.get('version') == 2
+                                 and measurement.get('mode') == 'required' and args.task and args.run
+                                 and args.measurement_attempt and args.worktree not in ('new-child', 'new-top-level'))
+                if (error or not (spec_launch or measured_task) or args.retry_of or args.terminal
+                        or args.reuse_dispatch or args.origin_receipt or args.prepared_bundle and measured_task):
+                    print(json.dumps({'ok': False, 'error': 'inventory reprepare requires a fresh spec or prepared v2 Task launch'}))
                     return 1
             storage_launch_guard(args, reserve=True, capability=capability)
             if path.exists():
@@ -556,7 +561,8 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
     refreshed['evidence'][ref]['sha256'] = hashlib.sha256(current).hexdigest()
     if 'profile_binding' in refreshed:
         profile = refreshed['profile_binding']
-        recomputed = make_profile_binding(profile['profile'], profile['table'], profile['unit_id'], profile['pins'])
+        recomputed = make_profile_binding(profile['profile'], profile['table'], profile['unit_id'],
+                                          profile['pins'], codex_availability=profile.get('codex_availability'))
         require(recomputed == profile, 'profile selection changed; review required')
         refreshed['profile_binding'] = recomputed
     # Recompute the full candidate comparison and binding using current bytes;
@@ -588,6 +594,53 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
     return refreshed, checked, digest, provenance
 
 
+def prerequisite_artifacts(executable, args, envelope, artifacts):
+    """Verify a declared handoff against the completed Task and its current Dispatch."""
+    from native_operations import regular, require
+
+    runtime_id = envelope['_meta']['runtimeId']
+    require(isinstance(runtime_id, str) and runtime_id, 'missing prerequisite runtime identity')
+
+    def observe(command):
+        proc = subprocess.run([executable, 'orchestration', *command, '--full', '--json'],
+                              check=False, capture_output=True, text=True, timeout=args.probe_timeout)
+        reply = json.loads(proc.stdout, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+        require(proc.returncode == 0 and reply['ok'] is True and reply['_meta']['runtimeId'] == runtime_id,
+                'prerequisite readback unavailable on the same runtime')
+        return reply['result']
+
+    mailbox = 'run:' + args.run
+    inbox = observe(['inbox', '--terminal', mailbox, '--limit', '200'])
+    tasks = {row['id']: row for row in envelope['result']['tasks']}
+    proofs = {}
+    for task, path in artifacts.items():
+        row = tasks[task]
+        report = json.loads(row['result'], object_pairs_hook=unique_object, parse_constant=invalid_constant)
+        require(row['status'] == 'completed' and report['provenance'] == 'worker_report'
+                and report['outcome'] == 'succeeded' and report['reportPath'] == path,
+                'prerequisite has no successful worker report for the expected artifact')
+        messages = [message for message in inbox['messages'] if message['id'] == report['messageId']]
+        require(len(messages) == 1, 'exact prerequisite worker_done message unavailable')
+        message = messages[0]
+        payload = json.loads(message['payload'], object_pairs_hook=unique_object, parse_constant=invalid_constant)
+        require(message['type'] == 'worker_done' and message['run_id'] == args.run
+                and message['to_handle'] == mailbox and message['from_handle'] == report['reportedBy']
+                and payload['taskId'] == task and payload['outcome'] == 'succeeded'
+                and payload['reportPath'] == path,
+                'prerequisite worker_done does not match the Task result')
+        raw = regular(Path(path))
+        require(bool(raw), 'prerequisite artifact is empty')
+        dispatch = observe(['dispatch-show', '--task', task, '--from', args.sender])['dispatch']
+        require(dispatch['id'] == payload['dispatchId'] and dispatch['task_id'] == task
+                and dispatch['run_id'] == args.run and dispatch['status'] == 'completed'
+                and dispatch['assignee_handle'] == message['from_handle']
+                and row.get('dispatch_id') in (None, dispatch['id']),
+                'prerequisite report does not belong to the current completed Dispatch')
+        proofs[task] = {'dispatch': dispatch['id'], 'message': message['id'], 'path': path,
+                        'sha256': hashlib.sha256(raw).hexdigest()}
+    return proofs
+
+
 def _main(args):
     timing = args.timing
     parser = argument_parser()
@@ -611,7 +664,8 @@ def _main(args):
     if error:
         print(json.dumps({'ok': False, 'errors': [error]}))
         return 2
-    result = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
+    result = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True,
+                           decision_sha256=decision_hash)
     original_decision_hash = decision_hash
     refresh = None
     if result['label'] != 'real':
@@ -632,6 +686,10 @@ def _main(args):
         result['ok'] = False
         result['errors'].append({'path': '$.binding.parent_task', 'code': 'parent_binding',
                                  'message': 'Parent Task must match the checked decision'})
+    if isinstance(binding, dict) and 'task_deps' in binding and not args.task:
+        result['ok'] = False
+        result['errors'].append({'path': '$.binding.task_deps', 'code': 'dependency_binding',
+                                 'message': 'Task dependency binding requires an existing Orca Task'})
     if (args.run is not None or 'run' in binding or 'run' in record) and (
             not args.run or binding.get('run') != args.run or record.get('run') != args.run):
         result['ok'] = False
@@ -654,21 +712,56 @@ def _main(args):
         result['receipt']['inventory_reprepare'] = refresh
     selected = result['receipt']['selected']
     catalog_context = binding.get('host_catalog')
+    catalog_runtime = None
+    catalog_target_args = []
+    catalog_preparation = result['receipt'].get('host_catalog_preparation')
+    catalog_at = None
+    if args.lifecycle is not None and 'host_catalog' in args.lifecycle.prep and (
+            not result['ok'] or catalog_preparation is None or
+            catalog_preparation['prepare_sha256'] != args.lifecycle.prepare_sha256 or
+            args.lifecycle.attempt['decision_sha256'] != decision_hash):
+        print(json.dumps({'ok': False, 'error': 'prepared Run catalog binding denied', 'check': result}))
+        return 1
     if catalog_context is not None:
-        # Existing-workspace opt-in only; legacy/reprepare/reuse behavior is untouched.
+        # Existing-workspace opt-in. Only the explicitly bound 269 host adds
+        # prepared v2 Task launches; legacy catalog launches remain spec-only.
         try:
-            from host_model_catalog import bound_catalog, require
+            from host_model_catalog import bound_catalog, require, timestamp
             require(args.worktree == catalog_context['worktree'], 'launch worktree differs from catalog')
-            require(not any((args.reprepare_inventory, args.task, args.retry_of, args.terminal,
-                             args.reuse_dispatch, args.measurement_attempt, args.origin_receipt))
-                    and record.get('measurement') is None, 'catalog mode requires fresh spec launch')
+            require(not any((args.reprepare_inventory, args.retry_of, args.terminal,
+                             args.reuse_dispatch, args.origin_receipt)), 'catalog mode requires a fresh launch')
             require(not any(os.environ.get(k) for k in
                             ('ORCA_PAIRING_CODE', 'ORCA_REMOTE_PAIRING', 'ORCA_ENVIRONMENT', 'ORCA_DEV_REPO_ROOT')),
-                    'catalog mode requires the same local installed host')
-            require(Path(shutil.which(executable)).resolve().is_relative_to(
-                    Path('/Applications/Orca.app/Contents/Resources')), 'catalog mode requires installed Orca CLI')
-            catalog_before = bound_catalog(decision, args.decision.parent, resolve())
-        except (ValueError, OSError, KeyError, TypeError) as exc:
+                    'catalog mode requires the same local packaged host')
+            if catalog_preparation is not None:
+                require(args.lifecycle is not None and 'host_catalog' in args.lifecycle.prep,
+                        'catalog reuse requires the prepared measurement lifecycle')
+                catalog_at = timestamp(catalog_preparation['prepared_at'])
+            catalog_before = bound_catalog(decision, args.decision.parent, resolve(), now=catalog_at)
+            host = catalog_before.get('host')
+            fresh_spec = not (args.task or args.measurement_attempt) and record.get('measurement') is None
+            measured_task = (host is not None and args.task and args.run and
+                             args.measurement_attempt and args.lifecycle is not None)
+            require(fresh_spec or measured_task, 'catalog mode requires a fresh spec or explicit 269 v2 Task')
+            if host is None:
+                require(Path(shutil.which(executable)).resolve().is_relative_to(
+                        Path('/Applications/Orca.app/Contents/Resources')), 'catalog mode requires installed Orca CLI')
+            else:
+                cli = str(Path(host['app']) / 'Contents/Resources/bin/orca')
+                require(args.orca == cli and str(Path(cli).resolve(strict=True)) == cli and
+                        os.environ.get('ORCA_CLI_COMMAND') in (None, '', cli) and
+                        os.environ.get('ORCA_USER_DATA_PATH') == host['user_data'],
+                        'catalog launch requires exact packaged --orca and ORCA_USER_DATA_PATH')
+                require(args.declared_host in (None, catalog_before['runtime_id']),
+                        'declared host differs from explicit catalog runtime')
+                signature = subprocess.run(['/usr/bin/codesign', '--verify', '--strict',
+                    '-R=anchor apple generic and identifier "com.stablyai.orca" and certificate leaf[subject.OU] = "6CX3WHS9HZ"',
+                    host['app']], check=False, capture_output=True, timeout=30)
+                require(signature.returncode == 0, 'explicit catalog app signature verification failed')
+                catalog_runtime = catalog_before['runtime_id']
+                catalog_target_args = [host['app'], host['user_data']]
+        except (ValueError, OSError, KeyError, TypeError, AttributeError, OverflowError,
+                subprocess.SubprocessError) as exc:
             print(json.dumps({'ok': False, 'error': 'catalog binding denied', 'detail': str(exc)}))
             return 1
     agent = CHECKED_AGENTS.get(selected['route'])
@@ -692,6 +785,9 @@ def _main(args):
             runtime_id = decision['evidence'][runtime['runtime_evidence']]['unlisted_runtime']['host']
     if not result['ok']:
         print(json.dumps(result))
+        return 1
+    if 'task_artifacts' in binding and not args.task:
+        print(json.dumps({'ok': False, 'error': 'Prerequisite artifacts require an existing Orca Task'}))
         return 1
     # These checks run before every possible host subprocess. The host, tools and
     # billing are explicit caller declarations, not host-authenticated facts.
@@ -734,6 +830,12 @@ def _main(args):
         result['receipt']['agy_runtime_id'] = runtime_id
     if args.task:
         current = next((item for item in record['tasks'] if item['id'] == args.task), None)
+        profile = decision.get('profile_binding')
+        if profile is not None and 'task_deps' not in binding:
+            unit = next(row for row in profile['profile']['units'] if row['id'] == profile['unit_id'])
+            if unit['depends_on']:
+                print(json.dumps({'ok': False, 'error': 'Bound profile requires explicit Orca dependencies'}))
+                return 1
         if (binding.get('task') != args.task or current is None or
                 (args.retry_of and (binding.get('planned') is not False or binding.get('attempt') != args.retry_of or
                  current['current_dispatch'] != args.retry_of or current['execution']['state'] != 'settled' or
@@ -743,13 +845,24 @@ def _main(args):
             return 1
         try:
             probe = subprocess.run([executable, 'orchestration', 'task-list', '--run', args.run, '--from', args.sender, '--full', '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
-            envelope = json.loads(probe.stdout)
+            envelope = json.loads(probe.stdout, object_pairs_hook=unique_object, parse_constant=invalid_constant)
             listed = envelope['result']
             task = next(item for item in listed['tasks'] if item['id'] == args.task)
             spec_hash = hashlib.sha256(task['spec'].encode('utf-8')).hexdigest()
             valid = (probe.returncode == 0 and envelope.get('ok') is True and listed['runId'] == args.run and
+                     (catalog_runtime is None or envelope.get('_meta', {}).get('runtimeId') == catalog_runtime) and
                      task['run_id'] == args.run and task['parent_id'] == args.parent and
                      binding.get('spec_sha256') == spec_hash and task['status'] in (('failed',) if args.retry_of else ('pending', 'ready')))
+            graph = task_graph(envelope, args.run)
+            host_needs = graph[args.task]['needs']
+            if host_needs or 'task_deps' in binding:
+                if not isinstance(binding.get('task_deps'), list) or dependencies(binding['task_deps']) != host_needs:
+                    print(json.dumps({'ok': False, 'error': 'Orca dependencies differ from checked decision'}))
+                    return 1
+                if any(graph[predecessor]['status'] != 'completed' for predecessor in host_needs):
+                    print(json.dumps({'ok': False, 'error': 'Orca prerequisite has not completed'}))
+                    return 1
+            result['receipt']['task_deps'] = host_needs
             if args.retry_of:
                 latest_probe = subprocess.run([executable, 'orchestration', 'dispatch-show', '--task', args.task, '--from', args.sender, '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
                 latest = json.loads(latest_probe.stdout)
@@ -760,7 +873,7 @@ def _main(args):
         except (KeyError, TypeError, ValueError, StopIteration, AttributeError, OSError, subprocess.SubprocessError):
             valid = False
         if not valid:
-            print(json.dumps({'ok': False, 'error': 'Current host Task specification or failed Dispatch mismatch'}))
+            print(json.dumps({'ok': False, 'error': 'Current host Task specification, dependency graph, or failed Dispatch mismatch'}))
             return 1
         result['receipt']['spec_sha256'] = spec_hash
         result['receipt']['task_list'] = envelope
@@ -869,8 +982,7 @@ def _main(args):
     if args.lifecycle is not None:
         args.lifecycle.check()
     if args.reprepare_inventory:
-        # One final current-evidence validation, never another refresh. This mode
-        # has made no host calls. Subsequent pending/unknown state never falls back.
+        # One final current-evidence validation, never another refresh or worker start.
         final = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
         _, decision_error, final_original_hash = read_json_snapshot(args.decision)
         _, record_error, final_record_hash = read_json_snapshot(args.record)
@@ -887,29 +999,35 @@ def _main(args):
             from host_model_catalog import load as load_catalog, compare, require, inventory_reference
             refreshed_path = args.result.with_name(args.result.name + '.catalog-refresh')
             probe = subprocess.run(['node', str(Path(__file__).with_name('host_model_catalog.cjs')),
-                                    str(refreshed_path), args.worktree],
+                                    str(refreshed_path), args.worktree, *catalog_target_args],
                                    check=False, capture_output=True, text=True, timeout=200)
             require(probe.returncode == 0, 'host catalog refresh failed')
             manifest_hash = hashlib.sha256((refreshed_path / 'manifest.json').read_bytes()).hexdigest()
+            refresh_options = {}
+            if catalog_at is not None:
+                refresh_options['prepared_observation'] = (catalog_at, catalog_before['host_result']['fetchedAt'])
             fresh = load_catalog(refreshed_path, manifest_hash, worktree=args.worktree,
-                                 model=selected['model'], effort=selected['effort'])
+                                 model=selected['model'], effort=selected['effort'], **refresh_options)
             compare(catalog_before, fresh)
             # Refresh is metadata-only. Never replace a decision, broaden candidates,
             # revise auth/billing declarations, or silently refresh a changed context.
-            final = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
-            require(final['ok'] and final['receipt']['configuration_sha256'] ==
+            final = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True,
+                                  decision_sha256=decision_hash)
+            require(final['ok'] and final['receipt'].get('host_catalog_preparation') == catalog_preparation and
+                    final['receipt']['configuration_sha256'] ==
                     result['receipt']['configuration_sha256'] and
                     final['receipt']['selected'] == selected and
                     final['receipt'].get('price_selection') == result['receipt'].get('price_selection'),
                     'prelaunch context or selection changed')
             require(read_json_snapshot(args.decision)[2] == original_decision_hash and
                     read_json_snapshot(args.record)[2] == record_hash, 'decision/record changed')
-            bound_catalog(decision, args.decision.parent, resolve())
+            bound_catalog(decision, args.decision.parent, resolve(), now=catalog_at)
             result['receipt']['host_catalog'] = {
                 'prepared_manifest_sha256': decision['evidence'][inventory_reference(decision)]['sha256'],
                 'refreshed_manifest_sha256': manifest_hash, 'refreshed_directory': str(refreshed_path),
                 'runtime_id': fresh['runtime_id'], 'worktree': fresh['worktree']}
-        except (ValueError, OSError, KeyError, TypeError, subprocess.SubprocessError) as exc:
+        except (ValueError, OSError, KeyError, TypeError, AttributeError, OverflowError,
+                subprocess.SubprocessError) as exc:
             print(json.dumps({'ok': False, 'error': 'catalog prelaunch denied', 'detail': str(exc)}))
             return 1
     try:
@@ -917,17 +1035,51 @@ def _main(args):
     except (OSError, ValueError, KeyError, TypeError) as exc:
         print(json.dumps({'ok': False, 'error': 'storage enrollment changed before start', 'detail': str(exc)}))
         return 1
-    final_authority = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True)
+    final_authority = check_routing(decision, args.decision.parent, record, args.record.parent, prelaunch=True,
+                                    decision_sha256=decision_hash)
     if runtime_id is not None and (read_json_snapshot(args.decision)[2] != original_decision_hash or
                                    read_json_snapshot(args.record)[2] != record_hash):
         print(json.dumps({'ok': False, 'error': 'AGY decision or record changed before start'}))
         return 1
     if (not final_authority['ok'] or
+            final_authority['receipt'].get('host_catalog_preparation') != catalog_preparation or
             final_authority['receipt'].get('worker_table_authority') != result['receipt'].get('worker_table_authority') or
             final_authority['receipt'].get('configuration_sha256') != result['receipt'].get('configuration_sha256')):
         print(json.dumps({'ok': False, 'error': 'configured worker table or configuration changed before start',
                           'check': final_authority}))
         return 1
+    if 'task_artifacts' in binding:
+        try:
+            artifacts = binding['task_artifacts']
+            if not artifacts.keys() <= set(result['receipt']['task_deps']):
+                raise ValueError('artifact output is not a direct Orca prerequisite')
+            result['receipt']['task_artifacts'] = prerequisite_artifacts(
+                executable, args, result['receipt']['task_list'], artifacts)
+        except (OSError, subprocess.SubprocessError, KeyError, TypeError, AttributeError, ValueError) as exc:
+            print(json.dumps({'ok': False, 'error': 'prerequisite artifact denied', 'detail': str(exc)}))
+            return 1
+    if catalog_runtime is not None:
+        try:
+            # Prerequisite reads can outlast catalog freshness or settings pins.
+            catalog_last = bound_catalog(decision, args.decision.parent, resolve(), now=catalog_at)
+            if catalog_at is not None:
+                from measurement_lifecycle import require_deadline
+                from worker_route import configured_table
+                _, authority = configured_table(resolve())
+                require(authority == result['receipt']['worker_table_authority'],
+                        'configured worker table changed before start')
+                observed_at = datetime.now(timezone.utc)
+                fresh = load_catalog(refreshed_path, manifest_hash, worktree=args.worktree,
+                                     model=selected['model'], effort=selected['effort'],
+                                     now=observed_at, **refresh_options)
+                compare(catalog_last, fresh)
+                require_deadline(args.lifecycle.prep)
+                result['receipt']['host_catalog']['observed_at'] = observed_at.isoformat()
+            require(read_json_snapshot(args.decision)[2] == original_decision_hash and
+                    read_json_snapshot(args.record)[2] == record_hash, 'decision/record changed')
+        except (ValueError, OSError, KeyError, TypeError, AttributeError, OverflowError) as exc:
+            print(json.dumps({'ok': False, 'error': 'explicit catalog binding changed before start', 'detail': str(exc)}))
+            return 1
     result['receipt']['launch_argv'] = command
     import run_completion as rc
     args.storage_capability.verify()
@@ -1003,6 +1155,8 @@ def _main(args):
             status, reason = 'failed', 'host returned an unsuccessful result'
         elif runtime_id is not None and response_runtime != runtime_id:
             status, reason = 'unverified', 'host runtime does not match AGY evidence'
+        elif catalog_runtime is not None and response_runtime != catalog_runtime:
+            status, reason = 'unverified', 'host runtime does not match catalog evidence'
         elif host.returncode == 0 and envelope.get('ok') is True and isinstance(payload.get('taskId'), str) and payload['taskId'] and isinstance(payload.get('dispatchId'), str) and payload['dispatchId']:
             if args.task and (payload['taskId'] != args.task or payload['dispatchId'] == args.retry_of):
                 status, reason = 'failed', 'host Task or Dispatch differs from checked identity'

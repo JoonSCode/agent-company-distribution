@@ -17,7 +17,7 @@ from contextlib import closing
 
 from measurement_lifecycle import (ADAPTER, decode, digest, encoded, require, write_once,
     prepared, timestamp, events, append, locked, runtime, host, close_attempt,
-    SQLITE_HOST, SOURCE_CONTRACT, SOURCE_CONTRACT_268, worker_show, require_fresh_codex_worker, require_268_start)
+    SQLITE_HOSTS, SOURCE_CONTRACT, worker_show, require_fresh_codex_worker, require_sqlite_start)
 
 SCRIPTS = Path(__file__).resolve().parent
 FIXTURE = SCRIPTS.parent / 'assets/measurement-canary.json'
@@ -47,8 +47,10 @@ def command(args):
     storage_flags = ['--enrollment-request', str(ep), '--expect-enrollment-sha256', reference['sha256']]
     base = [sys.executable, '-B']
     if args.action == 'prepare':
-        sqlite_host = host(args.orca, 'status')['runtime']['appVersion'] == SQLITE_HOST
-        contract_path = SOURCE_CONTRACT_268 if sqlite_host else SOURCE_CONTRACT
+        app_version = host(args.orca, 'status')['runtime']['appVersion']
+        sqlite_host = app_version in SQLITE_HOSTS
+        require(sqlite_host or app_version == '1.4.245', 'unsupported canary collector host version')
+        contract_path = SQLITE_HOSTS.get(app_version, SOURCE_CONTRACT)
         source_name = decode(contract_path.read_bytes())['source_name']
         hooks = args.hooks or args.database.parent / 'agent-hooks' / ('last-status.db' if sqlite_host else 'last-status.json')
         source = args.host_source or Path('/Applications/Orca.app/Contents/Resources/app.asar.unpacked/out/main/chunks') / source_name
@@ -104,18 +106,18 @@ def stop_owned(root, prep, attempt, executable, reason):
         d = before['dispatch']
         require(d['id'] == start['dispatchId'] and d['taskId'] == start['taskId']
                 and d['runId'] == start['runId'] and d.get('processIncarnation'), 'stop identity mismatch')
-        if app_version == SQLITE_HOST:
+        if app_version in SQLITE_HOSTS:
             require(before['worker']['state'] == 'ready'
                     and before['observation']['exactWorker'] is True
                     and before['observation']['status'] == 'live', 'exact live Codex terminal stop required')
             require_fresh_codex_worker(before, prep['runtime'])
-            require_268_start(start, before)
+            require_sqlite_start(start, before)
         database = Path(prep['collector']['database']).resolve()
         with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
             db.execute('BEGIN')
             row = db.execute('SELECT task_id, run_id, process_incarnation FROM dispatch_contexts WHERE id=?',
                              (d['id'],)).fetchall()
-            if app_version == SQLITE_HOST:
+            if app_version in SQLITE_HOSTS:
                 require(db.execute('SELECT 1 FROM dispatch_contexts WHERE creator_dispatch_id=? LIMIT 1',
                                    (d['id'],)).fetchone() is None, 'scoped canary stop would include helper dispatches')
         require(row == [(d['taskId'], d['runId'], d['processIncarnation'])], 'stop process binding mismatch')
@@ -123,7 +125,7 @@ def stop_owned(root, prep, attempt, executable, reason):
         with locked(root) as capability:
             append(root, 'stop_pending', {'attempt': attempt, 'dispatch': d['id'],
                                          'process': d['processIncarnation']}, capability)
-        flags = ['--full'] if app_version == SQLITE_HOST else []
+        flags = ['--full'] if app_version in SQLITE_HOSTS else []
         stop_proc = subprocess.run([executable, 'orchestration', 'worker-stop', '--dispatch', d['id'], *flags, '--json'],
                                    check=False, capture_output=True, text=True, timeout=30)
         envelope = decode(stop_proc.stdout)
@@ -144,7 +146,7 @@ def stop_owned(root, prep, attempt, executable, reason):
                 and after.get('worker', {}).get('state') == 'stopped'
                 and after.get('observation', {}).get('status') == 'exited',
                 'scoped stop not proven by receipt and exit readback')
-        if app_version == SQLITE_HOST:
+        if app_version in SQLITE_HOSTS:
             require(stopped.get('processAction') == 'closed_agent_terminal'
                     and not stopped.get('helpers') and not stopped.get('helperStopError'),
                     'exclusive canary terminal stop not proven')

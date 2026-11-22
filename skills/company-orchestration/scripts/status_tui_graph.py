@@ -13,6 +13,8 @@ STATES = {'ACC': '작업 검토 통과', 'SUB': '제출·검토 대기', 'WAIT':
 EN_STATES = {'ACC': 'Task review passed', 'SUB': 'Submitted; review due',
              'WAIT': 'Prerequisites pending', 'FAIL': 'Stage validation error',
              'ERR': 'Task record error', '?': 'State unknown'}
+HOST_STATES = {'pending': 'Orca 대기', 'ready': 'Orca 준비', 'dispatched': 'Orca 배정',
+               'completed': 'Orca 완료', 'failed': 'Orca 실패', 'blocked': 'Orca 차단'}
 # Only state-bound spans receive semantic color; source words never choose it.
 STATE_STYLES = {'ACC': '32', 'SUB': '33', 'WAIT': '33', 'FAIL': '1;31',
                 'ERR': '1;31', '?': '39'}
@@ -62,7 +64,29 @@ def safe(value, ascii=False):
     return ''.join(c if ord(c) < 128 else '?' for c in value) if ascii else value
 
 
+def standalone_run_task(task):
+    # Only the standalone Run loader projects parent_task. Record attachment
+    # uses host_parent_id and keeps its own model and review provenance.
+    return 'parent_task' in task
+
+
+def launch_model_labels(task, ascii=False):
+    launch = task.get('launch_settings', {})
+    applied = launch.get('effective', {})
+    requested = launch.get('requested', {})
+    labels = []
+    if applied.get('model'):
+        labels.append(('Orca applied: ' if ascii else 'Orca 적용: ') + safe(applied['model'], ascii)
+                      + (' / ' + safe(applied['effort'], ascii) if applied.get('effort') else ''))
+    if requested.get('model') and requested != applied:
+        labels.append(('Requested: ' if ascii else '요청: ') + safe(requested['model'], ascii)
+                      + (' / ' + safe(requested['effort'], ascii) if requested.get('effort') else ''))
+    return labels
+
+
 def model_label(task, ascii=False):
+    if task.get('dispatch_unconfirmed'):
+        return 'Execution details pending' if ascii else '실행 상세 확인 중'
     model, basis = task.get('assigned_model'), task.get('model_basis')
     if not model or basis not in ('assigned', 'planned'):
         return 'Model unknown' if ascii else '모델 미확인'
@@ -88,9 +112,12 @@ def specialist_label(task, ascii=False):
 
 def state_class(task, ascii=False):
     classification = task.get('classification')
-    states = EN_STATES if ascii else STATES
-    host_status = task.get('host_status')
-    state = 'Orca: ' + safe(host_status, ascii) if host_status is not None else states.get(task.get('state'), states['?'])
+    state = (EN_STATES if ascii else STATES).get(task.get('state'), EN_STATES['?'] if ascii else STATES['?'])
+    host_state = task.get('host_status')
+    if host_state is not None and standalone_run_task(task):
+        state = 'Orca: ' + safe(host_state, ascii)
+    elif task.get('state') == '?' and host_state in HOST_STATES:
+        state = 'Orca ' + host_state if ascii else HOST_STATES[host_state]
     return (state,
             (EN_CLASSES.get(classification, 'class?') if ascii else CLASSES.get(classification, '분류 미확인')))
 
@@ -102,6 +129,8 @@ def task_fields(task, ref, inner, split, ascii=False):
     if title == '?':
         title = 'Title unknown' if ascii else '제목 미확인'
     state, classification = state_class(task, ascii)
+    if standalone_run_task(task):
+        return [ref + ' ' + identity + ' ' + title, state, *launch_model_labels(task, ascii)]
     return [ref + ' ' + identity + ' ' + title, *([state, classification] if split else
             [state + (' | ' if ascii else ' · ') + classification]),
             model_label(task, ascii), specialist_label(task, ascii)]
@@ -163,9 +192,11 @@ def layout(snapshot, width, height):
         # Short/narrow but usable: real n/p task/edge text slices (not tiny).
         for identity in order:
             task = by_id[identity]
-            fields = [refs[identity] + ' ID: ' + safe(identity),
-                      safe(task.get('title') or '제목 미확인'), *state_class(task),
-                      model_label(task), specialist_label(task)]
+            fields = [refs[identity] + ' ID: ' + safe(identity), safe(task.get('title') or '제목 미확인')]
+            if standalone_run_task(task):
+                fields.extend((state_class(task)[0], *launch_model_labels(task)))
+            else:
+                fields.extend((*state_class(task), model_label(task), specialist_label(task)))
             chunks = [fit(field, width) for field in fields]
             node_pages[identity] = len(pages) + 1
             for start in range(0, len(chunks), room):
@@ -281,6 +312,8 @@ def lane(snapshot, task, ascii=False):
     teams = (snapshot.get('organization') or {}).get('teams', [])
     team = next((t for t in teams if t['id'] == task.get('team_id')), None)
     if team is None:
+        if snapshot.get('input_mode') == 'orca_run':
+            return ''
         return 'Team unknown | no org record' if ascii else '소속 미확인 | 조직 미기록'
     return '[' + safe(team['id'], ascii) + '] ' + safe(team['label'], ascii)
 

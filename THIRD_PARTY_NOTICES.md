@@ -1,5 +1,11 @@
 # Third-Party Notices
 
+## Orca
+
+The upstream guide snapshots are from Orca v1.4.269.
+The [Orca MIT license](skills/company-orchestration/references/upstream/LICENSE-orca.txt)
+is included with the snapshots.
+
 ## Ponytail
 
 Agent Company's Development minimum-solution method adapts ideas from

@@ -50,7 +50,7 @@ def catalog_capture_time(manifest):
     return timestamp(receipts[-1].get('received_at'))
 
 
-def historical_catalog(decision, evidence, base):
+def historical_catalog(decision, evidence, base, record=None):
     """Reuse immutable catalog validation at capture time, never bound_catalog.
 
     This intentionally does not resolve Company settings, read observed_files,
@@ -64,10 +64,8 @@ def historical_catalog(decision, evidence, base):
     require(path.name == 'manifest.json', 'catalog evidence must pin manifest.json')
     captured = catalog_capture_time(manifest)
     selected = decision['selected']
-    metadata = load(path.parent, inventory['sha256'], worktree=context['worktree'],
-                    model=selected['model'], effort=selected['effort'], now=captured)
-    require(metadata['runtime_id'] == context['runtime_id'], 'historical runtime binding mismatch')
-    _, preflight = pinned_json(evidence.get(decision.get('receipt_evidence')), base)
+    receipt_ref = evidence.get(decision.get('receipt_evidence'))
+    _, preflight = pinned_json(receipt_ref, base)
     require(preflight.get('ok') is True and preflight.get('label') == 'real',
             'successful real-shaped recorded prelaunch receipt required')
     receipt = preflight['receipt']
@@ -82,6 +80,26 @@ def historical_catalog(decision, evidence, base):
     require(receipt.get('configuration_sha256') == context['configuration_sha256'] and
             isinstance(context['configuration_sha256'], str) and len(context['configuration_sha256']) == 64,
             'historical configuration hash binding mismatch')
+    prepared_at = captured
+    anchor = receipt.get('host_catalog_preparation')
+    if anchor is not None:
+        from measurement_lifecycle import catalog_preparation, events, prepared
+        if record is None:
+            raise MissingHistory('prepared Run record is unavailable')
+        root, preparation = prepared(record, base)
+        decision_hash = receipt['decision_sha256']
+        expected = catalog_preparation(record, preparation, {**decision, 'evidence': evidence},
+                                       decision_hash, Path(base))
+        require(expected is not None and anchor == expected and receipt.get('requested_run') == anchor['run'],
+                'historical catalog preparation binding mismatch')
+        require(any(event['kind'] == 'pending' and event['value']['receipt_sha256'] == receipt_ref['sha256']
+                    and event['value']['planned_decision_sha256'] == decision_hash
+                    and event['value']['prepare_sha256'] == anchor['prepare_sha256'] for event in events(root)),
+                'historical Run catalog receipt not bound to a pending attempt')
+        prepared_at = timestamp(anchor['prepared_at'])
+    metadata = load(path.parent, inventory['sha256'], worktree=context['worktree'],
+                    model=selected['model'], effort=selected['effort'], now=prepared_at)
+    require(metadata['runtime_id'] == context['runtime_id'], 'historical runtime binding mismatch')
     refresh = receipt.get('host_catalog')
     if not isinstance(refresh, dict):
         raise MissingHistory('checked-launch catalog receipt is unavailable')
@@ -92,9 +110,18 @@ def historical_catalog(decision, evidence, base):
     # claim alone does not prove those historical bytes are still available.
     refreshed_path, refreshed = pinned_json({'file': str(Path(refresh['refreshed_directory']) / 'manifest.json'),
                                             'sha256': refresh['refreshed_manifest_sha256']}, base)
+    observed_at = catalog_capture_time(refreshed)
+    options = {}
+    if anchor is not None:
+        checked_at = timestamp(refresh['observed_at'])
+        require(prepared_at <= observed_at <= checked_at and
+                (checked_at - prepared_at).total_seconds() <= preparation['limits']['deadline_seconds'],
+                'historical catalog observation outside prepared Run')
+        observed_at = checked_at
+        options['prepared_observation'] = (prepared_at, metadata['host_result']['fetchedAt'])
     refreshed_metadata = load(refreshed_path.parent, refresh['refreshed_manifest_sha256'],
         worktree=context['worktree'], model=selected['model'], effort=selected['effort'],
-        now=catalog_capture_time(refreshed))
+        now=observed_at, **options)
     from host_model_catalog import compare
     compare(metadata, refreshed_metadata)
     return captured.isoformat()
@@ -117,7 +144,7 @@ def evaluate(record, base, configuration, *, legacy_ok):
                 history.append(h)
                 current.append(c)
                 continue
-            h['captured_at'] = historical_catalog(decision, evidence, base)
+            h['captured_at'] = historical_catalog(decision, evidence, base, record)
             h.update(status='valid', reason='pinned catalog and prelaunch receipt bindings match')
         except (MissingHistory, OSError, KeyError) as exc:
             h.update(status='unknown', reason=str(exc))

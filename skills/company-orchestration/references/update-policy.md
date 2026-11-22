@@ -5,6 +5,7 @@ reviewed Orca skill tree, runtime document bytes, selected capability scopes,
 adoption reasons and hashes of active local policy. Upstream snapshots are
 comparison inputs, not extra runtime authority. Dated model evidence is a
 starting prior; actual support/authentication is observed per execution route.
+The upstream guide snapshots include the [Orca MIT license](upstream/LICENSE-orca.txt).
 
 All paths below are relative to this skill folder. The scripts use stdlib Python;
 use Python 3.13 in the repository or a compatible available interpreter. They

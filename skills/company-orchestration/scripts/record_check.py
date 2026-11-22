@@ -102,6 +102,7 @@ class Checker:
         self.refs = {}
         self.price_result = None
         self.table_authority = None
+        self.catalog_time = None
         try:
             self.configuration = resolve()
         except (ConfigError, OSError) as exc:
@@ -285,7 +286,7 @@ class Checker:
                     inventory_path = (self.base / inventory['file']).resolve()
                     if inventory.get('source') == 'orca_model_catalog':
                         from host_model_catalog import bound_catalog
-                        host_models = bound_catalog(decision, self.base, config)['models']
+                        host_models = bound_catalog(decision, self.base, config, now=self.catalog_time)['models']
                     elif inventory_path != (canonical_home() / 'models_cache.json').resolve():
                         raise SelectionError('Codex inventory must reference this host canonical models_cache.json')
                     if host_models is None:
@@ -326,6 +327,8 @@ class Checker:
             elif (prelaunch or recorded_prelaunch) and label == 'synthetic' and isinstance(selection, dict):
                 inventory = self.refs.get(selection.get('inventory_evidence'), {})
                 host_models = inventory.get('host_models') if isinstance(inventory, dict) else None
+            if prelaunch and host_models is not None:
+                check_codex_availability(decision, host_models)
             result = select_by_price(selection, self.refs, config, synthetic=label == 'synthetic', prelaunch=prelaunch or recorded_prelaunch,
                                      requested=decision.get('selected') if (prelaunch or recorded_prelaunch) and (not pinned or decision.get('selected', {}).get('route') != 'codex') else None,
                                      host_models=host_models, current_runtime=not recorded_prelaunch,
@@ -419,7 +422,7 @@ class Checker:
                 host_models = inventory['host_models']
             elif inventory.get('source') == 'orca_model_catalog':
                 from host_model_catalog import bound_catalog
-                host_models = bound_catalog(decision, self.base, self.configuration)['models']
+                host_models = bound_catalog(decision, self.base, self.configuration, now=self.catalog_time)['models']
             else:
                 source = (self.base / inventory['file']).resolve()
                 if source != (canonical_home() / 'models_cache.json').resolve():
@@ -434,6 +437,7 @@ class Checker:
                 host_models = json.loads(raw)['models']
             model_policy = load_table()[0]
             models = model_policy['models']
+            check_codex_availability(decision, host_models)
             if row['route'] == 'codex':
                 model = models.get(row['model'])
                 family = model['family'] if model else model_policy.get('worker_route_families', {}).get('codex', {}).get(row['model'])
@@ -493,6 +497,17 @@ class Checker:
                            ['task', 'scope', 'revision', 'attempt', 'planned'])
         for field in ('task', 'scope', 'revision', 'attempt'):
             self.string(binding.get(field), path + '.binding.' + field)
+        if 'task_artifacts' in binding:
+            artifacts = binding['task_artifacts']
+            needs = binding.get('task_deps')
+            if (not isinstance(artifacts, dict) or not artifacts or not isinstance(needs, list)
+                    or any(not isinstance(key, str) for key in needs)
+                    or not artifacts.keys() <= set(needs)
+                    or any(not isinstance(value, str) or '\x00' in value
+                           or not Path(value).is_absolute() or '..' in Path(value).parts
+                           or str(Path(value)) != value for value in artifacts.values())):
+                self.error(path + '.binding.task_artifacts', 'artifact_binding',
+                           'Declare canonical absolute output paths for direct Task prerequisites')
         if type(binding.get('planned')) is not bool:
             self.error(path + '.binding.planned', 'type', 'Expected boolean')
         elif binding.get('planned') is True:
@@ -1171,13 +1186,28 @@ def check_record(record, base, require_routing=False, measurement_preflight=Fals
     return result
 
 
-def make_profile_binding(profile, table, unit, pins=None):
+def check_codex_availability(decision, host_models):
+    profile = decision.get('profile_binding')
+    if not isinstance(profile, dict) or profile.get('version') != 4:
+        return
+    pairs = {(row['slug'], level['effort']) for row in host_models
+             for level in row.get('supported_reasoning_levels', [])
+             if isinstance(level, dict) and isinstance(level.get('effort'), str)}
+    availability = profile['codex_availability']
+    if not isinstance(availability, dict) or pairs != {
+            (model, effort) for model, efforts in availability.items() for effort in efforts}:
+        raise SelectionError('Profile Codex availability differs from the routed host inventory')
+
+
+def make_profile_binding(profile, table, unit, pins=None, *, codex_availability=None):
     pins = {} if pins is None else pins
-    proposal = prepare_profile(profile, table, pins)
+    proposal = prepare_profile(profile, table, pins, codex_availability=codex_availability)
     matches = [row for row in proposal['results'] if row['unit_id'] == unit]
     if len(matches) != 1 or matches[0]['status'] != 'MATCH':
         raise ProfileError('NO_MATCH', 'The requested unit has no eligible candidate')
-    return {'version': 3, 'unit_id': unit, 'profile': profile, 'table': table, 'pins': pins,
+    availability = {} if codex_availability is None else {'codex_availability': codex_availability}
+    return {'version': 4 if availability else 3, **availability,
+            'unit_id': unit, 'profile': profile, 'table': table, 'pins': pins,
             'profile_sha256': proposal['profile_sha256'], 'table_sha256': proposal['table_sha256'],
             'source_sha256': proposal['source_sha256'], 'pins_sha256': proposal['pins_sha256'],
             'selected': matches[0]['selected'],
@@ -1195,8 +1225,12 @@ def check_profile_binding(checker, decision, path, *, required=False, historical
     fields = {'version', 'unit_id', 'profile', 'table', 'pins', 'profile_sha256', 'table_sha256', 'source_sha256', 'pins_sha256', 'selected'}
     try:
         fields |= {'eligible_chain', 'fallback_index', 'selection_reasons', 'selected_source', 'default_provenance'}
-        if not isinstance(value, dict) or set(value) != fields or type(value['version']) is not int or value['version'] != 3:
-            raise ValueError('Invalid profile binding shape or version')
+        if not isinstance(value, dict) or type(value.get('version')) is not int or value['version'] not in (3, 4):
+            raise ValueError('Invalid profile binding version')
+        if value['version'] == 4:
+            fields.add('codex_availability')
+        if set(value) != fields:
+            raise ValueError('Invalid profile binding shape')
         binding = decision.get('binding', {})
         if not isinstance(binding, dict):
             raise ValueError('Profile binding requires a decision task')
@@ -1269,6 +1303,12 @@ def check_profile_binding(checker, decision, path, *, required=False, historical
                 effective = worker['startOptions']['launch']['effective']
             if not isinstance(effective, dict) or any(effective.get(k) != v for k, v in expected_settings.items()):
                 raise ValueError('Historical host effective selection mismatch')
+        elif value['version'] == 4 and historical is not None:
+            from record_integrity import pinned_json
+            _, receipt = pinned_json(checker.refs.get(decision.get('receipt_evidence')), checker.base)
+            if (receipt.get('ok') is not True or
+                    receipt['receipt'].get('profile_binding_sha256') != profile_digest(value)):
+                raise ValueError('Recorded profile availability differs from the prelaunch receipt')
         pins = value['pins']
         selected = decision.get('selected', {})
         if not isinstance(selected, dict):
@@ -1278,9 +1318,14 @@ def check_profile_binding(checker, decision, path, *, required=False, historical
             raise ValueError('Profile pins require the exact evidence-bound current-task user pin')
         if decision.get('selected_reason') == 'user_pin' and pins != {value['unit_id']: ident}:
             raise ValueError('Explicit user pin must be applied during profile preparation')
-        expected = make_profile_binding(value['profile'], value['table'], value['unit_id'], pins)
+        expected = make_profile_binding(value['profile'], value['table'], value['unit_id'], pins,
+                                        codex_availability=value.get('codex_availability'))
         if profile_digest(expected) != profile_digest(value) or value['selected'] != ident:
             raise ValueError('Profile, table, digest or selected identity mismatch')
+        if 'task_deps' in binding:
+            unit = next(row for row in value['profile']['units'] if row['id'] == value['unit_id'])
+            if not isinstance(binding['task_deps'], list) or sorted(binding['task_deps']) != sorted(unit['depends_on']):
+                raise ValueError('Task dependencies differ from the bound profile')
         if required:
             if checker.configuration is None:
                 raise ProfileError('INVALID_TABLE_AUTHORITY', 'resolved configuration unavailable')
@@ -1294,8 +1339,10 @@ def check_profile_binding(checker, decision, path, *, required=False, historical
         checker.error(p, 'profile_binding_invalid', str(exc))
 
 
-def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaunch=False):
+def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaunch=False,
+                  decision_sha256=None):
     checker = Checker(base)
+    catalog_preparation = None
     expected = None
     if record is not NO_RECORD:
         current = check_record(record, base if record_base is None else record_base,
@@ -1306,6 +1353,18 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaun
             checker.error('$.record.measurement', 'measurement_future_unbound',
                           'This launcher cannot observe the future worker turn before starting it')
         if current['ok']:
+            if prelaunch and isinstance(record.get('measurement'), dict) and record['measurement'].get('version') == 2:
+                from host_model_catalog import timestamp
+                from measurement_lifecycle import catalog_preparation as check_catalog_preparation, prepared, require_deadline
+                try:
+                    _, preparation = prepared(record, base if record_base is None else record_base)
+                    catalog_preparation = check_catalog_preparation(
+                        record, preparation, decision, decision_sha256, Path(base))
+                    if catalog_preparation is not None:
+                        require_deadline(preparation)
+                        checker.catalog_time = timestamp(catalog_preparation['prepared_at'])
+                except (ValueError, KeyError, TypeError, AttributeError, OSError) as exc:
+                    checker.error('$.binding.host_catalog', 'catalog_preparation_invalid', str(exc))
             goal = record['goal']
             expected = {'scope': goal['scope'], 'revision': goal['revision']}
             binding = decision.get('binding') if isinstance(decision, dict) else None
@@ -1326,8 +1385,10 @@ def check_routing(decision, base, record=NO_RECORD, record_base=None, *, prelaun
             checker.error('$.label', 'required', 'Missing field')
         checker.routing(decision, '$', expected, False, prelaunch=prelaunch)
         check_profile_binding(checker, decision, '$', required=prelaunch)
-    return {'ok': not checker.errors, 'label': label, 'errors': checker.errors,
-            'receipt': checker.routing_receipt(decision)}
+    receipt = checker.routing_receipt(decision)
+    if catalog_preparation is not None:
+        receipt['host_catalog_preparation'] = catalog_preparation
+    return {'ok': not checker.errors, 'label': label, 'errors': checker.errors, 'receipt': receipt}
 
 
 
@@ -1401,6 +1462,7 @@ def main(argv=None):
         if command == 'profile-prepare':
             item.add_argument('--table', type=Path, help='Proposal-only table override; execution uses configured authority')
             item.add_argument('--pins', type=Path)
+            item.add_argument('--codex-availability', type=Path, help='Explicit Codex model-to-efforts JSON object')
             item.add_argument('--unit', required=True)
     args = parser.parse_args(argv)
     if args.command in ('profile-prepare', 'profile-validate'):
@@ -1418,7 +1480,10 @@ def main(argv=None):
                     if error: raise ValueError(error['message'])
                 pins, error, _ = read_json_snapshot(args.pins) if args.pins else ({}, None, None)
                 if error: raise ValueError(error['message'])
-                result = {'ok': True, 'profile_binding': make_profile_binding(profile, table, args.unit, pins),
+                from worker_route import read_codex_availability
+                availability = read_codex_availability(args.codex_availability)
+                result = {'ok': True, 'profile_binding': make_profile_binding(
+                              profile, table, args.unit, pins, codex_availability=availability),
                           'limits': 'Proposal only; table evidence is unverified and existing routing checks remain mandatory.'}
             code = 0
         except (ProfileError, ValueError, TypeError, KeyError, OSError, RecursionError) as exc:
@@ -1448,7 +1513,8 @@ def main(argv=None):
             result, code = {'ok': False, 'errors': [error]}, 2
         else:
             result = check_routing(value, args.path.parent, record,
-                                   args.record.parent if args.record is not None else None, prelaunch=True)
+                                   args.record.parent if args.record is not None else None, prelaunch=True,
+                                   decision_sha256=decision_sha256)
             result['receipt']['decision_sha256'] = decision_sha256
             if args.record is not None:
                 result['receipt']['record_sha256'] = record_sha256

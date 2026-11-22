@@ -10,14 +10,17 @@ Orca에서 Agent Company를 명시적으로 시작하면 [자동 열기](../scri
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --run run_EXACT_ID
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --run run_EXACT_ID --once --json
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --mode combined
+python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --orca-run "$RUN_ID" --mode combined
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --once --json
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /private/run/view.json --mode combined
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /private/run/view.json --mode org --once --width 80 --height 12
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /private/run/view.json --mode flow --once --json
 ```
 
-* `--run`은 호출자가 지정한 ID로 로컬 Orca의 작업 목록만 읽는다. 시작 당시 선택을 화면이 열린 동안 유지한다. 다른 Run이나 잘못된 작업 관계가 응답에 섞이면 마지막 정상 화면과 갱신 오류를 함께 표시한다. Task 제목, Orca 상태, 명시된 선행 조건만 화면에 사용한다. 부모 Task는 선행 조건과 별도로 원문 보기에서 확인할 수 있다. Orca에서 완료된 작업의 Company 수락과 사용자 확인은 미확인으로 표시한다. 프로그램이 pane을 열거나 기록을 쓰거나 작업을 실행하지 않는다.
+* `--run`은 지정한 로컬 Orca Run의 작업, 명시 선행 조건과 현재 Dispatch의 실행 설정을 읽는다. 다른 Run이나 잘못된 작업 관계가 작업 목록에 섞이면 마지막 정상 화면과 갱신 오류를 함께 표시한다. 작업 목록에 현재 Dispatch ID가 없으면 Orca의 해당 Task 조회로 확인한 뒤 실행 응답의 요청 및 적용 모델·강도를 표시한다. 해당 정보가 없거나 설정 조회에 실패하면 작업 상태와 제목은 계속 표시된다. 모델 적용은 Orca 실행 기록에 근거한다. 분류·전문가·소속은 명시 Company 기록이 공급하는 정보다. 독립 검토와 사용자 수락은 화면 상단에서 미확인으로 표시한다. 부모 Task는 원문 보기에서 확인할 수 있다.
 * `--record`는 **명시 선택한 기존 Company supplementary record**의 현재 바이트를 읽는다. `--manifest`는 고정 pin을 검증한다. `--run`, `--record`, `--manifest` 중 하나만 선택한다. 선택 `--metadata /private/run/view.json` 또는 `--context /private/view/context.json`은 `--record`와만 사용할 수 있고 서로 배타적이다.
+* 실제 로컬 Run은 같은 `record.run`을 지정한 `--orca-run`으로 연다. 빈 기록에서도 공식 Orca `task-list --full --json`의 제목·상태·선행 조건을 지도에 표시한다. 현재 Dispatch는 같은 Task 행의 `dispatch_id`로 확인한다. 이 ID가 기록과 같을 때만 실행 상세를 연결한다. ID가 없으면 Orca Task 상태를 표시하고 실행 상세는 `확인 중`으로 남긴다. Orca 완료 상태 자체로 수락을 만들지 않는다. 조직에는 기존에 명시한 metadata만 사용한다. 명시 metadata의 선행 조건이 호스트와 다르면 전체 candidate를 거부한다. `--context`는 고정 계획 재생 입력이다.
+* 화면을 배치할 때는 호출자가 소유한 위쪽 터미널을 `orca terminal split --terminal HANDLE --direction horizontal --json`으로 분할하고, 하단 소유가 확인되면 위 명령을 입력한다. `--orca-run --once --json`은 Task 조회와 투영의 단조 시간(ns)을 포함한다. 최초 보이는 프레임 및 갱신 지연은 `orca terminal read --screen`의 실제 출력으로 확인한다.
 * 기본 combined + `--layout wide`: viewport를 채우는 네 필드 카드지도다. `o` 조직, `f` 흐름, `c` 통합, `n` 다음/`p` 이전 페이지, `q` 종료는 그대로이며 마지막 페이지에서 순환한다. `j/k` 작업 선택, `x` 보조 초점 지도, `w` 넓은 지도, `v` 전체 개요, `t` 팀, `r` 기록 위상 구간, `l` 선택 작업의 이름 있는 정확한 연결, `s` 원본·배정 근거, `Enter` 선택 진입/연결 반대편, `b` 뒤로를 추가한다. `f`를 초점 키로 덮어쓰지 않는다. `--layout focus`는 선택 작업과 실제 이웃만 보여 주며, `--layout legacy`는 이전 작은 slice 표현을 명시 선택하는 호환 경로다. 방향키/마우스는 지원하지 않는다.
 * 상주는 caller가 소유한 동일 stdin/stdout PTY에서만 실행한다. TERM=dumb/unknown, 파이프는 거부한다. PTY 소유권은 operator 책임이며 다른 terminal의 권한을 얻는 도구가 아니다.
 * `--once`만 비TTY/`--json`/`--width`/`--height` 허용. 기본 snapshot80×12. 상주는 실제 PTY 크기와 SIGWINCH 사용. width/height 양의 정수.

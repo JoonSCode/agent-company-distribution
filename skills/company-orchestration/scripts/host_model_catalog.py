@@ -9,8 +9,9 @@ import re
 
 FORMAT = 'company-host-catalog-metadata/v1'
 MAX_AGE_SECONDS = 300
-SAVED_ONLY_VERSION = '1.4.268'
-REVIEWED_VERSIONS = ('1.4.245', '1.4.261', '1.4.263', SAVED_ONLY_VERSION)
+EXPLICIT_HOST_VERSION = '1.4.269'
+SAVED_ONLY_VERSIONS = ('1.4.268', EXPLICIT_HOST_VERSION)
+REVIEWED_VERSIONS = ('1.4.245', '1.4.261', '1.4.263', *SAVED_ONLY_VERSIONS)
 COHERENT_CATALOG = 'agent-session.coherent-model-catalog.v1'
 SAVED_ONLY_CAPABILITIES = (
     'agent-session.model-catalog.model-efforts.v1',
@@ -42,12 +43,34 @@ def timestamp(value):
     return result
 
 
-def load(directory, digest, *, worktree, model, effort, now=None):
+def verify_local_host(metadata):
+    """Check the live profile locator and packaged app against the pinned observation."""
+    host = metadata['host']
+    app, user_data = Path(host['app']), Path(host['user_data'])
+    for path in (app, user_data):
+        require(path.resolve(strict=True) == path and path.is_dir(), 'catalog host path changed')
+    for name, key, expected in (
+            ('orca-runtime.json', 'runtimeId', metadata['runtime_id']),
+            ('host-installation.json', 'installationId', host['installation_id'])):
+        path = user_data / name
+        require(path.resolve(strict=True) == path and path.is_file(), 'catalog host identity path changed')
+        value = strict_json(path.read_bytes())
+        require(isinstance(value, dict) and value.get(key) == expected, 'catalog live host identity changed')
+    seal = app / 'Contents/_CodeSignature/CodeResources'
+    require(seal.resolve(strict=True) == seal and seal.is_file() and
+            hashlib.sha256(seal.read_bytes()).hexdigest() == host['code_resources_sha256'],
+            'catalog packaged app seal changed')
+
+
+def load(directory, digest, *, worktree, model=None, effort=None, now=None,
+         prepared_observation=None):
     """No global cache reads, fallback models, account inference, or source writes.
 
     A caller must pin manifest bytes, not merely name an editable directory.
     Unknown response fields are retained in result and compared on explicit recheck.
     This validates *observed rows*, not completeness, auth, tools or billing.
+    Only pass (prepared_at, original_fetched_at) from a validated Run
+    preparation, when comparing a new local read to that Run's pinned catalog.
     """
     directory = Path(directory)
     now = now or datetime.now(timezone.utc)
@@ -57,7 +80,22 @@ def load(directory, digest, *, worktree, model, effort, now=None):
     require(isinstance(manifest, dict) and manifest.get('format') == FORMAT, 'unknown manifest format')
     app_version = manifest.get('app_version')
     require(app_version in REVIEWED_VERSIONS, 'unreviewed host version')
-    saved_only = app_version == SAVED_ONLY_VERSION
+    saved_only = app_version in SAVED_ONLY_VERSIONS
+    explicit = app_version == EXPLICIT_HOST_VERSION
+    if prepared_observation is not None:
+        require(explicit, 'prepared catalog reuse requires an explicit saved-only host')
+        prepared_at, original_fetched_at = prepared_observation
+    host = manifest.get('host')
+    if explicit:
+        require(isinstance(host, dict) and set(host) == {'app', 'user_data', 'code_resources_sha256'},
+                'explicit local catalog host required')
+        for value in (host['app'], host['user_data']):
+            require(isinstance(value, str) and value.startswith('/') and str(Path(value)) == value and
+                    '..' not in Path(value).parts and '\0' not in value, 'invalid explicit host path')
+        require(Path(host['app']).suffix == '.app' and isinstance(host['code_resources_sha256'], str) and
+                re.fullmatch(r'[0-9a-f]{64}', host['code_resources_sha256']), 'invalid packaged app binding')
+    else:
+        require('host' not in manifest, 'explicit catalog host requires a reviewed version')
     require(isinstance(worktree, str) and re.fullmatch(r'id:[^:]+::/.+', worktree), 'exact worktree id required')
     require(manifest.get('worktree') == worktree, 'worktree context changed; reprepare')
     runtime = manifest.get('runtime_id')
@@ -81,6 +119,7 @@ def load(directory, digest, *, worktree, model, effort, now=None):
         started, received = timestamp(receipt.get('started_at')), timestamp(receipt.get('received_at'))
         require(started <= received <= now and (now - received).total_seconds() <= MAX_AGE_SECONDS,
                 'stale or future catalog receipt')
+        require(prepared_observation is None or prepared_at <= started, 'catalog receipt predates preparation')
         require(previous_time is None or previous_time <= started, 'out-of-order receipts')
         previous_time = received
         params = {} if index == 0 else {'agent': 'codex', 'worktree': worktree}
@@ -104,6 +143,12 @@ def load(directory, digest, *, worktree, model, effort, now=None):
             and isinstance(capabilities, list) and COHERENT_CATALOG in capabilities
             and (not saved_only or all(capability in capabilities for capability in SAVED_ONLY_CAPABILITIES)),
             'unverified host provenance')
+    if explicit:
+        descriptor = status.get('hostDescriptor')
+        installation_id = descriptor.get('installationId') if isinstance(descriptor, dict) else None
+        require(status.get('graphStatus') == 'ready' and isinstance(installation_id, str) and
+                bool(installation_id), 'unverified explicit host installation or readiness')
+        host = {**host, 'installation_id': installation_id}
     require(result.get('origin') == 'probe', 'unknown or fallback catalog origin')
     require(result.get('listingInProgress', False) is False and result.get('waitExpired', False) is False,
             'partial listing')
@@ -111,16 +156,19 @@ def load(directory, digest, *, worktree, model, effort, now=None):
     require(result.get('nextCursor') is None and result.get('hasMore', False) is False
             and result.get('complete', True) is True, 'pagination or incomplete result')
     if saved_only:
-        # Orca 1.4.268 can project a base catalog for a workspace. In its reviewed
-        # Codex resolver that projection cannot name the configured model.
+        # The reviewed Codex resolvers can project a base catalog for an
+        # unresolved workspace, but that projection cannot name its configured model.
         require(result.get('modelsDifferByWorkspace') is True
                 and result.get('listingNamesConfiguredModel') is True,
                 'missing verified workspace catalog; refresh in Orca and reprepare')
     # Absence of complete is NOT converted to a completeness claim.
     fetched = result.get('fetchedAt')
     require(type(fetched) in (int, float) and fetched > 0, 'missing host fetchedAt')
+    if prepared_observation is not None:
+        require(fetched >= original_fetched_at, 'host catalog fetchedAt regressed since preparation')
     fetched = datetime.fromtimestamp(fetched / 1000, timezone.utc)
-    require(previous_time is not None and fetched <= previous_time and (now - fetched).total_seconds() <= MAX_AGE_SECONDS,
+    require(previous_time is not None and fetched <= previous_time and
+            (prepared_observation is not None or (now - fetched).total_seconds() <= MAX_AGE_SECONDS),
             'stale or future host catalog; fresh receipt is not fresh provider metadata')
     models = result.get('models')
     if not isinstance(models, list) or not models:
@@ -140,9 +188,11 @@ def load(directory, digest, *, worktree, model, effort, now=None):
             require(level['value'] not in values, 'duplicate effort')
             values.append(level['value'])
         normalized.append({'slug': row['id'], 'supported_reasoning_levels': [{'effort': value} for value in values]})
-    require(any(row['slug'] == model and {'effort': effort} in row['supported_reasoning_levels']
-                for row in normalized), 'selected model/effort absent; reprepare')
+    if model is not None or effort is not None:
+        require(any(row['slug'] == model and {'effort': effort} in row['supported_reasoning_levels']
+                    for row in normalized), 'selected model/effort absent; reprepare')
     return {'format': FORMAT, 'app_version': app_version, 'runtime_id': runtime, 'worktree': worktree,
+            **({'host': host} if explicit else {}),
             'selected': {'model': model, 'effort': effort}, 'models': normalized,
             'host_result': result, 'metadata_verified': True, 'launch_authorized': False,
             'unknown': ['effective_provider_config', 'provider_list_completeness',
@@ -183,15 +233,25 @@ def bound_catalog(decision, base, configuration, *, now=None):
     ref = inventory_reference(decision)
     source = decision['evidence'][ref]
     require(source.get('source') == 'orca_model_catalog', 'not a host catalog source')
-    context = decision['binding']['host_catalog']
+    selected = decision['selected']
+    require(all(isinstance(selected[key], str) and selected[key] for key in ('model', 'effort')),
+            'selected model/effort absent; reprepare')
+    return observed_catalog(source, decision['binding']['host_catalog'], base, configuration,
+                            selected, now=now)
+
+
+def observed_catalog(source, context, base, configuration, selected=None, *, now=None):
     require(context['configuration_sha256'] == configuration['configuration_sha256'],
             'observed Company configuration changed; reprepare')
     path = (Path(base) / source['file']).resolve()
     require(path.name == 'manifest.json', 'catalog evidence must pin manifest.json')
-    selected = decision['selected']
+    selected = {} if selected is None else selected
     value = load(path.parent, source['sha256'], worktree=context['worktree'],
-                 model=selected['model'], effort=selected['effort'], now=now)
+                 model=selected.get('model'), effort=selected.get('effort'), now=now)
     require(value['runtime_id'] == context['runtime_id'], 'catalog runtime binding changed')
+    host = value.get('host')
+    if host is not None:
+        verify_local_host(value)
     observations = context['observed_files']
     require(isinstance(observations, list) and observations, 'observed config/auth policy files required')
     require({'config', 'auth_policy'} <= {row['role'] for row in observations},
@@ -199,10 +259,11 @@ def bound_catalog(decision, base, configuration, *, now=None):
     from semantic_settings import KIND, LEGACY_VERSION, validate_rows
     require(all(row.get('kind') in (None, 'file', KIND) for row in observations),
             'unknown observation kind')
-    saved_only = value['app_version'] == SAVED_ONLY_VERSION
+    saved_only = value['app_version'] in SAVED_ONLY_VERSIONS
     if saved_only or any(row.get('kind') == KIND for row in observations):
         validate_rows(observations, context['worktree'],
-                      app_version=SAVED_ONLY_VERSION if saved_only else LEGACY_VERSION)
+                      app_version=value['app_version'] if saved_only else LEGACY_VERSION,
+                      user_data=host['user_data'] if host is not None else None)
     for row in observations:
         if row.get('kind') == KIND:
             continue

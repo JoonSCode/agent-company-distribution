@@ -79,6 +79,17 @@ def content(task, width, ascii=False):
     state, classification = graph.state_class(task, ascii)
     title = task.get('title')
     if title in (None, '', '?'): title = 'Title unknown' if ascii else '제목 미확인'
+    if graph.standalone_run_task(task):
+        values = {'title': graph.safe(title, ascii), 'state': state}
+        for index, label in enumerate(graph.launch_model_labels(task, ascii)):
+            values['model' if index == 0 else 'requested_model'] = label
+        rows = []
+        for key, value in values.items():
+            model, separator, effort = value.rpartition(' / ') if key.endswith('model') else ('', '', '')
+            parts = ([model, '/ ' + effort] if separator and graph.cells(model) <= inner
+                     and graph.cells(value) > inner and graph.cells(effort) + 2 <= inner else wrap(value, inner))
+            rows.extend((key, part) for part in parts)
+        return values, rows, len(rows) + 1
     values = {'title': graph.safe(title, ascii),
               'classification': classification, 'model': graph.model_label(task, ascii),
               'expert': graph.specialist_label(task, ascii)}
@@ -86,7 +97,9 @@ def content(task, width, ascii=False):
     separator = ' | ' if ascii else ' · '
     # Use the longest legitimate state to select row structure, so a status-only
     # refresh cannot repack the selected task onto another page.
-    states = (graph.EN_STATES if ascii else graph.STATES).values()
+    states = list((graph.EN_STATES if ascii else graph.STATES).values())
+    if task.get('host_status') is not None:
+        states.extend(('Orca ' + status for status in graph.HOST_STATES) if ascii else graph.HOST_STATES.values())
     combined = all(graph.cells(classification + separator + label) <= inner for label in states)
     if combined:
         rows.append(('class_state', classification + separator + state))
@@ -254,7 +267,9 @@ def draw(snapshot, plan, index, width, selected='', ascii=False):
     by_id = {task['id']: task for task in snapshot['tasks']}
     teams = {team['id']: '[' + team['id'] + '] ' + team['label']
              for team in (snapshot.get('organization') or {}).get('teams', [])}
+    missing_team = '' if snapshot.get('input_mode') == 'orca_run' else (
+        'Team unknown' if ascii else '소속 미확인')
     nodes = [draw_card(canvas, by_id[tid], box, tid == selected, ascii,
-                       teams.get(by_id[tid].get('team_id'), 'Team unknown' if ascii else '소속 미확인'))
+                       teams.get(by_id[tid].get('team_id'), missing_team))
              for tid, box in page['boxes'].items()]
     return canvas, nodes
