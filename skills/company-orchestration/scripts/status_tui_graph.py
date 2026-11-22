@@ -88,7 +88,10 @@ def specialist_label(task, ascii=False):
 
 def state_class(task, ascii=False):
     classification = task.get('classification')
-    return ((EN_STATES if ascii else STATES).get(task.get('state'), EN_STATES['?'] if ascii else STATES['?']),
+    states = EN_STATES if ascii else STATES
+    host_status = task.get('host_status')
+    state = 'Orca: ' + safe(host_status, ascii) if host_status is not None else states.get(task.get('state'), states['?'])
+    return (state,
             (EN_CLASSES.get(classification, 'class?') if ascii else CLASSES.get(classification, '분류 미확인')))
 
 

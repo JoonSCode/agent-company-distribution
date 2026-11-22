@@ -2,15 +2,84 @@
 """Observe one explicit current Company record; no discovery, writes or approval pins."""
 from __future__ import annotations
 import copy
+from graphlib import CycleError, TopologicalSorter
 import os
 from pathlib import Path
+import re
+import subprocess
 import sys
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import status_tui_data as data
+from orca_contract import resolve_orca
 
 IDENTITY_FIELDS = ('device', 'inode', 'mode', 'size', 'mtime_ns', 'ctime_ns')
+
+
+def load_run_snapshot(run_id):
+    """Read one explicit local Orca Run for display, with no record writes."""
+    if not re.fullmatch(r'run_[A-Za-z0-9_-]{1,128}', run_id):
+        raise data.InputError('invalid Orca Run ID')
+    try:
+        result = subprocess.run(
+            [resolve_orca(None), 'orchestration', 'task-list', '--environment', 'local',
+             '--run', run_id, '--full', '--brief', '--json'],
+            capture_output=True, timeout=2, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise data.InputError('Orca task list unavailable') from exc
+    if result.returncode != 0 or len(result.stdout) > data.MAX_BYTES:
+        raise data.InputError('Orca refused the selected Run or returned too much data')
+    reply = data.obj(data.strict_json(result.stdout))
+    if reply.get('ok') is not True:
+        raise data.InputError('Orca task list rejected')
+    observed = data.obj(reply.get('result'))
+    raw_tasks = data.rows(observed.get('tasks'))
+    if (observed.get('runId') != run_id or type(observed.get('count')) is not int
+            or observed['count'] != len(raw_tasks)):
+        raise data.InputError('Orca Run or task count mismatch')
+
+    tasks = {}
+    declared_needs = {}
+    for raw in raw_tasks:
+        row = data.obj(raw)
+        task_id = data.text(row.get('id'))
+        if row.get('run_id') != run_id or task_id in tasks:
+            raise data.InputError('foreign or duplicate task in Orca Run')
+        status = data.text(row.get('status'))
+        needs = row.get('deps')
+        if needs is not None:
+            if isinstance(needs, str):
+                needs = data.strict_json(needs.encode('utf-8'))
+            needs = [data.text(need) for need in data.rows(needs)]
+            if len(set(needs)) != len(needs):
+                raise data.InputError('duplicate task dependency')
+            declared_needs[task_id] = needs
+        tasks[task_id] = {
+            'id': task_id, 'title': data.text(row.get('task_title') or row.get('display_name') or task_id),
+            'state': '?', 'host_status': status, 'needs': declared_needs.get(task_id, []),
+            'parent_task': data.text(row.get('parent_id'), True),
+            'current_dispatch': data.text(row.get('dispatch_id'), True),
+        }
+    if any(need not in tasks for needs in declared_needs.values() for need in needs):
+        raise data.InputError('task dependency is outside the selected Run')
+    try:
+        TopologicalSorter(declared_needs).prepare()
+    except CycleError as exc:
+        raise data.InputError('task dependency cycle') from exc
+
+    return {
+        'schema': 'company-status-tui/v1', 'input_mode': 'orca_run',
+        'binding': {'run_id': run_id}, 'organization': None, 'tasks': list(tasks.values()),
+        'dependencies': [{'task': task_id, 'needs': needs} for task_id, needs in declared_needs.items()],
+        'dependency_coverage': ('reported' if tasks and len(declared_needs) == len(tasks)
+                                else 'partial' if declared_needs else 'unknown'),
+        'sources': [{'kind': 'orca_task_list', 'run_id': run_id}],
+        'overall_goal_acceptance': {'earned_success': False, 'badge_kind': 'unknown'},
+        'check': {'ok': True, 'scope': 'task_list_response'}, 'live_host_state': 'task_list_observed',
+        'observed_overlap': 'unknown',
+    }
 
 
 def _observation(path, tracked):

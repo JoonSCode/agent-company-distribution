@@ -1,5 +1,9 @@
 # Release notes
 
+## v0.2.8
+
+- Open the Company TUI for an explicitly selected local Orca Run.
+
 ## v0.2.7
 
 - Validate that a declared Run matches the checked launcher storage enrollment.
