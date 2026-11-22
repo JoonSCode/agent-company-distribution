@@ -66,13 +66,23 @@ Missing, failed or conflicting readback does not authorize another start.
 For reuse, supply the original launch receipt, its dispatch and terminal. The
 decision binds the original hash and a pinned host observation that settings
 were unchanged, including `observed_at` and `valid_until` UTC timestamps. The
-launcher checks those supplied bounds; it cannot independently prove that the
-settings stayed unchanged. It compares the original `launch.effective` model
-and effort with the selected pair, plus a current `worker-show`, live agent
-projection and the same terminal incarnation. This is not a fresh provider
-model/effort readback.
-Unknown or changed evidence denies reuse without starting a replacement. Orca
-still owns Task and Dispatch lifecycle and recovery.
+launcher verifies those bounds as part of the supplied historical evidence. It
+compares the original `launch.effective` pair with the selection and checks the
+origin Run, Task, Dispatch, runtime, terminal, PTY and incarnation against the
+live worker. A contradictory stored setting or an uncertain origin blocks the
+start. The launcher retains a failed origin probe in the `not_started` result.
+
+After the start, the launcher checks the new Task and Dispatch against the same
+Run and process in a fresh `worker-show --full` response with a reused terminal
+effect. On the supported Orca terminal path, this response projects stored
+`startOptions.launch` alongside live process evidence. It provides no current
+model or effort observation for the reused process. The receipt records the
+original pair as `prior_launch_effective` and the result records both current
+values as null in `reuse_settings`. An echoed model or effort without a current
+observation contract leaves the start unresolved, including when it matches the
+selected pair. A conflicting value fails readback. The preserved result gives
+the owner the evidence for reconciliation. The launcher never starts a
+replacement automatically. Orca owns Task and Dispatch lifecycle and recovery.
 
 For a precreated Task, use `--task <id> --run <id>` instead of `--spec`.
 The record's `run` and decision's `binding.run` must equal that Run, and
@@ -131,9 +141,13 @@ marker hash. Missing completion registration cannot prove that a session is not
 Company. A recognized targeted worker `send` is denied within this scope because
 a settled target can create a new Task without an atomic active-state condition;
 coordinator Run messages and the distinct ask/reply/worker_done paths remain.
-For an authorized new contribution after worker completion, use a fresh checked
-`--spec` launch in the same Run with the retained evidence and explicit parent;
-the worker receives a new Task rather than the old terminal's implicit context.
+On the supported local host, a targeted send can reuse a live terminal, reopen
+a conversation or start with saved requested preferences after settlement.
+Those preferences cannot supply current model or effort evidence.
+For an authorized new contribution after worker completion, use a checked
+`--spec` launch in the same Run with the retained evidence and explicit parent.
+If the contribution requires a confirmed new launch setting, select a supported
+fresh worker and verify its actual launch readback.
 Preserve failed or unknown attempts; a new Task is not a substitute for an
 unverified retry. The hook does not intercept unsupported shell or host paths.
 
