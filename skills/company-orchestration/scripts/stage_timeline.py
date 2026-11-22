@@ -26,6 +26,9 @@ OFFSET_TIME = re.compile(
     r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}'
     r'(?:\.[0-9]{1,6})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])'
 )
+TIMING_POINTS = ('entry', 'lock_enter', 'lock_acquired', 'prepared', 'start_enter',
+                 'start_exit', 'readback_done')
+TIMING_SPANS = ('enrollment_prepare', 'lifecycle_lock', 'launch_prepare', 'host_start', 'readback')
 
 
 class TimelineError(ValueError):
@@ -166,6 +169,103 @@ def checked_launch(source, selector, check_stage, report, precheck_sha):
     return stage('launch', 'observed', 'checked_readback', *refs), {
         'dispatch': dispatch, 'actor': actor, 'runtime': runtime, 'predecessor': predecessor,
     }
+
+
+def launch_timing(source, selector, launch, report, check_pin):
+    if source is None or 'timing' not in source[0]:
+        return None
+    document, sha256 = source
+    timing = mapping(document['timing'])
+    pins = ('run_sha256', 'requested_task_sha256', 'retry_of_sha256',
+            'decision_sha256', 'receipt_sha256')
+    require(set(timing) == {'version', 'epoch', 'reason', 'marks', *pins}
+            and type(timing['version']) is int and timing['version'] == 1,
+            'invalid_launch_timing')
+    epoch = identity(timing['epoch'])
+    require(re.fullmatch('[0-9a-f]{32}', epoch), 'invalid_timing_epoch')
+    for pin in pins:
+        require(timing[pin] is None or re.fullmatch('[0-9a-f]{64}', identity(timing[pin])),
+                'invalid_timing_pin')
+    require(timing['run_sha256'] in (None, digest_id(selector['run']))
+            and timing['requested_task_sha256'] in (None, digest_id(selector['task']))
+            and (timing['retry_of_sha256'] is None or timing['requested_task_sha256'] is not None),
+            'timing_attempt_mismatch')
+    if report and timing['requested_task_sha256'] is not None:
+        binding = report['binding']
+        prior = binding.get('attempt') if binding['planned'] is False else None
+        require(timing['retry_of_sha256'] == (digest_id(prior) if prior is not None else None),
+                'timing_predecessor_mismatch')
+    if launch:
+        require(timing['retry_of_sha256'] != digest_id(launch['dispatch']), 'timing_predecessor_mismatch')
+    if 'decision_sha256' in document:
+        require(timing['decision_sha256'] == document['decision_sha256'], 'timing_decision_mismatch')
+    if check_pin is not None and timing['decision_sha256'] is not None:
+        require(timing['decision_sha256'] == report.get('decision_sha256'), 'timing_decision_mismatch')
+    receipt_pin = timing['receipt_sha256']
+    if 'prelaunch_receipt_sha256' in document:
+        require(receipt_pin == document['prelaunch_receipt_sha256'], 'timing_receipt_mismatch')
+    if check_pin is not None and receipt_pin is not None:
+        require(receipt_pin == check_pin, 'timing_receipt_mismatch')
+
+    reason = identity(timing['reason'])
+    raw = mapping(timing['marks'])
+    state = document['launch_state']
+    if state == 'not_started':
+        require(reason in ('preparation_incomplete', 'preparation_stopped')
+                and receipt_pin is None, 'conflicting_timing_state')
+        expected = TIMING_POINTS[:3] + (('preparation_stopped',) if reason == 'preparation_stopped' else ())
+    else:
+        require(receipt_pin is not None and timing['decision_sha256'] is not None, 'timing_pin_missing')
+        if state == 'invocation_pending':
+            expected = TIMING_POINTS[:4]
+            require(reason == state, 'conflicting_timing_state')
+        elif document.get('error_code') == 'host_start_timeout':
+            expected = TIMING_POINTS[:6]
+            require(reason == 'host_start_timeout', 'conflicting_timing_state')
+        elif document.get('readback_status') in ('observed', 'failed', 'unverified'):
+            expected = TIMING_POINTS
+            require(reason == 'readback_finished', 'conflicting_timing_state')
+        else:
+            expected = TIMING_POINTS[:6 if 'start_enter' in raw else 4]
+            require(reason == 'host_start_error' and isinstance(document.get('error'), str),
+                    'conflicting_timing_state')
+    require(set(raw) == set(expected), 'invalid_timing_sequence')
+    clock, previous_ns = {}, -1
+    for point in expected:
+        value = sequence(raw[point])
+        require(len(value) == 2 and type(value[1]) is int
+                and previous_ns <= value[1] < 2**63 and value[1] >= 0, 'invalid_timing_clock')
+        stamp = utc_time(value[0])
+        require(stamp is not None, 'invalid_timing_clock')
+        clock[point] = stamp, value[1]
+        previous_ns = value[1]
+    stamps = [clock[point][0] for point in expected]
+
+    spans = []
+    boundaries = (('entry', 'lock_enter'), ('lock_enter', 'lock_acquired'),
+                  ('lock_acquired', 'preparation_stopped' if 'preparation_stopped' in clock else 'prepared'),
+                  ('start_enter', 'start_exit'), ('start_exit', 'readback_done'))
+    for name, (first, last) in zip(TIMING_SPANS, boundaries):
+        span = stage(name, 'unknown', reason, evidence(sha256, '/timing/reason'))
+        span.update(started_at=None, duration_ns=None)
+        if first in clock and last in clock:
+            start, begin_ns = clock[first]
+            finish, end_ns = clock[last]
+            span_reason = 'local_elapsed'
+            if name == 'readback':
+                span_reason = document['readback_status']
+            elif last == 'preparation_stopped' or (name == 'host_start' and reason != 'readback_finished'):
+                span_reason = reason
+            span.update(status='measured', reason=span_reason,
+                        started_at=start.isoformat(), observed_at=finish.isoformat(),
+                        duration_ms=(end_ns - begin_ns) / 1_000_000,
+                        duration_ns=end_ns - begin_ns)
+            span['evidence'].extend(evidence(sha256, '/timing/marks/' + point) for point in (first, last))
+        spans.append(span)
+    return {'epoch': epoch, 'reason': reason, 'clock': 'launcher_process_monotonic',
+            'wall_clock_reversed': any(a > b for a, b in zip(stamps, stamps[1:])),
+            'attribution': 'observed_dispatch' if launch else 'launcher_process_only',
+            'spans': spans}
 
 
 def worker_report(source, selector, launch, known_dispatches):
@@ -328,6 +428,7 @@ def _project(manifest, base):
             'invalid_manifest')
     current = identity(manifest['current'])
     selectors, prepared, known_dispatches = set(), [], {}
+    epochs = set()
     for selector in sequence(manifest['attempts']):
         selector = mapping(selector)
         keys = {'id', 'run', 'task', 'revision'}
@@ -354,10 +455,14 @@ def _project(manifest, base):
             dispatch = launch['dispatch']
             require(dispatch not in known_dispatches, 'duplicate_dispatch')
             known_dispatches[dispatch] = (selector['run'], selector['task'])
-        prepared.append((selector, sources, check_stage, launch_stage, launch, precheck_link))
+        timing = launch_timing(sources['launch'], selector, launch, check, check_pin)
+        if timing is not None:
+            require(timing['epoch'] not in epochs, 'duplicate_timing_epoch')
+            epochs.add(timing['epoch'])
+        prepared.append((selector, sources, check_stage, launch_stage, launch, precheck_link, timing))
     require(current in selectors, 'current_attempt_missing')
     attempts = []
-    for selector, sources, check_stage, launch_stage, launch, precheck_link in prepared:
+    for selector, sources, check_stage, launch_stage, launch, precheck_link, timing in prepared:
         report = worker_report(sources['worker_done'], selector, launch, known_dispatches)
         settlement, retry_of = worker_settlement(sources['settlement'], selector, launch,
                                                  launch_stage, report)
@@ -378,6 +483,8 @@ def _project(manifest, base):
                        stage('tool_execution', 'unknown', 'source_not_supported')],
             'usage': usage_projection(sources['usage'], selector, launch),
         })
+        if timing is not None:
+            attempts[-1]['launch_timing'] = timing
     installer = manifest.get('installer')
     return {'format': 'company-stage-timeline/v1', 'ok': True, 'coverage': 'supplied_receipts',
             'attempts': attempts,

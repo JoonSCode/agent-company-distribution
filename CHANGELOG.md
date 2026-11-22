@@ -1,5 +1,10 @@
 # Release notes
 
+## v0.2.5
+
+- Add opt-in checked-launch stage timing in the existing private result.
+- Project monotonic durations and observed Dispatch attribution in the local timeline.
+
 ## v0.2.4
 
 - Fix inventory refresh for ordinary checked launches and add read-only lookup
