@@ -1,5 +1,9 @@
 # Release notes
 
+## v0.2.7
+
+- Validate that a declared Run matches the checked launcher storage enrollment.
+
 ## v0.2.6
 
 - Add an opt-in audit for saved role reference delivery, source reads, and

@@ -186,7 +186,10 @@ def storage_launch_guard(args, reserve=False, capability=None):
         require(bundle['format'] == routing_prepare.FORMAT and checked['ok'], 'prepared bundle stale/blocked', Blocked)
         require(bundle['enrollment'] == reference and bundle['canonical_record'] == {'path': str(args.record.absolute()), 'sha256': sha(regular(args.record))}, 'prepared canonical enrollment differs', Blocked)
         require(args.decision.absolute() == args.prepared_bundle.absolute() / 'decision.json' and args.spec is not None and args.spec.encode('utf-8') == regular(args.prepared_bundle / 'spec.txt'), 'prepared decision/spec differs', Blocked)
-    require(record.get('goal', {}).get('id') == enrollment['run_id'] and record.get('goal', {}).get('current_owner') == enrollment['owner'], 'checked goal/owner differs from enrollment', Blocked)
+    enrolled_run_id = enrollment['run_id']
+    require(record['goal'].get('id') == enrolled_run_id and record['goal'].get('current_owner') == enrollment['owner'], 'checked goal/owner differs from enrollment', Blocked)
+    require(record.get('run', enrolled_run_id) == enrolled_run_id, 'record.run differs from enrollment', Blocked)
+    require(args.run is None or args.run == enrolled_run_id, '--run differs from enrollment', Blocked)
     if capability is not None:
         capability.verify()
         require(capability.root == root, 'launch capability root differs', Blocked)
@@ -208,7 +211,9 @@ def storage_launch_guard(args, reserve=False, capability=None):
         # Enrollment still precedes all writes. Missing decision is an ordinary
         # downstream prelaunch denial, not authority to probe or start a host.
         decision = {}
-    if decision.get('binding', {}).get('host_catalog') is not None:
+    binding = decision.get('binding', {})
+    require(binding.get('run', enrolled_run_id) == enrolled_run_id, 'decision.binding.run differs from enrollment', Blocked)
+    if binding.get('host_catalog') is not None:
         directory = args.result.absolute().with_name(args.result.name + '.catalog-refresh')
         paths += [directory / name for name in lifecycle.LAUNCH_OPTIONAL_OUTPUTS['.catalog-refresh']]
     # Refuse an ambiguous/observed attempt before reserving renamed outputs.
@@ -221,7 +226,7 @@ def storage_launch_guard(args, reserve=False, capability=None):
         if args.reprepare_inventory:
             require(all(path.relative_to(root).as_posix() not in manifest.get('creation_contract', {})
                         for path in paths), 'reprepare requires unused output reservations', Blocked)
-        attempt_binding = logical_attempt(decision.get('binding', {}))
+        attempt_binding = logical_attempt(binding)
         for prior_ref, prior_contract in manifest.get('launch_contract', {}).items():
             if prior_ref != result_ref and logical_attempt(prior_contract['attempt_binding']) == attempt_binding:
                 prior = lifecycle.decode(lifecycle.read_file(capability.fd, prior_ref)[0])
