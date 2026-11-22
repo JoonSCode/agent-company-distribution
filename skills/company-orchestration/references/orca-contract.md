@@ -116,6 +116,23 @@ workers keep parent ownership and host depth limits; a new Run cannot bypass
 them. A failed `worker-start` is not permission to start again: inspect its
 failed stage, residual resources and exact recovery receipt first.
 
+The official [Orca 1.4.269 coordinator guide](https://github.com/stablyai/orca/blob/v1.4.269/skill-guides/orchestration/references/coordinator-loop.md)
+uses a Run-owning coordinator, precreated Tasks, `task-list --ready`, and
+`worker-start --task` for DAGs. The relevant guides are byte-identical at
+1.4.268 and 1.4.269. A dispatched worker can start a bounded nested leaf through
+its supported path. Creating or updating the owning Run's dependency graph
+uses the actual Run coordinator's authority, including its own terminal
+identity. Preserve any refusal and effects receipt.
+
+Bind the reviewed Company profile's units and dependencies to the emitted
+Task IDs. Use the [checked prerequisite binding](routing-prelaunch.md#routing-prelaunch-prototype)
+when starting those Tasks. Use [the explicit Run view](status-tui.md) to read
+the resulting graph and Task states in a caller-owned pane. This keeps the
+portable planning and evidence replay usable without the live Orca CLI.
+The [1.4.269 release notes](https://github.com/stablyai/orca/releases/tag/v1.4.269)
+describe notice when a brief may not have been submitted. Reconcile ambiguous
+submission from the exact host receipt and Dispatch/readback before any retry.
+
 ## Task lineage and internal provider helpers
 
 A dispatched worker starts a useful nested leaf through its live preamble's
@@ -193,7 +210,7 @@ receipt. If the ID or result is unavailable, use the named mailbox `inbox --full
 readback and keep missing or partial evidence unresolved. Multiple waiters can see
 the same Delivery, so identify duplicate observations before taking action.
 
-The pinned 1.4.217 upstream references describe the older explicit ACK protocol:
+The historical 1.4.217 upstream references in Git describe the older explicit ACK protocol:
 process the complete Delivery before acknowledging and preserve that historical
 contract for older hosts. On 1.4.268 `--ack` is optional for older deliveries and
 is a no-op for a handled Delivery; it is not a prerequisite for advancing. Host

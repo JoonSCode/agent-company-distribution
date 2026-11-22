@@ -4,7 +4,8 @@
 prepare(document, table, pins=None) returns per-unit proposals and canonical SHA256
 hashes. pins maps unit IDs to exact route/model/effort identity objects. Capabilities
 and evidence in a table are untrusted assertions, not host or quality verification.
-CLI: worker_route.py prepare PROFILE.json [--table TABLE.json] [--pins PINS.json].
+CLI: worker_route.py prepare PROFILE.json [--table TABLE.json] [--pins PINS.json]
+                            [--codex-availability MODELS.json].
 """
 import argparse
 import hashlib
@@ -82,8 +83,15 @@ def validate_table(table, priors=None):
         raise ProfileError('INVALID_TABLE', 'general easy/medium/hard rows required')
     return table
 
-def prepare(document, table, pins=None):
+def prepare(document, table, pins=None, *, codex_availability=None):
     validate_profile_document(document); priors = load_json(ASSETS / 'model-choice-priors.json'); validate_table(table, priors)
+    if codex_availability is not None:
+        if (not isinstance(codex_availability, dict) or
+                any(not isinstance(model, str) or not model.strip() or
+                    not isinstance(efforts, list) or not efforts or
+                    any(not isinstance(effort, str) or not effort.strip() for effort in efforts) or
+                    len(efforts) != len(set(efforts)) for model, efforts in codex_availability.items())):
+            raise ProfileError('INVALID_AVAILABILITY', 'Expected a Codex model-to-efforts object with unique efforts')
     if pins is None: pins = {}
     if not isinstance(pins, dict): raise ProfileError('INVALID_PIN', 'pins must be an object')
     ids = {u['id'] for u in document['units']}
@@ -98,6 +106,10 @@ def prepare(document, table, pins=None):
             reasons = []
             if not c['enabled']: reasons.append('disabled')
             if unit['id'] in pins and c['identity'] != pins[unit['id']]: reasons.append('pin mismatch')
+            ident = c['identity']
+            if (codex_availability is not None and ident['route'] == 'codex' and
+                    ident['effort'] not in codex_availability.get(ident['model'], ())):
+                reasons.append('not listed in Codex availability')
             for required, available in [('input_modalities','input_modalities'),('output_modalities','output_modalities'),('required_capabilities','capabilities'),('required_tools','tools'),('hard_constraints','constraints')]:
                 missing = sorted(set(p[required]) - set(c[available]))
                 if missing: reasons.append(f'{required}: missing {missing}')
@@ -134,12 +146,25 @@ def prepare(document, table, pins=None):
                         'selected_source':source,'default_provenance':provenance})
     return {'version':2,'profile_sha256':digest(document),'table_sha256':digest(table),'source_sha256':digest(priors),'pins_sha256':digest(pins),'hash_format':'sha256 of UTF-8 canonical JSON (sorted keys, compact separators, unescaped Unicode)','results':results,'authority':'proposal only; table evidence is unverified; existing host and policy checks remain required'}
 
+def read_codex_availability(path):
+    if path is None:
+        return None
+    from host_model_catalog import strict_json
+    value = strict_json(path.read_bytes())
+    if value is None:
+        raise ProfileError('INVALID_AVAILABILITY', 'Explicit availability must be a JSON object')
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('command',choices=['prepare','validate']); parser.add_argument('profile'); parser.add_argument('--table', help='Proposal-only table override'); parser.add_argument('--pins')
+    parser.add_argument('--codex-availability', type=Path, help='Explicit Codex model-to-efforts JSON object')
     args = parser.parse_args()
     try:
         table = load_json(args.table) if args.table else configured_table(resolve())[0]
-        result = prepare(load_json(args.profile),table,load_json(args.pins) if args.pins else None)
+        availability = read_codex_availability(args.codex_availability)
+        result = prepare(load_json(args.profile), table, load_json(args.pins) if args.pins else None,
+                         codex_availability=availability)
         print(json.dumps(result,sort_keys=True,indent=2)); return 0 if all(r['status']=='MATCH' for r in result['results']) else 2
     except (ProfileError, OSError, ValueError) as exc:
         print(json.dumps({'status':'error','code':getattr(exc,'code','INVALID_JSON'),'detail':str(exc)})); return 1

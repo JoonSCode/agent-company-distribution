@@ -1,39 +1,39 @@
 {
   "schema_version": "company-orchestration-baseline/v1",
-  "revision": "2026-11-09.semantic-settings-r1",
+  "revision": "2026-11-23.orca-run-catalog-r2",
   "upstream": {
     "source_url": "https://github.com/stablyai/orca",
     "skill_path": "skills/orchestration/SKILL.md",
-    "folder_hash": "b0cd1d58b0c317cf7c3726fef7e6b1197c405246",
+    "folder_hash": "e9634d4e858f11f2408a7627dea56de594bf1167",
     "stub": {
       "path": "references/upstream/discovery-stub.md",
-      "sha256": "cd1b364bf35781bad06bf75ab1766afa8d6cec69cb2060529691d89871a2098a"
+      "sha256": "e3d5282234db8a2817ed7c5c660d07851ad509d9e3625d5b42a1641ca5a771e6"
     },
-    "app_version": "1.4.217",
+    "app_version": "1.4.268",
     "documents": [
       {
         "id": "kernel",
         "reference": null,
         "path": "references/upstream/kernel.md",
-        "sha256": "f6fa3a7e181adca97789b8c02f29de7f025de86b854c8bde9e950ca7a6d60e8d"
+        "sha256": "5c17b2135943362221c95b37ad7376a117e4ef5dbcbeab643cdeddf2f8bbfa1d"
       },
       {
         "id": "coordinator-loop",
         "reference": "references/coordinator-loop.md",
         "path": "references/upstream/coordinator-loop.md",
-        "sha256": "9bbfdcbc6c550db9af22806bae08638dc7460b1358db2412645dbb5435605f5c"
+        "sha256": "e02f9933ebc2fd54b28eae81b78ceb3c2df82e65b68182032ecb45120c3a850d"
       },
       {
         "id": "messaging-and-gates",
         "reference": "references/messaging-and-gates.md",
         "path": "references/upstream/messaging-and-gates.md",
-        "sha256": "975edc4caa6fda3bc4e7e2fc3736445bb0c5b6624d6b96e368bf29b90e791a30"
+        "sha256": "5f0a0391f5f7dadc5180efde6b10c89c8ab99060dfdef41e070708b4e2b04e9c"
       },
       {
         "id": "recovery-and-cleanup",
         "reference": "references/recovery-and-cleanup.md",
         "path": "references/upstream/recovery-and-cleanup.md",
-        "sha256": "dd26e5127f377cee176961492bb07d0c7ad148d010c3217eb7ca22ff5fc030df"
+        "sha256": "69478953b972b80d68b90482ae1522f6873de8bfa2abc61e007dedf431d04d9d"
       }
     ]
   },
@@ -149,7 +149,7 @@
     },
     {
       "path": "references/host-model-catalog.md",
-      "sha256": "b14c664a3277af703d2757be03a7cfa19ce14f1798d27ab5ace49b3c392d7525"
+      "sha256": "d09d32212166ed6390d317796f4c45b9e59050978a9d19da823f5e291f498202"
     },
     {
       "path": "references/knowledge-repository.md",
@@ -161,7 +161,7 @@
     },
     {
       "path": "references/measurement-lifecycle.md",
-      "sha256": "a2b031c9599dc8fbf5b41abeb64fc2fb9478a8b23a12e7a50d6ee31bbde2a52b"
+      "sha256": "8343c4fc9116b5bea98d462041bf12300e0cf1d272e6f67c795d6f89ba8bc65a"
     },
     {
       "path": "references/model-candidates.md",
@@ -185,7 +185,7 @@
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "0ef3c396b2015f067aaa4d99c05f4abbc7b74c5348930d171fbe5d8cc280ff53"
+      "sha256": "f8c60dd311390eb50bd985b58066ca218456b95852dc02edafaac5f6d7cb5e6b"
     },
     {
       "path": "references/organization-evidence.md",
@@ -225,7 +225,7 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "fc980f090520eae6df7e804bb6492eeb3600967b309e7c203e71fe814427e93b"
+      "sha256": "2e5fbe7d5741e92a807ebf111b4ace0c1f6c430510b38811e22a693752cd4377"
     },
     {
       "path": "references/session-continuity.md",
@@ -237,7 +237,7 @@
     },
     {
       "path": "references/status-tui.md",
-      "sha256": "7d2fea9efb84ecb38fda54a44dd3f89ce5caba9c75d1f35811a1f8987309b9f5"
+      "sha256": "a5c8f88a7557e498ae43d078cc8c1176f6aaaf8a90b655b9feb1a5dc1826c4aa"
     },
     {
       "path": "references/status-view.md",
@@ -249,7 +249,7 @@
     },
     {
       "path": "references/update-policy.md",
-      "sha256": "7b48064971d305a83a24e306cf029204801f28f5d6c7681e2ed6141a1e496679"
+      "sha256": "0cef447c37c0d4e66074f22794d043bec12a3fc6ecde532a9c9d62d84f62aeb5"
     },
     {
       "path": "references/worker-routing-evidence.md",
@@ -281,11 +281,11 @@
     },
     {
       "path": "scripts/host_model_catalog.cjs",
-      "sha256": "3548764a79edc1c82268d88ff2932df984ffc2848ec5c4989b4d699b6f567bb1"
+      "sha256": "dde38a5f43e0d30876920cd1dcb8a364d143c590d6239371a4cdadc4ec8ee621"
     },
     {
       "path": "scripts/host_model_catalog.py",
-      "sha256": "79f88fb6a37df81dd4569dbde4e029660b14cf70e843c5a01c5f39c48c6afb99"
+      "sha256": "c685e3ba98866f778a2d4e8d7c88000c4d1f7cdf48c7d5d29e6250391e21a292"
     },
     {
       "path": "scripts/knowledge_repository.py",
@@ -297,11 +297,11 @@
     },
     {
       "path": "scripts/measurement_canary.py",
-      "sha256": "98d56a8254c1b90f736bf3ec24420ca93aa4b3598e24ed3cd43da0b40951b87d"
+      "sha256": "4c7190864d8c300e8226e54eea154defda4c5b5968b719e72cb627c35faf22db"
     },
     {
       "path": "scripts/measurement_lifecycle.py",
-      "sha256": "846162976bc5f4a96327e3443cfe9c50fb4b7cd815b7d0814abd518c76ab844d"
+      "sha256": "3637f58989df3bb9d90ac2745de9b819ae1654e356afb864560e3c4ce5874ba0"
     },
     {
       "path": "scripts/native_maintenance.py",
@@ -357,11 +357,11 @@
     },
     {
       "path": "scripts/record_check.py",
-      "sha256": "782ec35db08ffac80663fe4f378ca0c7f3a2352f242c5c706815d56058743b5e"
+      "sha256": "75a917ec359e10e874fed4dc3b7d2a758a0b9d18c0094fc6bbfa59c1f3021ec1"
     },
     {
       "path": "scripts/record_integrity.py",
-      "sha256": "01d786316d719a24a933b052316bebbee098969e779ddc6a4c740318352afaad"
+      "sha256": "c9e3f82e124087225af25003fc3f5f5433fb65378ea35089b65453a3fc0f76b0"
     },
     {
       "path": "scripts/record_projection.py",
@@ -389,7 +389,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "86acc93546ae84a32c88d3c178556d9cb83ee2e8775f915ca423723859472103"
+      "sha256": "c6f64c918c8b59681491f71efdfd6af0009609c0db66c0f6c010cb70dc6b20af"
     },
     {
       "path": "scripts/routing_prepare.py",
@@ -401,7 +401,7 @@
     },
     {
       "path": "scripts/semantic_settings.py",
-      "sha256": "da1d6b6ef5d9e607d3851b5ef4c4b5156f03b9b864f896eb1303f31e2823bbcb"
+      "sha256": "e8f812735dd328f79bd80fdb8439ff40545b9ea6199fec22ea290eab9b7955b3"
     },
     {
       "path": "scripts/stage_timeline.py",
@@ -413,7 +413,7 @@
     },
     {
       "path": "scripts/status_tui.py",
-      "sha256": "ca4082284a0ad0b127b9df4ef429081571afe4b0a63d5fd23ae9b5e043d57095"
+      "sha256": "28898665866cf8a8625e7c452f7922dfaf4d29f506c25bfe82a87c9ac284bb86"
     },
     {
       "path": "scripts/status_tui_context.py",
@@ -425,19 +425,19 @@
     },
     {
       "path": "scripts/status_tui_graph.py",
-      "sha256": "e7bcbf213ee0d340d01d906f6646f6cd3d4cc4e64a39f88ea04786e8a6c2bbdd"
+      "sha256": "a08bfd56acdc9d5e8acb75133e488352a2e7c3c2438dd63719df250f974660a4"
     },
     {
       "path": "scripts/status_tui_input.py",
-      "sha256": "c55aa4f8c976732ca3845d920a77eabe92a7fe0fb37ce6009927e28e7511ffd9"
+      "sha256": "9695e5af6441a2f9d7feac85686fb2a2b721320f4296875da3b366ad4a7dd8a0"
     },
     {
       "path": "scripts/status_tui_navigation.py",
-      "sha256": "44e06121ebc2d4fa570c89b4b6516182627ff23958a44a7757b452f4926c323f"
+      "sha256": "241bd25fa60137879046380f61a51fb2d3abc1e339f74cfbc489e521d576b24b"
     },
     {
       "path": "scripts/status_tui_wide.py",
-      "sha256": "869415e0cfb3f1c77d3bfc5313da8fb82592c200b2ef6b8cecb49e6c645d5a92"
+      "sha256": "4a75f8ca420fe42c6303367451f93e0e1f894c75beba07005d8130da206e2dcb"
     },
     {
       "path": "scripts/status_view.py",
@@ -481,7 +481,7 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "878f2d7cbca11ece7ee107f4ec2000b944d7590cbcd81ed9ef2dcb4a68b58e92"
+      "sha256": "4d2536c4705b66c10bb4a8acf875135ebf5da906689c3bab4ce0ec1e76bba3d6"
     },
     {
       "path": "scripts/test_routing_preflight.py",
@@ -497,11 +497,11 @@
     },
     {
       "path": "scripts/worker_profile.py",
-      "sha256": "51de8adf9cc0c6d2cef0cc5e1c2ed818b20c0d271d01846b28bed9a1db59540a"
+      "sha256": "a257e1ed66f030ea850c01520903b377e88da54bb88e986c12a893becf0bdbc0"
     },
     {
       "path": "scripts/worker_route.py",
-      "sha256": "5316802df876ad2e71db42ca9172a608b1b1d432d38f77922d6de7e75d6cdecd"
+      "sha256": "8a399323d03f4d7e551bf51bcad46529ffba924608128e091b0d1ebe835aa302"
     },
     {
       "path": "references/role-context-audit.md",
@@ -514,9 +514,130 @@
     {
       "path": "scripts/test_role_context_audit.py",
       "sha256": "9c1a0fb99cb65b880917aace6ee9d7cdbfa2daabc7633cb2ca3913a1afc7bdb3"
+    },
+    {
+      "path": "references/upstream/LICENSE-orca.txt",
+      "sha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3"
+    },
+    {
+      "path": "scripts/orca_task_graph.py",
+      "sha256": "d586ae26175ee951608d3f2a8b1f0a8b9fb782740ca461292295f691190d37c5"
+    },
+    {
+      "path": "scripts/test_orca_task_graph.py",
+      "sha256": "db760d0a2751af9657e507cfcff119cf4aa90922f6cfe38458291ab8af1aa0a2"
+    },
+    {
+      "path": "scripts/test_storage_coordination.py",
+      "sha256": "701e81120ee06980ee5e14899c5d8a2ccaa4dc6f789017bbb8ba78f9970ef0c1"
+    },
+    {
+      "path": "scripts/test_storage_maintenance_safety.py",
+      "sha256": "b838482bca8399a0b7253f5cff39f506a9b972de2a2a697b81284bc82026c7a4"
+    },
+    {
+      "path": "scripts/test_storage_repair.py",
+      "sha256": "ea812ebe38950640defbaf581973809375f4331e447d6dc47d82aebcad6773a4"
+    },
+    {
+      "path": "scripts/test_storage_lifecycle.py",
+      "sha256": "fd69cadb9c10c3412d415bffc51de9a42eeba534f94bed4223b413d55d0fc245"
+    },
+    {
+      "path": "scripts/test_status_tui_wide.py",
+      "sha256": "3e3e2e01c30943ad154017173d3aa0063065251d7142312f0b3e4ea39a170802"
+    },
+    {
+      "path": "scripts/test_status_tui_graph.py",
+      "sha256": "73206d84783f81f23b5b17990f1b2c94a3cedf533babdbc9583557753cb1d74a"
+    },
+    {
+      "path": "scripts/test_status_tui_context.py",
+      "sha256": "afcd6faedfd92ae9795b734973e4c33491f0ef5c58abe87a06a8b1c931ec9ceb"
+    },
+    {
+      "path": "scripts/test_status_tui_input.py",
+      "sha256": "1ee604300c75a16355bcf2d2122353d8d552c943f25c4f38eb1d965c4ae28ac6"
+    },
+    {
+      "path": "scripts/test_native_operations.py",
+      "sha256": "d300e00fc5b35e135d51240d7329c49b9d2a47b8137f1874c2169074ce68f8f8"
+    },
+    {
+      "path": "scripts/test_status_tui.py",
+      "sha256": "23bff20a49f23e7f8f16cca61a6038a03067c2695fce67df6b076036c400b83a"
+    },
+    {
+      "path": "scripts/test_status_tui_data.py",
+      "sha256": "794314df07baa89867354e13312f164e3bb913994543519fbffa91e89469608b"
+    },
+    {
+      "path": "scripts/test_record_integrity.py",
+      "sha256": "032293bcf1f2b56a4b328b11991159f76edd16abaa824afa03658764caeea337"
+    },
+    {
+      "path": "scripts/test_routing_explain.py",
+      "sha256": "a68b2a386329941390a7fa08fe84d95c530fd28d163f0f1c7ee17c4ef6c63a3a"
+    },
+    {
+      "path": "scripts/test_routing_prepare.py",
+      "sha256": "bf723eecb959933f320caa9f24f495367ada91c9ba6f8e61a385667a9feee33d"
+    },
+    {
+      "path": "scripts/test_policy_manifest.py",
+      "sha256": "f0ecee58f701bfd976a1bc26c024385b0f8904c3e6d35ce78200dc2cbeaa7299"
+    },
+    {
+      "path": "scripts/test_host_catalog_launch.py",
+      "sha256": "4ffdb8829bc1d7227ce3d6aaf2b804b3c038b4643c8b254ffc7596bbe108e3a7"
+    },
+    {
+      "path": "scripts/test_host_model_catalog.py",
+      "sha256": "c13d7e67a64681d59dfb72633bde7b396f4ba8164810d24f0accc141f18ba569"
+    },
+    {
+      "path": "scripts/test_inventory_reprepare.py",
+      "sha256": "83b4fbc3ce244180e516770f753873f24ce5bad05dd1c03a701ace071003e715"
+    },
+    {
+      "path": "scripts/test_worker_default_table.py",
+      "sha256": "8c3c20b770d1e437bdbb3238153c2f8fa93554c09b019661538aaeef674e1c4a"
+    },
+    {
+      "path": "scripts/test_worker_profile_route.py",
+      "sha256": "29d1364396ee481b49075941230396a1050d19eb438422df52b54c69b0b64ec2"
+    },
+    {
+      "path": "scripts/test_worker_fallback_chain.py",
+      "sha256": "bfcd1da3f86526522caf24750a22768fb7a36e9200c30bc0858c1ba9da6c0dea"
+    },
+    {
+      "path": "scripts/test_worker_shared_default.py",
+      "sha256": "7b634ee34f372271db3ecdf985f4059c3e890e9b48f658238c562187283340c8"
+    },
+    {
+      "path": "scripts/test_measurement_lifecycle.py",
+      "sha256": "c94380f521dc57b6b9b78f92bf1ebb4fa3c0a89357aea71efaa83b4c4b3109a4"
+    },
+    {
+      "path": "assets/orca-terminal-source-contract-1.4.269.json",
+      "sha256": "9cc63c9ba97a8adc773058bd58ec8a03325c46791952c76ab8bcd6983925dc61"
+    },
+    {
+      "path": "scripts/test_semantic_settings.py",
+      "sha256": "1ab96987792827095e9642b077b305bc874edd567fd6e9c1dc06653109893846"
+    },
+    {
+      "path": "scripts/catalog_test_support.py",
+      "sha256": "b081c3525e876126aa2965be36ed88019d138b7b6c203b364201e3c1526f50b8"
     }
   ],
   "adoptions": [
+    {
+      "source": "Orca v1.4.269 stable release (af41be458dc02c2710502586198d6d9acf83d389) and matching 1.4.268 host guides",
+      "disposition": "adapted",
+      "reason": "Use Run-owner Task creation, ready-list readback, and checked launch of existing Tasks for dependencies. Observe the Task graph in an explicit read-only local view; keep portable plans and evidence replay independent of Orca. Match the installed host guide separately from the latest release."
+    },
     {
       "source": "Orca upstream skill and bundled runtime documents",
       "disposition": "adapted",

@@ -97,10 +97,27 @@ def validate_profile_document(document):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['validate']); parser.add_argument('profile')
+    parser.add_argument('command', choices=['validate', 'compare']); parser.add_argument('profile')
+    parser.add_argument('reviewed', nargs='?', help='accepted profile to compare with the candidate')
     args = parser.parse_args()
+    if (args.command == 'compare') != (args.reviewed is not None):
+        parser.error('compare requires a candidate profile and a reviewed profile')
     try:
-        validate_profile_document(load_json(args.profile)); print(json.dumps({'status':'valid'}))
+        candidate = validate_profile_document(load_json(args.profile))
+        if args.reviewed is not None:
+            reviewed = validate_profile_document(load_json(args.reviewed))
+            actual, expected = (
+                {row['id']: {**row, 'depends_on': sorted(row['depends_on'])} for row in doc['units']}
+                for doc in (candidate, reviewed)
+            )
+            added, removed = sorted(actual.keys() - expected.keys()), sorted(expected.keys() - actual.keys())
+            changed = {uid: sorted(key for key in expected[uid] if actual[uid][key] != expected[uid][key])
+                       for uid in sorted(actual.keys() & expected.keys()) if actual[uid] != expected[uid]}
+            match = not (added or removed or changed)
+            print(json.dumps(dict(status='match' if match else 'mismatch', added=added, removed=removed,
+                                  changed=changed, launch_authorized=False)))
+            return 0 if match else 1
+        print(json.dumps({'status':'valid'}))
     except (ProfileError, OSError, ValueError) as exc:
         print(json.dumps({'status':'error','code':getattr(exc,'code','INVALID_JSON'),'detail':str(exc)})); return 1
     return 0

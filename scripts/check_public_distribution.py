@@ -146,12 +146,13 @@ def run_checks(root: Path = ROOT) -> dict[str, object]:
                'UV_OFFLINE': '1', 'UV_PYTHON_DOWNLOADS': 'never', 'PIP_NO_INDEX': '1',
                'LANG': 'C.UTF-8', 'TERM': 'xterm-256color'}
         script_dir = root / 'skills/company-orchestration/scripts'
+        # The full runtime suite can take more than ten minutes on a busy host.
         commands = [
-            ([sys.executable, '-E', '-s', '-B', '-c', UNITTEST_PROGRAM], script_dir),
-            ([sys.executable, '-E', '-s', '-B', str(script_dir / 'policy_manifest.py'), 'check'], root),
+            ([sys.executable, '-E', '-s', '-B', '-c', UNITTEST_PROGRAM], script_dir, 900),
+            ([sys.executable, '-E', '-s', '-B', str(script_dir / 'policy_manifest.py'), 'check'], root, 300),
         ]
-        for command, cwd in commands:
-            result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=300)
+        for command, cwd, timeout in commands:
+            result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, timeout=timeout)
             sys.stdout.write(result.stdout)
             sys.stderr.write(result.stderr)
             results.append({'command': command, 'exit': result.returncode})

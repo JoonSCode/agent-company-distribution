@@ -25,11 +25,12 @@ VERSION = 2
 ADAPTER = 'orca-local-terminal/v2'
 SOURCE_CONTRACT = Path(__file__).resolve().parent.parent / 'assets/orca-terminal-source-contract.json'
 SOURCE_CONTRACT_268 = SOURCE_CONTRACT.with_name('orca-terminal-source-contract-1.4.268.json')
-SQLITE_HOST = '1.4.268'
+SOURCE_CONTRACT_269 = SOURCE_CONTRACT.with_name('orca-terminal-source-contract-1.4.269.json')
+SQLITE_HOSTS = {'1.4.268': SOURCE_CONTRACT_268, '1.4.269': SOURCE_CONTRACT_269}
 
 
 def capture_settings(settings_path, config, app_version):
-    if app_version != SQLITE_HOST:
+    if app_version not in SQLITE_HOSTS:
         settings = decode(settings_path.read_bytes())['settings']
         flags = {k: settings.get(k) for k in ('experimentalNativeChat', 'experimentalStructuredNativeChat',
                   'openAgentTabsInChatByDefault', 'agentStatusHooksEnabled', 'tabAutoGenerateTitle')}
@@ -65,7 +66,7 @@ def capture_settings(settings_path, config, app_version):
 
 
 def hook_entries(path, app_version, pane=None):
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         require(path.name == 'last-status.db' and not os.path.lexists(path.with_suffix('.json')),
                 'SQLite hook-store authority required')
         with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as db:
@@ -108,9 +109,9 @@ def collector_probe(config, executable):
             and status.get('runtime', {}).get('state') == 'ready', 'ready local runtime required')
     rt = status['runtime']
     app_version = rt.get('appVersion')
-    require(app_version in ('1.4.245', SQLITE_HOST),
+    require(app_version == '1.4.245' or app_version in SQLITE_HOSTS,
             'unsupported host version: review exact resolver, hook serializer and worker-stop contract')
-    contract_data = (SOURCE_CONTRACT_268 if app_version == SQLITE_HOST else SOURCE_CONTRACT).read_bytes()
+    contract_data = SQLITE_HOSTS.get(app_version, SOURCE_CONTRACT).read_bytes()
     contract = decode(contract_data)
     require(app_version == contract['app_version'], 'host source contract version differs')
     require({'orchestration.contract.v1', 'orchestration.worker-stop-verdict.v1'}
@@ -121,7 +122,7 @@ def collector_probe(config, executable):
             and codex[0].get('state') == 'installed' and codex[0].get('managedHooksPresent') is True,
             'Codex managed hook capture is unavailable; enable/repair host hooks before launch')
     source_path = Path(config['host_source']).resolve()
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         source_sha = digest(source_path.read_bytes())
         require(source_path.name == contract['source_name'] and source_sha == contract['observed_full_sha256'],
                 'unsupported host source contract: exact resolver/serializer/scoped stop requires review')
@@ -136,9 +137,10 @@ def collector_probe(config, executable):
         source_sha = digest(code.encode())
     flags = capture_settings(Path(hook_status['settingsPath']), config, app_version)
     title_evidence = {}
-    if app_version == SQLITE_HOST and flags['tabAutoGenerateTitle']:
+    if app_version in SQLITE_HOSTS and flags['tabAutoGenerateTitle']:
         # The main-process layout handler and desktop store both format existing text.
-        title = contract['title_renderer']
+        title = contract.get('title_renderer')
+        require(title is not None, 'unsupported automatic title implementation for this exact host')
         out = source_path.parent.parent.parent
         title_files = {'title_app_asar_sha256': (out.parent.parent / 'app.asar', contract['title_app_asar_sha256']),
                        'title_renderer_sha256': (out / title['path'], title['sha256'])}
@@ -155,7 +157,7 @@ def collector_probe(config, executable):
     samples = [e for e in entries if e.get('providerSession', {}).get('key') == 'session_id'
                and e['providerSession'].get('id') == config['sample_session']]
     require(len(samples) == 1, 'explicit host-named historical sample required (not a LIVE dispatch)')
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         require(local_codex_hook(samples[0]), 'local Codex terminal sample required')
     sample_source = Path(samples[0]['providerSession']['transcriptPath']).resolve()
     sha = digest(sample_source.read_bytes())
@@ -166,7 +168,7 @@ def collector_probe(config, executable):
     require(isinstance(rt.get('runtimeId'), str) and rt['runtimeId'], 'host runtime identity unavailable')
     return {'runtime': rt['runtimeId'], 'app_version': rt['appVersion'],
             'source_contract_sha256': digest(contract_data),
-            'host_source_sha256': source_sha, 'hook_schema': 202 if app_version == SQLITE_HOST else 2,
+            'host_source_sha256': source_sha, 'hook_schema': 202 if app_version in SQLITE_HOSTS else 2,
             'capture_settings': flags, 'codex_hooks': 'installed',
             'sample': {'session': config['sample_session'], 'turn': config['sample_turn'],
                        'source': str(sample_source), 'sha256': sha},
@@ -270,7 +272,7 @@ def runtime(executable, app_version=None):
 
 
 def worker_show(executable, dispatch_id, app_version):
-    flags = ['--full'] if app_version == SQLITE_HOST else []
+    flags = ['--full'] if app_version in SQLITE_HOSTS else []
     return host(executable, 'orchestration', 'worker-show', '--dispatch', dispatch_id, *flags)
 
 
@@ -292,7 +294,7 @@ def require_fresh_codex_worker(view, runtime_id):
             'fresh owned local Codex terminal worker required')
 
 
-def require_268_start(start, view):
+def require_sqlite_start(start, view):
     from run_completion import start_incarnation_matches
 
     mode = start['mode']
@@ -318,10 +320,10 @@ def exact_source(config, executable, dispatch_id, after=None, *,
     dispatch = first['dispatch']
     require(dispatch['id'] == dispatch_id and first['observation']['exactWorker'] is True
             and first['observation']['status'] == 'live', 'exact live worker required')
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         require_fresh_codex_worker(first, runtime_id)
         if accepted_start is not None:
-            require_268_start(accepted_start, first)
+            require_sqlite_start(accepted_start, first)
     database = Path(config['database']).resolve()
     with closing(sqlite3.connect(database.as_uri() + '?mode=ro', uri=True)) as db:
         db.row_factory = sqlite3.Row
@@ -343,7 +345,7 @@ def exact_source(config, executable, dispatch_id, after=None, *,
     entry = matches[0]
     require(entry.get('connectionId') is None and not entry.get('providerSessionOnly')
             and not entry.get('structuredHost'), 'local terminal hook required')
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         require(local_codex_hook(entry), 'local Codex terminal hook required')
     require(type(entry['receivedAt']) is int, 'host hook timestamp must be milliseconds')
     observed = entry['receivedAt'] / 1000
@@ -354,7 +356,7 @@ def exact_source(config, executable, dispatch_id, after=None, *,
     require(provider['key'] == 'session_id' and provider['id']
             and entry['hostTurn']['owner'] == 'codex:' + provider['id'], 'Codex terminal session required')
     turn_key = entry['hostTurn']['currentTurnKey']
-    seeded = (app_version == SQLITE_HOST and accepted_start is not None and after is not None
+    seeded = (app_version in SQLITE_HOSTS and accepted_start is not None and after is not None
               and turn_key == 'seed' and entry.get('hookEventName') == 'SessionStart'
               and dispatch['status'] == 'completed')
     require(seeded or (isinstance(turn_key, str) and turn_key.startswith('turn:') and len(turn_key) > 5),
@@ -382,10 +384,10 @@ def exact_source(config, executable, dispatch_id, after=None, *,
     second = worker_show(executable, dispatch_id, app_version)
     require(second['dispatch'] == dispatch and second['observation']['exactWorker'] is True
             and second['observation']['status'] == 'live', 'worker changed during capture')
-    if app_version == SQLITE_HOST:
+    if app_version in SQLITE_HOSTS:
         require_fresh_codex_worker(second, runtime_id)
         if accepted_start is not None:
-            require_268_start(accepted_start, second)
+            require_sqlite_start(accepted_start, second)
     return {'dispatch': dispatch_id, 'task': row['task_id'], 'run': row['run_id'],
             'pane': row['assignee_pane_key'], 'process': row['process_incarnation'],
             'launch_token_sha256': row['launch_token_hash'], 'session': provider['id'],
@@ -513,6 +515,36 @@ def prepared(record, base):
     return root, p
 
 
+def require_deadline(preparation):
+    checked_at = datetime.now(timezone.utc).timestamp()
+    created_at = timestamp(preparation['created_at'])
+    require(checked_at <= created_at + preparation['limits']['deadline_seconds'], 'prepared deadline expired')
+    if 'host_catalog' in preparation:
+        require(created_at <= checked_at, 'catalog preparation is in the future')
+
+
+def catalog_preparation(record, preparation, decision, decision_hash, base):
+    """Resolve the original observation only for a decision in this prepared Run."""
+    if 'host_catalog' not in preparation:
+        return None
+    from host_model_catalog import inventory_reference
+    snapshot = preparation['host_catalog']
+    binding = decision['binding']
+    goal = preparation['frozen']['goal_binding']
+    require(record['run'] == goal['id'] == binding['run'] and
+            all(binding[key] == goal[key] for key in ('scope', 'revision')), 'catalog Run/scope differs')
+    require(any(a['decision_sha256'] == decision_hash and a['spec_sha256'] == binding['spec_sha256']
+                for a in preparation['attempts']), 'catalog reuse requires the prepared decision/spec')
+    source = decision['evidence'][inventory_reference(decision)]
+    require(source.get('source') == 'orca_model_catalog' and source.get('kind') == 'host' and
+            str((base / source['file']).resolve()) == snapshot['manifest'] and
+            source['sha256'] == snapshot['sha256'] and binding['host_catalog'] == snapshot['context'] and
+            decision.get('label') == 'real' and decision['selected']['route'] == 'codex',
+            'catalog differs from the prepared host observation')
+    return {'run': goal['id'], 'prepare_sha256': record['measurement']['prepare_sha256'],
+            'prepared_at': preparation['created_at']}
+
+
 def prepare(record_path, plan_path, root, executable, probe_dispatch=None, enrollment=None):
     require(enrollment is not None, 'explicit storage enrollment required')
     from native_operations import pinned
@@ -543,11 +575,31 @@ def _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollmen
     require(probe_dispatch is None, '--probe-dispatch is obsolete: readiness must not depend on active work')
     bridge = collector_probe(plan['collector'], executable)
     runtime_id = bridge['runtime']
+    created_at = None
+    catalog = {}
+    if 'host_catalog' in plan:
+        from company_config import resolve
+        from host_model_catalog import EXPLICIT_HOST_VERSION, observed_catalog, timestamp as catalog_time
+        snapshot = plan['host_catalog']
+        require(isinstance(snapshot, dict) and set(snapshot) == {'manifest', 'sha256', 'context'},
+                'exact host catalog preparation fields required')
+        manifest = Path(snapshot['manifest'])
+        require(manifest.is_absolute() and manifest == manifest.resolve(strict=True) and
+                str(manifest) == snapshot['manifest'], 'canonical catalog manifest path required')
+        require(record.get('run') == frozen['goal_binding']['id'], 'catalog preparation requires the enrolled Run')
+        require(bridge['app_version'] == EXPLICIT_HOST_VERSION, 'unsupported catalog preparation host')
+        created_at = now()
+        metadata = observed_catalog({'file': str(manifest), 'sha256': snapshot['sha256']},
+                                    snapshot['context'], record_path.parent, resolve(),
+                                    now=catalog_time(created_at))
+        require(metadata['app_version'] == EXPLICIT_HOST_VERSION and metadata['runtime_id'] == runtime_id,
+                'catalog preparation runtime differs from collector')
+        catalog['host_catalog'] = snapshot
     root.mkdir(mode=0o700, parents=False, exist_ok=False)
     probe = os.urandom(32)
     write_once(root / 'capture-probe', probe, enrollment, capability)
     require((root / 'capture-probe').read_bytes() == probe, 'capture readback failed')
-    value = {'version': VERSION, 'adapter': ADAPTER, 'created_at': now(), 'runtime': runtime_id,
+    value = {'version': VERSION, 'adapter': ADAPTER, 'created_at': created_at or now(), 'runtime': runtime_id, **catalog,
              'collector': plan['collector'], 'readiness': bridge, 'frozen': frozen,
              'attempts': plan['attempts'], 'limits': limits, 'future_provider_ids': 'unobserved',
              'capture_probe_sha256': digest(probe), 'storage_enrollment': enrollment}
@@ -559,6 +611,7 @@ def _prepare(record_path, plan_path, root, executable, probe_dispatch, enrollmen
 class Launch:
     def __init__(self, args, record, base, capability):
         self.root, self.prep = prepared(record, base)
+        self.prepare_sha256 = record['measurement']['prepare_sha256']
         self.args = args
         self.capability = capability
         self.attempt = next((a for a in self.prep['attempts'] if a['id'] == args.measurement_attempt), None)
@@ -567,16 +620,18 @@ class Launch:
 
     def check(self):
         args, p = self.args, self.prep
-        decision = decode(args.decision.read_bytes())
+        data = args.decision.read_bytes()
+        decision = decode(data)
         require(decision.get('constraints', {}).get('billing') == 'subscription'
                 and args.declared_billing != 'paid_api', 'v2 forbids paid billing/fallback')
         require(decision.get('selected', {}).get('route') == 'codex', 'v2 requires the Codex route')
         require(not any((args.terminal, args.reuse_dispatch, args.origin_receipt)), 'v2 terminal reuse unsupported')
-        require(digest(args.decision.read_bytes()) == self.attempt['decision_sha256'], 'prepared decision changed')
+        require(digest(data) == self.attempt['decision_sha256'], 'prepared decision changed')
         require(args.spec is None or digest(args.spec.encode()) == self.attempt['spec_sha256'], 'prepared spec changed')
+        if args.task:
+            require(decision['binding'].get('spec_sha256') == self.attempt['spec_sha256'], 'prepared Task spec changed')
         require(runtime(args.orca) == p['runtime'], 'runtime changed since preparation')
-        require(datetime.now(timezone.utc).timestamp() <= timestamp(p['created_at']) + p['limits']['deadline_seconds'],
-                'prepared deadline expired')
+        require_deadline(p)
         history = events(self.root)
         require(not any(e['kind'] == 'halt' for e in history), 'canary halted; no further starts')
         require(not any(e['kind'] == 'settlement' for e in history), 'already settled')
@@ -605,7 +660,7 @@ class Launch:
         # Access/capability only, never require an unrelated live dispatch.
         probe = collector_probe(p['collector'], args.orca)
         require(probe == p['readiness'], 'collector contract/source changed since preparation')
-        if probe['app_version'] == SQLITE_HOST:
+        if probe['app_version'] in SQLITE_HOSTS:
             require(args.worktree not in ('new-child', 'new-top-level'),
                     'v2 requires an existing local worktree')
             worktree = host(args.orca, 'worktree', 'show', '--worktree', args.worktree)['worktree']
@@ -614,8 +669,20 @@ class Launch:
 
     def pending(self, command, receipt):
         require(digest(self.args.decision.read_bytes()) == self.attempt['decision_sha256'], 'decision changed before invocation')
+        data = receipt.read_bytes()
+        checked = decode(data)['receipt']
+        planned = self.attempt['decision_sha256']
+        effective = checked['decision_sha256']
+        refresh = checked.get('inventory_reprepare')
+        if refresh is None:
+            require(effective == planned, 'unplanned effective decision')
+        else:
+            require(self.args.reprepare_inventory is not None and refresh['original_decision_sha256'] == planned
+                    and refresh['decision_sha256'] == effective and refresh['refresh_count'] == 1,
+                    'inventory refresh disagrees with prepared decision')
         return append(self.root, 'pending', {'attempt': self.attempt['id'], 'argv': command,
-                      'result': str(self.args.result.resolve()), 'receipt_sha256': digest(receipt.read_bytes()),
+                      'result': str(self.args.result.resolve()), 'receipt_sha256': digest(data),
+                      'planned_decision_sha256': planned, 'effective_decision_sha256': effective,
                       'prepare_sha256': digest((self.root / 'prepare.json').read_bytes())}, self.capability)
 
     def bind(self):
@@ -648,6 +715,9 @@ def bind(root, p, attempt, executable, capability=None):
     require(saved['launch_state'] == 'observed' and saved['readback_status'] == 'observed'
             and saved['prelaunch_receipt_sha256'] == pending['value']['receipt_sha256'],
             'accepted host receipt unavailable; unknown start cannot be retried')
+    if 'effective_decision_sha256' in pending['value']:
+        require(saved['decision_sha256'] == pending['value']['effective_decision_sha256'],
+                'host receipt effective decision changed')
     start = decode(saved['stdout'])['result']
     app_version = p['readiness']['app_version']
     require(runtime(executable, app_version) == p['runtime'], 'runtime changed')
@@ -753,6 +823,10 @@ def observed_union(root, p, history):
                 and digest(encoded(saved)) == binding['host_receipt_sha256']
                 and saved['launch_state'] == 'observed' and saved['readback_status'] == 'observed',
                 'invocation/host receipt binding changed')
+        if 'effective_decision_sha256' in invocation:
+            require(invocation['planned_decision_sha256'] == roster[final['attempt']]['decision_sha256']
+                    and invocation['effective_decision_sha256'] == saved['decision_sha256'],
+                    'measured decision provenance changed')
         require(start['dispatchId'] == bridge['dispatch'] == dispatch['id']
                 and start['taskId'] == bridge['task'] == dispatch['taskId']
                 and start['runId'] == bridge['run'] == dispatch['runId']

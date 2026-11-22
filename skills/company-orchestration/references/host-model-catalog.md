@@ -7,7 +7,7 @@ selector, profile/pin checks and checked launcher. See the
 for the short user request and stop rules. Source availability and candidate live
 observations do not establish publication or installed activation; check the
 release's installed identity separately. The reviewed local builds are Orca
-1.4.245, 1.4.261, 1.4.263 and 1.4.268.
+1.4.245, 1.4.261, 1.4.263, 1.4.268 and explicitly targeted 1.4.269.
 
 Preparation is collector → semantic helper → real record/decision →
 `record_check.py routing-check` → checked launcher. The helpers do not create
@@ -85,21 +85,56 @@ existing auth and source fences. Orca 1.4.245, 1.4.261 and 1.4.263 use status an
 one catalog request, with one follow-up if the host reports a listing in progress.
 Normal host metadata probing on those builds may prepare its own home/cache.
 
-On 1.4.268 the collector requires the coherent, model-efforts and saved-only
+On 1.4.268 and 1.4.269 the collector requires the coherent, model-efforts and saved-only
 catalog capabilities. It uses one `savedOnly: true` request and leaves listing
 to Orca. A live 1.4.268 listing returned progress and stale rows even on the
 `waitForListing` follow-up. After Orca finished, the saved-only read returned a
 fresh configured catalog for the exact worktree. The Python checker requires
 probe origin, `modelsDifferByWorkspace: true` and
-`listingNamesConfiguredModel: true` on that build. Its Codex resolver can
+`listingNamesConfiguredModel: true` on those builds. Their Codex resolvers can
 otherwise return a broader catalog that omits the verified configured model.
-The checker also requires known model efforts, a settled response and a
-`fetchedAt` no more than five minutes old.
+The checker also requires known model efforts and a settled response.
+Preparation and ordinary launches require a `fetchedAt` no more than five
+minutes old.
 
 If Orca has no fresh observation for that worktree, stop preparation or launch.
 Let Orca complete an authorized model listing in that workspace before collecting
 again into a fresh directory. The saved-only collector starts no listing and has
 no fallback or retry on an unknown, stale or partial result.
+
+### Explicit macOS host on 1.4.269
+
+Pass the canonical absolute path to the signed Orca app and to the running
+host's user-data directory as the last two arguments. Use the exact worktree
+selector issued by that host.
+
+```sh
+node skills/company-orchestration/scripts/host_model_catalog.cjs \
+  "$PRIVATE_UNUSED_DIRECTORY" "$EXACT_HOST_WORKTREE_ID" "$ORCA_APP" "$ORCA_USER_DATA"
+python3.13 -B skills/company-orchestration/scripts/semantic_settings.py \
+  --database "$ORCA_USER_DATA/profiles/$EXACT_ACTIVE_PROFILE_ID/profile-state.db" \
+  --worktree "$EXACT_HOST_WORKTREE_ID" --app-version 1.4.269 --user-data "$ORCA_USER_DATA"
+```
+
+The collector verifies the Orca signature and app version before loading the
+packaged Node modules. It uses the selected user-data directory for local RPC
+metadata and checks ready status, runtime and installation identity before the
+saved catalog request. The manifest pins both paths and the signed resource
+seal hash. Python binds the active profile database and required external
+observations to that same directory. System Codex config and auth observations
+remain required. Include any additional launch-relevant external files in the
+decision. No shared model-cache file is required.
+
+The signed 1.4.269 packaged source handles the exact-worktree `savedOnly`
+request without demanding a listing. The workspace flags and `fetchedAt` came
+from a settled live response. Its rows omit `effortsKnown` when efforts are known.
+The checked result requires nonempty effort lists and rejects explicit unknown
+efforts. In ordinary checks, freshness refers to the provider observation even
+when Orca answers the RPC immediately or serves the same stored response again.
+The [prepared Run opt-in](measurement-lifecycle.md#reuse-an-exact-workspace-catalog-during-one-run)
+admits unchanged contents from the same host with a fresh saved-only receipt
+and a provider timestamp at least as recent as the prepared observation.
+Leave listing refresh to the authorized Orca operator.
 
 In the existing real routing decision, set the inventory evidence `source` to
 `orca_model_catalog`, its `file` to that directory's `manifest.json`, and pin that
@@ -145,8 +180,8 @@ the profile index, canonical `.codex/config.toml` and `auth.json`, runtime-home
 config/auth, and hook trust policy. These required external pins cannot be dropped
 or relabeled in semantic mode. Raw DB/WAL duplicate pins are rejected, not ignored.
 On older reviewed builds, no kind (or `kind: file`) retains the legacy
-byte/absence behavior. The 1.4.268 catalog requires the 1.4.268 semantic digest
-and all external config/auth observations. Unknown kinds deny. Old decisions
+byte/absence behavior. The 1.4.268 and 1.4.269 catalogs require their respective
+semantic digests and all external config/auth observations. Unknown kinds deny. Old decisions
 retain their original hashes.
 
 The reader opens that exact active profile DB with `mode=ro`, never `immutable=1`,
@@ -186,10 +221,17 @@ fix does not retrospectively label the prior reviewer denial harmless.
 
 The launch command is the existing `routing_launch.py` with the exact same
 `--worktree`, prepared decision/record, actual sender/spec and fresh receipt/result
-paths. No extra flag or `--for-launch` metadata approval is needed. This narrow
-opt-in supports a fresh, non-measurement `--spec` launch in an existing worktree;
-new worktrees, remote environments, reuse and retries use their legacy contracts.
-The installed Orca CLI is required, and remote/dev environment selectors are denied.
+paths. Older catalog versions support a fresh, non-measurement `--spec` launch
+with the installed Orca CLI. On 1.4.269 pass
+`--orca "$ORCA_APP/Contents/Resources/bin/orca"` with
+`ORCA_USER_DATA_PATH="$ORCA_USER_DATA"` in the launcher environment. If inherited
+`ORCA_CLI_COMMAND` is set, it must name that same executable. The selected
+directory and signed CLI also bind Task reads, measured launch and readback to
+the prepared host. An explicit 1.4.269 host also supports a fresh existing
+`--task` with `--run` and `--measurement-attempt` under the
+[prepared v2 lifecycle](measurement-lifecycle.md), including Task dependencies
+and prerequisite artifact proofs. The catalog path excludes remote and
+development selectors, new worktrees, terminal reuse, retries and inventory reprepare.
 
 Before starting, the launcher collects a new private `.catalog-refresh` snapshot,
 checks the same runtime/worktree/model/effort and all returned metadata (except

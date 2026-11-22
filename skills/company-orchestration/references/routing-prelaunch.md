@@ -11,10 +11,10 @@ reference when both are present. Comparison inventory evidence includes
 `candidate_inventory`, a list of route, family, model and effort objects.
 Legacy real evidence pins the current host's
 canonical Codex home's `models_cache.json`. The explicit
-[host-catalog opt-in](host-model-catalog.md) instead pins fresh exact-worktree
-metadata for local Orca 1.4.245, 1.4.261, 1.4.263 or 1.4.268 through the
-same checker and checked launcher. It uses the host catalog independently of the
-shared cache. On 1.4.268 it requires the verified saved worktree catalog and
+[host-catalog opt-in](host-model-catalog.md) pins fresh exact-worktree metadata
+for reviewed local Orca versions through the same checker and checked launcher.
+It uses the host catalog independently of the shared cache. On 1.4.268 and
+explicitly targeted 1.4.269 it requires the verified saved worktree catalog and
 matching semantic settings observations. For an explicit comparison of an unpinned Codex selection, the checker
 independently intersects its models and supported efforts with the packaged
 table and requires each non-excluded known model at the selected effort and
@@ -92,6 +92,22 @@ current host Task and its exact UTF-8 specification. A first dispatch uses a
 planned binding and a current record attempt `planned:<id>`. A retry additionally
 uses `--retry-of <dispatch>`; the record must bind that settled failed attempt,
 and the current host Task, latest Dispatch and worker observation must agree.
+For a Task with prerequisites, supply `binding.task_deps` as the exact list of
+Orca Task IDs from the reviewed plan's unit-to-Task mapping. Use those IDs in
+the prepared profile's `depends_on` as well. Before calling
+`worker-start`, the launcher verifies the full host graph, including a valid
+`deps` field on every Task. It compares the dependency set and requires each
+predecessor's host status to be `completed`. An explicit empty list declares a
+Task with no predecessors. A host completion can also be recorded by a
+coordinator. For a successor that consumes an artifact, declare
+`binding.task_artifacts` as a mapping from each required direct predecessor Task
+ID to its exact absolute output path. The launcher checks the completed Task's
+worker report against the Run mailbox's successful `worker_done` and the
+predecessor's current completed Dispatch on the same runtime. It verifies the
+expected nonempty regular file and records its SHA-256 and exact message and
+Dispatch IDs in the launch receipt. A missing or stale result blocks the launch.
+Status-only edges need no artifact entry. Independent acceptance still has its
+own criteria.
 Read-only host checks precede the single worker-start call. Pass placement again. The launcher selects one executable using
 `--orca`, then `ORCA_CLI_COMMAND`, then the existing development/platform
 default; the value is a single executable, not shell syntax. All probes and the
@@ -176,8 +192,9 @@ previously running Codex session loaded the new hook.
 
 Raw inventory SHA-256 remains mandatory. A byte change alone never proves that
 selection evidence is equivalent. Default launch still denies any hash drift.
-For a **new, non-measurement `--spec` launch only**, the operator may explicitly
-supply `--reprepare-inventory /private/preparation-inventory.json`. At preparation,
+For a fresh `--spec` launch or a prepared v2 measured `--task` in an existing
+local worktree, the operator may explicitly supply
+`--reprepare-inventory /private/preparation-inventory.json`. At preparation,
 copy the complete canonical cache bytes into that private snapshot and bind the
 decision's inventory SHA-256 to those exact bytes. Do not rebuild a snapshot from
 model names or candidate projections. Keep the original decision and failed
@@ -187,10 +204,12 @@ unknown, not harmless; this option cannot repair such an old decision.
 This opt-in is deliberately narrower than arbitrary cache refresh:
 
 - An exclusive, unused result/receipt pair is required. The current launcher must
-  own its result lock and prove `not_started` before any host call. Existing
+  own its result lock and prove `not_started` before refreshing. Existing
   results (including a previous `not_started` denial), pending/unknown outcomes,
-  Task retries, terminal reuse and measurement lifecycles are not accepted by
-  this path. A new filename does not establish absence of an earlier host start;
+  Task retries and terminal reuse are excluded. A measured Task must use the
+  original prepared Run, attempt and spec and pass the live Task dependency and
+  measurement gates. Its ledger retains both the prepared and effective decision
+  hashes. A new filename does not establish absence of an earlier host start;
   reconcile any earlier attempt authoritatively before preparing new work.
 - Only the precise inventory-hash denial is eligible. The saved full snapshot
   must match the original pin. Apart from `fetched_at`, **every JSON value** must
@@ -246,6 +265,10 @@ local-terminal support, not an unconditional allow. Unsupported/missing host
 identity, Hermes/structured/resumed sources, unknown starts and v1 launches stay
 blocked. Add `--measurement-attempt` to the ordinary checked launcher; no existing
 pin/resource/model/permission gate is bypassed.
+The explicitly targeted 1.4.269 catalog supports a fresh existing Task with this
+lifecycle. Its launch refresh uses the same packaged app and user-data path
+as preparation, and the ordinary Task, dependency and prerequisite artifact
+checks still apply.
 
 ### Optional resource declaration and capacity requirement
 
@@ -270,6 +293,14 @@ host launch authorization. Direct host calls are outside this checked launcher.
 ## Profile preparation and decision binding
 
 ### Read-only reviewed DAG preview
+
+Before mapping approved units to Orca Tasks, run
+`python3.13 -B scripts/worker_profile.py compare candidate.json reviewed.json`.
+This portable check identifies added and removed units and changed fields,
+including missing prerequisites and changed deliverables or done criteria.
+Unit and prerequisite array order do not change the verdict. The reviewed
+profile is an explicit operator input. This check does not decide whether a
+proposed split is good or grant launch authority.
 
 `scripts/routing_prepare.py preview --request REQUEST.json
 --expect-request-sha256 SHA256` projects an already reviewed full profile DAG
@@ -377,6 +408,22 @@ supported. Changes to the original external file after preparation do not alter
 the embedded snapshot; prepare again to incorporate them. For an explicit
 current-task pin, pass `--pins pins.json`, a map from that unit id to its exact
 route/model/effort; the existing evidence-bound user-pin checks still apply.
+
+For a known Codex listing, pass `--codex-availability models.json` to
+`profile-prepare` or `worker_route.py prepare`. The JSON object maps exact model
+IDs to nonempty arrays of supported effort strings. For example,
+`{"gpt-6.1-terra":["low","medium"]}` permits those two Codex pairs. An empty
+object describes no listed Codex pair. Omit the option when availability is
+unknown. The table still supplies task fit and rank. Other providers keep their
+ordinary admission checks. An explicit pin must still be eligible and present
+when the input covers its route.
+
+`profile-prepare` emits a version 4 binding with the checked availability input
+embedded when this option is present. The checked launch recomputes the binding
+and matches the Codex pairs to the host inventory used for Codex runtime checks
+or price comparison. The input supplies eligibility evidence only. The ordinary
+authorization checks still apply. Calls without the option keep version 3
+bindings and their existing hashes.
 
 The packaged default table now has all ten families at three difficulties; the
 general example returns MATCH. See [routing evidence](worker-routing-evidence.md)

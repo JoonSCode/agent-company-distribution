@@ -5,10 +5,11 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
-from host_model_catalog import SAVED_ONLY_VERSION, strict_json
+from host_model_catalog import EXPLICIT_HOST_VERSION, SAVED_ONLY_VERSIONS, strict_json
 
 KIND = 'orca-profile-settings/v1'
 LEGACY_VERSION = '1.4.245'
+SETTINGS_VERSIONS = (LEGACY_VERSION, *SAVED_ONLY_VERSIONS)
 MAX_BYTES = 1024 * 1024
 COLUMNS = [('domain', 'TEXT', 1, 1), ('payload', 'TEXT', 1, 0),
            ('domain_version', 'INTEGER', 1, 0), ('revision', 'INTEGER', 1, 0),
@@ -24,16 +25,21 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False).encode()
 
 
-def authority(database):
+def authority(database, *, app_version=LEGACY_VERSION, user_data=None):
+    require(app_version in SETTINGS_VERSIONS, 'unreviewed settings observation version')
+    require((app_version == EXPLICIT_HOST_VERSION) == (user_data is not None),
+            'explicit catalog user-data directory required only for its reviewed version')
     path = Path(database)
-    app = Path.home() / 'Library/Application Support/Orca'
+    app = Path(user_data) if user_data is not None else Path.home() / 'Library/Application Support/Orca'
+    if user_data is not None:
+        require(app.is_absolute() and app.resolve(strict=True) == app and app.is_dir(),
+                'exact canonical local Orca user-data directory required')
     require(path.is_absolute() and path == path.resolve() and path.name == 'profile-state.db'
             and path.parent.parent == app / 'profiles', 'exact canonical local Orca profile database required')
     return path, app
 
 
-def external_files(database):
-    _, app = authority(database)
+def external_files(app):
     return [('config', app / 'orca-profile-index.json'),
             ('config', Path.home() / '.codex/config.toml'),
             ('config', app / 'codex-runtime-home' / 'home' / 'config.toml'),
@@ -42,13 +48,15 @@ def external_files(database):
             ('auth_policy', app / 'codex-hook-trust.json')]
 
 
-def observe(database, worktree, *, app_version=LEGACY_VERSION):
-    require(app_version in (LEGACY_VERSION, SAVED_ONLY_VERSION), 'unreviewed settings observation version')
-    path, app = authority(database)
+def observe(database, worktree, *, app_version=LEGACY_VERSION, user_data=None):
+    path, app = authority(database, app_version=app_version, user_data=user_data)
     require(isinstance(worktree, str) and worktree.startswith('id:') and '::/' in worktree,
             'exact worktree required')
     # Index remains a separate byte pin; ensure the DB is the selected profile.
-    index = strict_json((app / 'orca-profile-index.json').read_bytes())
+    index_path = app / 'orca-profile-index.json'
+    if user_data is not None:
+        require(index_path.resolve(strict=True) == index_path, 'explicit profile index path changed')
+    index = strict_json(index_path.read_bytes())
     require(index.get('schemaVersion') == 1 and index.get('activeProfileId') == path.parent.name,
             'profile selection mismatch')
     try:
@@ -82,27 +90,27 @@ def observe(database, worktree, *, app_version=LEGACY_VERSION):
     return {'kind': KIND, 'role': 'config', 'path': str(path), 'sha256': digest}
 
 
-def prepare(database, worktree, *, app_version=LEGACY_VERSION):
-    rows: list[dict] = [observe(database, worktree, app_version=app_version)]
-    for role, path in external_files(database):
+def prepare(database, worktree, *, app_version=LEGACY_VERSION, user_data=None):
+    rows = [observe(database, worktree, app_version=app_version, user_data=user_data)]
+    for role, path in external_files(Path(rows[0]['path']).parents[2]):
         rows.append({'role': role, 'path': str(path),
                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None})
     return rows
 
 
-def validate_rows(rows, worktree, *, app_version=LEGACY_VERSION):
+def validate_rows(rows, worktree, *, app_version=LEGACY_VERSION, user_data=None):
     semantic = [row for row in rows if row.get('kind') == KIND]
     require(len(semantic) == 1, 'exactly one semantic settings observation required')
     row = semantic[0]
     require(set(row) == {'kind', 'role', 'path', 'sha256'} and row['role'] == 'config',
             'invalid semantic settings observation')
-    path, _ = authority(row['path'])
-    required = set((role, str(p)) for role, p in external_files(path))
+    path, app = authority(row['path'], app_version=app_version, user_data=user_data)
+    required = {(role, str(p)) for role, p in external_files(app)}
     actual = set((r.get('role'), r.get('path')) for r in rows if r.get('kind') in (None, 'file'))
     require(required <= actual, 'required external config/auth observations missing')
     require(not any(r is not row and r.get('path') in (str(path), str(path)+'-wal', str(path)+'-shm') for r in rows),
             'do not byte-pin mutable database/WAL alongside semantic settings')
-    require(observe(path, worktree, app_version=app_version) == row,
+    require(observe(path, worktree, app_version=app_version, user_data=user_data) == row,
             'observed semantic settings changed; reprepare')
 
 
@@ -110,10 +118,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database', required=True)
     parser.add_argument('--worktree', required=True)
-    parser.add_argument('--app-version', choices=(LEGACY_VERSION, SAVED_ONLY_VERSION), default=LEGACY_VERSION)
+    parser.add_argument('--app-version', choices=SETTINGS_VERSIONS, default=LEGACY_VERSION)
+    parser.add_argument('--user-data', help='exact local user-data directory for 1.4.269')
     args = parser.parse_args()
     try:
-        print(json.dumps(prepare(args.database, args.worktree, app_version=args.app_version), indent=2))
+        print(json.dumps(prepare(args.database, args.worktree, app_version=args.app_version,
+                                 user_data=args.user_data), indent=2))
         return 0
     except (ValueError, OSError, TypeError, KeyError, RecursionError):
         print(json.dumps({'ok': False, 'error': 'semantic settings observation denied'}))

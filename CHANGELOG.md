@@ -1,5 +1,10 @@
 # Release notes
 
+## v0.2.11
+
+- Reuse verified host catalog observations within a measured Run, while keeping their observation times distinct.
+- Show current Orca Task and Dispatch information in the Run view when available.
+
 ## v0.2.10
 
 - Verify checked terminal reuse against the same Orca Run, worker process, and new Task and Dispatch.

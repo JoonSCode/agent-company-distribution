@@ -142,6 +142,8 @@ def source_rows(snapshot, selected, width, ascii=False):
              'input_pins': snapshot.get('input_pins'), 'context_provenance': snapshot.get('context_provenance'),
              'record_observation': snapshot.get('record_observation'),
              'overall_goal_acceptance': snapshot.get('overall_goal_acceptance')}
+    if 'orca_observation' in snapshot:
+        value['orca_observation'] = snapshot['orca_observation']
     return [part for line in json.dumps(value, ensure_ascii=ascii, indent=2).splitlines()
             for part in wide.wrap(graph.safe(line, ascii), width)]
 
@@ -249,8 +251,12 @@ def plan(snapshot, state, width, room, ascii=False):
             title = task.get('title')
             if title in (None, '', '?'): title = 'Title unknown' if ascii else '제목 미확인'
             title = graph.safe(title, ascii)
-            values = ['ID: ' + graph.safe(tid, ascii) + ' ', title, *graph.state_class(task, ascii),
-                      graph.model_label(task, ascii), graph.specialist_label(task, ascii)]
+            values = ['ID: ' + graph.safe(tid, ascii) + ' ', title]
+            if graph.standalone_run_task(task):
+                values.extend((graph.state_class(task, ascii)[0], *graph.launch_model_labels(task, ascii)))
+            else:
+                values.extend((*graph.state_class(task, ascii),
+                               graph.model_label(task, ascii), graph.specialist_label(task, ascii)))
             rows.extend(part for value in values for part in wide.wrap(value, width))
     elif state.screen == 'source':
         rows = source_rows(snapshot, state.selected, width, ascii)

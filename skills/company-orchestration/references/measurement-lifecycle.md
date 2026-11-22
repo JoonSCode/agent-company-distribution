@@ -3,7 +3,8 @@
 This is an opt-in local evidence contract, not a provider proxy, server-wide
 execution policy, watcher, or authenticated billing service. Version 1 evidence
 remains readable and is never migrated or rewritten. Its future-worker launch
-rejection remains in place. Worker table v2 and profile binding v3 are unchanged.
+rejection remains in place. Worker table v2 and existing profile binding v3
+remain supported.
 
 ## Boundary and authority
 
@@ -25,10 +26,11 @@ and the reviewed installed source named by `collector.host_source`.
 | --- | --- | --- |
 | 1.4.245 | Slices in `assets/orca-terminal-source-contract.json` | Legacy settings JSON and version-2 `agent-hooks/last-status.json` |
 | 1.4.268 | Exact runtime chunk and, when automatic titles are enabled, the main-process archive and desktop renderer in `assets/orca-terminal-source-contract-1.4.268.json` | Active `profile-state.db` settings domain v1 and `agent-hooks/last-status.db` schema 202 |
+| 1.4.269 | Exact signed macOS arm64 distribution chunk in `assets/orca-terminal-source-contract-1.4.269.json`, with automatic titles disabled | Same versioned SQLite settings and hook store |
 
-The 1.4.268 reader uses read-only SQLite reads with committed WAL data. It reads
-the active settings path from `agent hooks status`, checks SQLite authority,
-and requires the matching local orchestration and hook databases. A legacy hook
+The 1.4.268 and 1.4.269 readers use read-only SQLite reads with committed WAL data. They read
+the active settings path from `agent hooks status`, check SQLite authority,
+and require the matching local orchestration and hook databases. A legacy hook
 file beside the SQLite store makes the source ambiguous. Only persisted entry
 rows are used. Authority commitments and exit rows cannot supply a hook identity.
 Unknown builds, schemas and changed source pins require review.
@@ -38,15 +40,15 @@ An explicitly selected **historical** hook `sample_session` names its transcript
 and old launch hashes do not establish future identity, and its usage is never
 added to the experiment. No newest-file lookup occurs. `agent hooks status`
 confirms managed Codex hooks and names the settings store. The receipt retains
-only the capture flags. On 1.4.268 the Codex chat preference comes from
+only the capture flags. On both SQLite-backed releases the Codex chat preference comes from
 `nativeChatProviders.codex` or the global default surface when the provider
 preference is absent. Capture requires a local terminal preference and enabled
 Codex hooks. The reviewed 1.4.268 desktop title code derives tab labels from
 existing text with local formatting. If automatic titles are enabled, the
 adapter pins the reviewed main-process layout handler and renderer bytes before
 allowing preparation.
-1.4.245 keeps its existing automatic-title restriction. A 1.4.268 checked start
-requires an existing non-bare local worktree. A denial changes no settings.
+1.4.245 and 1.4.269 reject automatic titles. Both SQLite-backed releases require
+an existing non-bare local worktree. A denial changes no settings.
 Private capture bytes are actually written/read/fsynced (including directory
 fsync). The full capability/access probe is repeated immediately before launch.
 
@@ -54,12 +56,12 @@ fsync). The full capability/access probe is repeated immediately before launch.
 matching 64-hex launch-token hashes, task/run/pane/process and current runtime,
 fresh local terminal hook, native `turn:` key and exact `session_meta`.
 `receivedAt` is milliseconds, provider `key` is `session_id`, and `hostTurn.owner`
-is `codex:SESSION`. On 1.4.268 the start receipt must report Codex terminal
+is `codex:SESSION`. On both SQLite-backed releases the start receipt must report Codex terminal
 mode, one created agent terminal effect and a prompt process incarnation
 that matches the full worker readback for that terminal. That readback must identify the same runtime epoch, local terminal, and owned terminal resource
 for this exact Dispatch. The worker's stored placement must show a fresh
 Codex terminal without a structured preference. `worker-show --full` supplies
-these fields. First usage is not required. A completed 1.4.268 Dispatch with only a
+these fields. First usage is not required. A completed SQLite-backed Dispatch with only a
 launch-token-bound SessionStart hook may use the exact fresh session's single
 native start and matching completion after the pending timestamp. An active
 Dispatch still needs the hook's native turn key. Missing correspondence leaves
@@ -74,6 +76,33 @@ workers, Hermes turns, resumed sessions, multiple native turns, and nested model
 work are unsupported and fail closed. A completed source may bind after launch
 only through the preserved prelaunch/pending/start chain, not a backdated v1
 preflight. The active outer Hermes session must not be represented as Codex CLI.
+
+## Reuse an exact workspace catalog during one Run
+
+For an explicit local Orca 1.4.269 Task launch, optionally put `host_catalog` in
+the v2 plan. It contains `manifest` (the absolute canonical path to the saved-only
+collector's `manifest.json`), `sha256` (that manifest's byte hash), and `context`
+(the exact `binding.host_catalog` object used by the planned decisions). The
+record and each decision must name the same enrolled Run. Use the existing
+decision inventory evidence for the same manifest and freeze the exact decision
+and spec hashes before preparation.
+
+Preparation checks the original receipt and provider ages against the current
+clock. It retains the manifest pin and full context in the same `prepare.json`
+as the Run binding, attempt roster and deadline. After arming the record, use
+`routing-check DECISION --record RECORD` for a prelaunch check against that
+preparation. Each checked start still reads the exact local workspace through
+the saved-only catalog transport. Each new receipt must start at or after
+preparation and pass the current 300-second freshness check. Its provider
+`fetchedAt` may be older than 300 seconds and must be at least the original
+admitted `fetchedAt` and no later than the new response's receipt time. Each
+launch compares the full listing, the other result fields and the host against
+the prepared observation. Changed catalog contents or scope require a fresh
+preparation. The existing same-host, app signature, settings and auth,
+Task and artifact checks apply. The receipt retains the preparation hash/time,
+the current check time, and both manifest hashes. The Run deadline, one-start
+reservation, and usage limits still apply. Plans without a catalog keep the
+existing per-invocation freshness checks.
 
 ## Commands and durable state
 

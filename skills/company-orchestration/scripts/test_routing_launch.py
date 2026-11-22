@@ -336,6 +336,104 @@ class AgyLaunchTests(LaunchFixture):
 
 
 class LaunchTests(LaunchFixture):
+    def test_prerequisite_artifact_gate_rejects_manual_completion_and_stale_evidence(self):
+        for case in ('exact', 'manual', 'missing-mail', 'wrong-file', 'missing-file', 'stale-dispatch', 'other-runtime'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temp:
+                root = launch_root(temp)
+                artifact = root / 'output.md'
+                if case != 'missing-file':
+                    artifact.write_text('verified output\n')
+                path = str(artifact)
+                report = {'provenance': 'worker_report', 'outcome': 'succeeded', 'reportPath': path,
+                          'messageId': 'msg_a', 'reportedBy': 'term_a'}
+                task = {'id': 'b', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'verify',
+                        'status': 'pending', 'deps': ['a']}
+                first = {'id': 'a', 'run_id': 'goal-1', 'status': 'completed', 'deps': [],
+                         'result': None if case == 'manual' else json.dumps(report)}
+                payload = {'taskId': 'a', 'dispatchId': 'ctx_a', 'outcome': 'succeeded',
+                           'reportPath': path + ('-unexpected' if case == 'wrong-file' else '')}
+                mail = {'type': 'worker_done', 'id': 'msg_a', 'from_handle': 'term_a',
+                        'to_handle': 'run:goal-1', 'run_id': 'goal-1', 'payload': json.dumps(payload)}
+                dispatch = {'id': 'ctx_new' if case == 'stale-dispatch' else 'ctx_a', 'task_id': 'a',
+                            'run_id': 'goal-1', 'status': 'completed', 'assignee_handle': 'term_a'}
+                decision = {'binding': {'task': 'b', 'attempt': 'planned:b', 'planned': True, 'parent_task': None,
+                                        'run': 'goal-1', 'task_deps': ['a'], 'task_artifacts': {'a': path},
+                                        'spec_sha256': hashlib.sha256(b'verify').hexdigest()}}
+                (root / 'decision').write_text(json.dumps(decision))
+                (root / 'record').write_text(json.dumps({'goal': fixture_goal(), 'run': 'goal-1', 'tasks': [
+                    {'id': 'b', 'current_dispatch': 'planned:b'}]}))
+                args = [*enrollment_flags(root), '--decision', str(root/'decision'), '--record', str(root/'record'),
+                        '--receipt', str(root/'receipt'), '--result', str(root/'result'), '--from', 'sender',
+                        '--task', 'b', '--run', 'goal-1', '--worktree', 'current']
+                selected = {'route': 'codex', 'model': 'model', 'effort': 'high'}
+                checked = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {'selected': selected}}
+                results = {'task-list': {'runId': 'goal-1', 'count': 2, 'tasks': [first, task]},
+                           'inbox': {'messages': [] if case == 'missing-mail' else [mail]},
+                           'dispatch-show': {'dispatch': dispatch},
+                           'worker-start': {'runId': 'goal-1', 'taskId': 'b', 'dispatchId': 'ctx_b',
+                                            'launch': {'effective': {**selected, 'agent': 'codex'}}}}
+
+                def observe(argv, **kwargs):
+                    runtime = 'other' if case == 'other-runtime' and argv[2] == 'dispatch-show' else 'runtime'
+                    document = {'ok': True, '_meta': {'runtimeId': runtime}, 'result': results[argv[2]]}
+                    if argv[2] == 'worker-start':
+                        document['result']['processIncarnation'] = 'process'
+                    return SimpleNamespace(returncode=0, stdout=json.dumps(document), stderr='')
+
+                with patch('routing_launch.check_routing', return_value=checked), \
+                     patch('routing_launch.subprocess.run', side_effect=observe) as host, redirect_stdout(StringIO()):
+                    self.assertEqual(routing_launch.main(args), 0 if case == 'exact' else 1)
+                invokes = [call.args[0][2] for call in host.call_args_list]
+                if case == 'exact':
+                    self.assertEqual(invokes, ['task-list', 'inbox', 'dispatch-show', 'worker-start'])
+                    proof = json.loads((root/'receipt').read_text())['receipt']['task_artifacts']['a']
+                    self.assertEqual(proof, {'dispatch': 'ctx_a', 'message': 'msg_a', 'path': path,
+                                             'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest()})
+                else:
+                    self.assertNotIn('worker-start', invokes)
+                    self.assertFalse((root/'receipt').exists())
+
+    def test_existing_task_dependency_gate_precedes_worker_start(self):
+        for status, expected, host_deps, count, allowed in [
+            ('completed', ['a'], '["a"]', 2, True),
+            ('ready', ['a'], '["a"]', 2, False),
+            ('failed', ['a'], '["a"]', 2, False),
+            ('completed', [], '["a"]', 2, False),
+            ('completed', ['a'], '["a"]', 3, False),
+            ('completed', None, None, 2, False),
+            ('completed', None, '[]', 2, True),
+        ]:
+            with self.subTest(status=status, expected=expected, host_deps=host_deps, count=count), tempfile.TemporaryDirectory() as temp:
+                root = launch_root(temp)
+                task = {'id': 'b', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'verify',
+                        'status': 'pending'}
+                if host_deps is not None:
+                    task['deps'] = host_deps
+                first = {'id': 'a', 'run_id': 'goal-1', 'status': status, 'deps': '[]'}
+                listed = {'ok': True, 'result': {'runId': 'goal-1', 'count': count, 'tasks': [first, task]}}
+                decision = {'binding': {'task': 'b', 'attempt': 'planned:b', 'planned': True, 'parent_task': None,
+                                        'run': 'goal-1',
+                                        'spec_sha256': hashlib.sha256(b'verify').hexdigest()}}
+                if expected is not None:
+                    decision['binding']['task_deps'] = expected
+                (root / 'decision').write_text(json.dumps(decision))
+                (root / 'record').write_text(json.dumps({'goal': fixture_goal(), 'run': 'goal-1', 'tasks': [
+                    {'id': 'b', 'current_dispatch': 'planned:b'}]}))
+                args = [*enrollment_flags(root), '--decision', str(root/'decision'), '--record', str(root/'record'),
+                        '--receipt', str(root/'receipt'), '--result', str(root/'result'), '--from', 'sender',
+                        '--task', 'b', '--run', 'goal-1', '--worktree', 'current']
+                selected = {'route': 'codex', 'model': 'model', 'effort': 'high'}
+                check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {'selected': selected}}
+                launched = {'ok': True, 'result': {'runId': 'goal-1', 'taskId': 'b', 'dispatchId': 'dispatch',
+                            'launch': {'effective': {**selected, 'agent': 'codex'}}}}
+                results = [SimpleNamespace(returncode=0, stdout=json.dumps(value), stderr='')
+                           for value in (listed, launched)]
+                with patch('routing_launch.check_routing', return_value=check), \
+                     patch('routing_launch.subprocess.run', side_effect=results) as host, redirect_stdout(StringIO()):
+                    self.assertEqual(routing_launch.main(args), 0 if allowed else 1)
+                command_names = [call.args[0][2] for call in host.call_args_list]
+                self.assertEqual(command_names, ['task-list', 'worker-start'] if allowed else ['task-list'])
+
     def configure_fixture_table(self, table):
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         source = root / 'table.json'
@@ -425,7 +523,7 @@ class LaunchTests(LaunchFixture):
                     self.assertEqual(routing_launch.main(args + flags), 1); host.assert_not_called()
                     resource[key] = old
                 write()
-                listed = {'ok': True, 'result': {'runId': 'goal-1', 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'x', 'status': 'ready'}]}}
+                listed = {'ok': True, 'result': {'runId': 'goal-1', 'count': 1, 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'x', 'status': 'ready', 'deps': '[]'}]}}
                 launched = {'ok': True, 'result': {'runId': 'goal-1', 'taskId': 'task', 'dispatchId': 'new', 'launch': {'effective': {'agent': 'codex', 'model': 'model', 'effort': 'high'}}}}
                 host.side_effect = [SimpleNamespace(returncode=0, stdout=json.dumps(x), stderr='') for x in (listed, launched)]
                 self.assertEqual(routing_launch.main(args + flags), 0)
@@ -448,7 +546,7 @@ with open(os.environ['FAKE_LOG'], 'a') as f:
 time.sleep(float(os.environ.get('FAKE_DELAY', '0')))
 name = sys.argv[2]
 if name == 'task-list':
-    result = {'runId': 'goal-1', 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'original', 'status': 'failed'}]}
+    result = {'runId': 'goal-1', 'count': 1, 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'original', 'status': 'failed', 'deps': '[]'}]}
 elif name == 'dispatch-show':
     result = {'dispatch': {'id': 'old'}}
 elif name == 'worker-show':
@@ -815,7 +913,7 @@ print(json.dumps({'ok': True, 'result': result}))
             args.extend(['--orca', '/synthetic/orca'])
             selected = {'route': 'codex', 'model': 'model', 'effort': 'high'}
             check = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {'selected': selected}}
-            listed = {'ok': True, 'result': {'runId': 'goal-1', 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'original', 'status': 'failed'}]}}
+            listed = {'ok': True, 'result': {'runId': 'goal-1', 'count': 1, 'tasks': [{'id': 'task', 'run_id': 'goal-1', 'parent_id': None, 'spec': 'original', 'status': 'failed', 'deps': '[]'}]}}
             latest = {'ok': True, 'result': {'dispatch': {'id': 'old'}}}
             failed = {'ok': True, 'result': {'dispatch': {'id': 'old', 'taskId': 'task', 'runId': 'goal-1', 'status': 'failed'}}}
             launched = {'ok': True, 'result': {'runId': 'goal-1', 'taskId': 'task', 'dispatchId': 'new', 'launch': {'effective': {'agent': 'codex', 'model': 'model', 'effort': 'high'}}}}
