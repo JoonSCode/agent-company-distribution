@@ -333,6 +333,7 @@ skills/company-orchestration/references/record-projection.md
 skills/company-orchestration/references/research-cache.md
 skills/company-orchestration/references/resource-manifest-example.json
 skills/company-orchestration/references/resource-policy.md
+skills/company-orchestration/references/role-context-audit.md
 skills/company-orchestration/references/routing-prelaunch.md
 skills/company-orchestration/references/session-continuity.md
 skills/company-orchestration/references/stage-timeline.md
@@ -377,6 +378,7 @@ skills/company-orchestration/scripts/record_integrity.py
 skills/company-orchestration/scripts/record_projection.py
 skills/company-orchestration/scripts/research_cache.py
 skills/company-orchestration/scripts/resource_manifest.py
+skills/company-orchestration/scripts/role_context_audit.py
 skills/company-orchestration/scripts/route_select.py
 skills/company-orchestration/scripts/routing_explain.py
 skills/company-orchestration/scripts/routing_hook.py
@@ -400,6 +402,7 @@ skills/company-orchestration/scripts/test_launch_readiness.py
 skills/company-orchestration/scripts/test_measurement_gate.py
 skills/company-orchestration/scripts/test_org_audit.py
 skills/company-orchestration/scripts/test_research_cache.py
+skills/company-orchestration/scripts/test_role_context_audit.py
 skills/company-orchestration/scripts/test_route_select.py
 skills/company-orchestration/scripts/test_routing_hook.py
 skills/company-orchestration/scripts/test_routing_launch.py
