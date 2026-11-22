@@ -139,6 +139,9 @@ constraints. Keep a producer's expected answer and another reviewer's conclusion
 out of an independent first judgment. Successor readback and independent outcome
 acceptance are separate. A read ledger proves an attestation, not comprehension
 or an improvement in tokens/quality.
+The [optional role-context audit](role-context-audit.md) checks saved
+source and citation evidence for a pinned turn. Independent review owns
+the judgment about how the role used those references.
 
 All note mutations use one lock and atomic individual files. There is no automatic
 session replacement, scheduler or crash recovery across multiple files. Refuse

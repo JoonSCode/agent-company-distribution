@@ -229,7 +229,7 @@
     },
     {
       "path": "references/session-continuity.md",
-      "sha256": "03023bd1ec3a90ac3a69a6ee6d8cdd48a68addfc6917c438d21d4527f8ab9737"
+      "sha256": "1999efe91f7565842b4b62daca2339c3faa219ceed86f0b8b6b68048287271b9"
     },
     {
       "path": "references/stage-timeline.md",
@@ -498,6 +498,18 @@
     {
       "path": "scripts/worker_route.py",
       "sha256": "5316802df876ad2e71db42ca9172a608b1b1d432d38f77922d6de7e75d6cdecd"
+    },
+    {
+      "path": "references/role-context-audit.md",
+      "sha256": "04fc03117de8c7ec3d5f0734c2785d0f7b10b799c21d61cb5feea308f119249d"
+    },
+    {
+      "path": "scripts/role_context_audit.py",
+      "sha256": "3cb1a770995c07c7b7dce0b9dfe723ebd6320a6d0c6a2e1c08b6ca304358ea89"
+    },
+    {
+      "path": "scripts/test_role_context_audit.py",
+      "sha256": "9c1a0fb99cb65b880917aace6ee9d7cdbfa2daabc7633cb2ca3913a1afc7bdb3"
     }
   ],
   "adoptions": [

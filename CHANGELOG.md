@@ -1,5 +1,11 @@
 # Release notes
 
+## v0.2.6
+
+- Add an opt-in audit for saved role reference delivery, source reads, and
+  citations tied to a specific role and turn. Independent judgment remains a
+  separate review.
+
 ## v0.2.5
 
 - Add opt-in checked-launch stage timing in the existing private result.
