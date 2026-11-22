@@ -1,6 +1,8 @@
 # 조직·팀별 작업 상주 TUI
 
-`../scripts/status_tui.py`는 지정한 로컬 Orca Run 또는 명시 파일을 여는 Company 진입점이다. stdlib Python 3.13을 사용한다. 조직 회사→팀→lead/member와 Task/Dispatch/needs DAG를 **서로 다른 관계**로 유지한다. 상주와 once 모드는 읽기 전용이다. 아래 명시 `--capture-context`만 새 private planning context 한 파일을 쓴다. 실제 Orca pane은 호출자가 선택한다.
+`../scripts/status_tui.py`는 지정한 로컬 Orca Run 또는 명시 파일을 여는 Company 진입점이다. stdlib Python 3.13을 사용한다. 조직 회사→팀→lead/member와 Task/Dispatch/needs DAG를 **서로 다른 관계**로 유지한다. 상주와 once 모드는 읽기 전용이다. 아래 명시 `--capture-context`만 새 private planning context 한 파일을 쓴다.
+
+Orca에서 Agent Company를 명시적으로 시작하면 [자동 열기](../scripts/open_run_view.py)가 현재 코디네이터에 연결된 Run을 같은 탭에서 연다. Run이 생긴 뒤에만 시도하며 해당 탭과 Run에 자동 열기는 한 번이다. 결과가 불확실하거나 사용자가 q로 닫은 뒤에도 기존 직접 열기 명령을 사용할 수 있다.
 
 ## 실행과 키
 

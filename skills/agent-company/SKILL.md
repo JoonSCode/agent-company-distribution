@@ -16,6 +16,18 @@ records and actual Orca execution. Preserve the explicit-only front door and
 continuous-session attribution below. Read only the package references needed
 for the task; it does not require global orchestration or ultrawork skills.
 
+## Open the team view in Orca
+
+On explicit Company entry in a local Orca coordinator pane, run the installed
+[Run view opener](../company-orchestration/scripts/open_run_view.py) yourself.
+Use the existing Python 3.13 runner, for example
+`uv run --offline --no-python-downloads --no-project --python 3.13 python -B PATH_TO_OPEN_RUN_VIEW`,
+where the path is the installed helper above. If the Run is bound already, this
+opens its team view in the same tab. If no Run is bound, continue with the
+requested work and run the helper immediately once creating, resuming or starting
+the first worker actually binds a Run to this coordinator. Follow the
+[Company Orca contract](../company-orchestration/references/orca-contract.md).
+
 The Core route/job/TeamExecutor history is retained in the source checkout's
 `docs/legacy-core-baseline.md` under "Archived skill invocation contract"; it is not a required installed-skill input. It is not this fork's
 dispatch path and must not run alongside an Orca Dispatch. Supported Company

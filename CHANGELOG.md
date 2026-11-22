@@ -1,5 +1,9 @@
 # Release notes
 
+## v0.2.9
+
+- Open a bound Run view once per Orca tab and Run when Agent Company starts.
+
 ## v0.2.8
 
 - Open the Company TUI for an explicitly selected local Orca Run.

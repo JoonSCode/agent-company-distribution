@@ -367,6 +367,7 @@ skills/company-orchestration/scripts/native_storage.py
 skills/company-orchestration/scripts/native_usage.py
 skills/company-orchestration/scripts/offline_replay.py
 skills/company-orchestration/scripts/offline_sidecar.py
+skills/company-orchestration/scripts/open_run_view.py
 skills/company-orchestration/scripts/orca_contract.py
 skills/company-orchestration/scripts/org_audit.py
 skills/company-orchestration/scripts/outcome_eval.py
