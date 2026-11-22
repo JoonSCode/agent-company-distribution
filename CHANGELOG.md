@@ -1,5 +1,10 @@
 # Release notes
 
+## v0.2.10
+
+- Verify checked terminal reuse against the same Orca Run, worker process, and new Task and Dispatch.
+- Preserve the original launch settings and report the current model and effort as unknown when Orca supplies no current observation.
+
 ## v0.2.9
 
 - Open a bound Run view once per Orca tab and Run when Agent Company starts.

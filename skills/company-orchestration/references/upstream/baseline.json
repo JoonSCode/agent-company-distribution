@@ -225,7 +225,7 @@
     },
     {
       "path": "references/routing-prelaunch.md",
-      "sha256": "ca2607e0c13484e59932a3904071427aebe6a7246753e89d2c37ef6997a5fea3"
+      "sha256": "fc980f090520eae6df7e804bb6492eeb3600967b309e7c203e71fe814427e93b"
     },
     {
       "path": "references/session-continuity.md",
@@ -389,7 +389,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "17577aef339d27d677eb8ee75147832b388eb762e83aab6fff55e49df1ed9d0a"
+      "sha256": "86acc93546ae84a32c88d3c178556d9cb83ee2e8775f915ca423723859472103"
     },
     {
       "path": "scripts/routing_prepare.py",
@@ -481,7 +481,7 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "202dbb97e4ae98bce8b7f72074262324351b80e30893ad7c08d163cb8341294e"
+      "sha256": "878f2d7cbca11ece7ee107f4ec2000b944d7590cbcd81ed9ef2dcb4a68b58e92"
     },
     {
       "path": "scripts/test_routing_preflight.py",

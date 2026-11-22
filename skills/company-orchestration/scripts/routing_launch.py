@@ -277,7 +277,28 @@ def storage_launch_guard(args, reserve=False, capability=None):
     return reference
 
 
-def full_launch_readback(executable, payload, selected, timeout, *, agent='codex', runtime_id=None):
+def optional_reuse_object(value, field):
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError(f'malformed reuse {field}')
+    return value
+
+
+def read_reuse_effects(value):
+    if not isinstance(value, list):
+        raise ValueError('reuse effects must be an array')
+    for effect in value:
+        if (not isinstance(effect, dict) or not isinstance(effect.get('kind'), str) or
+                not effect['kind'].strip() or any(
+                    member is not None and (not isinstance(member, str) or not member.strip())
+                    for member in map(effect.get, ('id', 'action', 'role', 'state', 'surface')))):
+            raise ValueError('malformed reuse effect')
+    return value
+
+
+def full_launch_readback(executable, payload, selected, timeout, *, agent='codex', runtime_id=None,
+                         reused_process=None):
     """Read the host's exact Dispatch and effective settings or incarnation."""
     from run_completion import start_incarnation_matches
 
@@ -306,6 +327,42 @@ def full_launch_readback(executable, payload, selected, timeout, *, agent='codex
                   data['result'].get('terminal', {}).get('handle') != payload['terminal']))):
             return result
         effective = worker['startOptions']['launch']['effective']
+        if reused_process is not None:
+            handle, pty_id, incarnation = reused_process
+            terminal = data['result']['terminal']
+            observation = data['result']['observation']
+            projection = optional_reuse_object(data['result'].get('projection'), 'worker projection')
+            liveness = optional_reuse_object(projection.get('liveness'), 'worker liveness')
+            if (dispatch.get('assigneeHandle') != handle or worker.get('agentTerminalHandle') != handle or
+                    worker.get('runtimeEpoch') not in (None, runtime_id) or
+                    observation.get('exactWorker') is not True or observation.get('status') != 'live' or
+                    liveness.get('verdict') == 'dead' or
+                    terminal.get('handle') != handle or terminal.get('ptyId') != pty_id or
+                    terminal.get('incarnationId') != incarnation or
+                    dispatch.get('processIncarnation') != f'{pty_id}:{incarnation}'):
+                return result
+            matched_terminal = False
+            for effect in read_reuse_effects(worker['effects']):
+                action = effect.get('action')
+                if action == 'created':
+                    return result
+                if effect['kind'] == 'terminal':
+                    if action != 'reused' or effect.get('id') != handle:
+                        return result
+                    matched_terminal = True
+            if not matched_terminal:
+                return result
+            if effective is not None and not isinstance(effective, dict):
+                return result
+            effective = effective or {}
+            expected = {'agent': agent, 'model': selected['model'], 'effort': selected['effort']}
+            if any(effective.get(key) is not None and effective[key] != value for key, value in expected.items()):
+                result.update(status='failed', reason='full reuse readback contradicts the checked settings')
+            elif any(effective.get(key) is not None for key in ('model', 'effort')):
+                result['reason'] = 'full reuse readback contains settings without a current observation contract'
+            else:
+                result.update(status='observed', reason='same process observed by full reuse readback; current model and effort unknown')
+            return result
         if not isinstance(effective, dict) or any(effective.get(k) is None for k in ('agent', 'model', 'effort')):
             return result
         if (effective['agent'], effective['model'], effective['effort']) != (agent, selected['model'], selected['effort']):
@@ -387,7 +444,7 @@ def main(argv=None):
                 if timing is not None and 'prepared' not in timing.marks:
                     timing.mark('preparation_stopped')
                     try:
-                        atomic_state(path, timing.add(initial, 'preparation_stopped'), capability)
+                        atomic_state(path, timing.add(args.initial_launch_state, 'preparation_stopped'), capability)
                     except (OSError, ValueError):
                         # The incomplete observation is sufficient if enrichment cannot be persisted.
                         pass
@@ -721,49 +778,81 @@ def _main(args):
         if error or not isinstance(origin, dict) or not isinstance(evidence, dict) or evidence.get('origin_sha256') != origin_hash:
             print(json.dumps({'ok': False, 'error': 'reuse origin receipt missing or hash mismatch'}))
             return 1
+        reuse_probe = {'exit_code': None, 'stdout': '', 'stderr': ''}
         try:
-            envelope = json.loads(origin['stdout']) if isinstance(origin.get('stdout'), str) else origin
+            if isinstance(origin.get('stdout'), str) and origin.get('launch_state') != 'observed':
+                raise ValueError('original checked result has no observed launch')
+            envelope = (json.loads(origin['stdout'], object_pairs_hook=unique_object, parse_constant=invalid_constant)
+                        if isinstance(origin.get('stdout'), str) else origin)
             original = envelope['result']
+            original_task_id = original['taskId']
+            original_run = original['runId']
+            reuse_runtime = envelope['_meta']['runtimeId']
             original_effective = original['launch']['effective']
             original_incarnation = original['prompt']['processIncarnation']
+            if (not all(isinstance(value, str) and value.strip() for value in
+                        (original_task_id, original_run, reuse_runtime, original_incarnation)) or
+                    original_run != record['goal']['id']):
+                raise ValueError('missing original reuse identity or different requested Run')
             probe = subprocess.run([executable, 'orchestration', 'worker-show', '--dispatch', args.reuse_dispatch, '--full', '--json'], check=False, capture_output=True, text=True, timeout=args.probe_timeout)
-            observed = json.loads(probe.stdout)
+            reuse_probe.update(exit_code=probe.returncode, stdout=probe.stdout, stderr=probe.stderr)
+            observed = json.loads(probe.stdout, object_pairs_hook=unique_object, parse_constant=invalid_constant)
             live = observed['result']
             terminal = live['terminal']
             dispatch = live['dispatch']
+            prior_worker = live['worker']
+            reuse_pty = terminal['ptyId']
+            prior_launch = optional_reuse_object(prior_worker.get('startOptions', {}).get('launch'), 'prior launch')
+            prior_effective = prior_launch.get('effective')
             unchanged = source.get('reuse_binding', {})
             evidence_bytes = (args.decision.parent / source['file']).read_bytes()
             observed_at = datetime.fromisoformat(unchanged['observed_at'].replace('Z', '+00:00'))
             valid_until = datetime.fromisoformat(unchanged['valid_until'].replace('Z', '+00:00'))
             now = datetime.now(timezone.utc)
             valid = (probe.returncode == 0 and observed.get('ok') is True and envelope.get('ok') is True and original.get('dispatchId') == args.reuse_dispatch
+                     and observed.get('_meta', {}).get('runtimeId') == reuse_runtime
                      and any(effect.get('kind') == 'terminal' and effect.get('id') == args.terminal for effect in original['effects'])
                      and terminal.get('handle') == args.terminal and terminal.get('incarnationId') == original_incarnation
-                     and dispatch.get('assigneeHandle') == args.terminal and dispatch.get('processIncarnation', '').endswith(':' + original_incarnation)
+                     and isinstance(reuse_pty, str) and bool(reuse_pty)
+                     and dispatch.get('id') == args.reuse_dispatch
+                     and prior_worker.get('dispatchId') == args.reuse_dispatch and prior_worker.get('agentTerminalHandle') == args.terminal
+                     and prior_worker.get('runtimeEpoch') in (None, reuse_runtime)
+                     and dispatch.get('runId') == original_run and dispatch.get('taskId') == original_task_id
+                     and dispatch.get('assigneeHandle') == args.terminal
+                     and dispatch.get('processIncarnation') == f'{reuse_pty}:{original_incarnation}'
                      and live['observation'].get('status') == 'live' and live['observation'].get('exactWorker') is True
                      and live['projection']['liveness'].get('verdict') == 'live'
                      and original_effective.get('agent') == 'codex' and original_effective.get('model') == selected['model']
-                     and original_effective.get('effort') == selected['effort'] and isinstance(source, dict)
+                     and original_effective.get('effort') == selected['effort']
+                     and (prior_effective is None or (isinstance(prior_effective, dict) and
+                          all(prior_effective.get(key) in (None, original_effective[key]) for key in ('agent', 'model', 'effort'))))
+                     and isinstance(source, dict)
                      and source.get('kind') == 'host' and isinstance(source.get('file'), str) and isinstance(source.get('sha256'), str)
                      and hashlib.sha256(evidence_bytes).hexdigest() == source['sha256'] and json.loads(evidence_bytes) == unchanged
                      and unchanged.get('dispatch') == args.reuse_dispatch and unchanged.get('terminal') == args.terminal
                      and unchanged.get('incarnation') == original_incarnation and unchanged.get('settings_unchanged') is True
                      and observed_at.tzinfo is not None and valid_until.tzinfo is not None and observed_at <= now <= valid_until)
-        except (AttributeError, KeyError, TypeError, ValueError, OSError, subprocess.SubprocessError):
+        except (AttributeError, KeyError, TypeError, ValueError, OSError, subprocess.SubprocessError) as exc:
+            reuse_probe['error'] = str(exc)
             valid = False
         if not valid:
+            args.initial_launch_state['reuse_probe'] = reuse_probe
+            atomic_state(args.result, args.initial_launch_state, args.storage_capability)
             print(json.dumps({'ok': False, 'error': 'reuse source, process incarnation, settings or live observation mismatch'}))
             return 1
         result['receipt']['reuse'] = {'origin_sha256': origin_hash, 'worker_show': live,
-                                      'limits': 'Original effective launch and current process observation; not current provider model readback.'}
+                                      'prior_launch_effective': {key: original_effective[key] for key in ('agent', 'model', 'effort')},
+                                      'limits': 'Original effective launch and current process observation; current model and effort unknown.'}
+        result['receipt']['requested_run'] = original_run
         command = [executable, 'orchestration', 'worker-start', '--from', args.sender, '--spec', args.spec,
                    '--worktree', args.worktree, '--terminal', args.terminal, '--json']
     else:
         command = [executable, 'orchestration', 'worker-start', '--from', args.sender, '--task' if args.task else '--spec', args.task or args.spec,
                    '--worktree', args.worktree, '--agent', agent, '--model', selected['model'],
                    '--effort', selected['effort'], '--json', '--full']
-    if args.run:
-        command.extend(('--run', args.run))
+    checked_run = original_run if reuse else args.run
+    if checked_run:
+        command.extend(('--run', checked_run))
     if args.retry_of:
         command.extend(('--retry-of', args.retry_of))
     if args.task_title:
@@ -920,9 +1009,37 @@ def _main(args):
             elif args.run and payload.get('runId') != args.run:
                 status, reason = ('unverified', 'host Run identity missing') if payload.get('runId') is None else ('failed', 'host Run identity differs')
             elif reuse:
+                prompt = optional_reuse_object(payload.get('prompt'), 'prompt')
+                launch = optional_reuse_object(payload.get('launch'), 'launch')
+                incarnation = prompt.get('processIncarnation')
+                effective = launch.get('effective')
                 effects = payload.get('effects')
-                if isinstance(effects, list) and any(isinstance(item, dict) and item.get('kind') == 'terminal' and item.get('id') == args.terminal for item in effects):
-                    status, reason = 'observed', 'host IDs and reused terminal observed; model and effort remain prior evidence'
+                effects = [] if effects is None else read_reuse_effects(effects)
+                reported_terminal = payload.get('terminal')
+                if payload['taskId'] == original_task_id or payload['dispatchId'] == args.reuse_dispatch:
+                    status, reason = 'failed', 'reuse did not return a new Task and Dispatch'
+                elif reported_terminal is not None and reported_terminal != args.terminal:
+                    status, reason = 'failed', 'reuse returned a different terminal'
+                elif incarnation is not None and incarnation != original_incarnation:
+                    status, reason = 'failed', 'reuse returned a different terminal incarnation'
+                elif payload.get('runId') != original_run or response_runtime not in (None, reuse_runtime):
+                    status, reason = 'unverified', 'reuse host response does not identify the original Run and runtime'
+                elif any(effect['kind'] == 'terminal' and
+                         (effect.get('id') != args.terminal or effect.get('action') not in (None, 'reused'))
+                         for effect in effects):
+                    status, reason = 'failed', 'reuse returned a contradictory terminal effect'
+                elif effective is not None and not isinstance(effective, dict):
+                    status, reason = 'unverified', 'reuse response contains malformed effective settings'
+                elif any((effective or {}).get(field) not in (None, expected)
+                         for field, expected in (('agent', agent), ('model', selected['model']), ('effort', selected['effort']))):
+                    status, reason = 'failed', 'reuse returned effective settings that contradict the checked selection'
+                elif any((effective or {}).get(key) is not None for key in ('model', 'effort')):
+                    status, reason = 'unverified', 'reuse response contains settings without a current observation contract'
+                else:
+                    full_readback = full_launch_readback(
+                        executable, payload, selected, args.probe_timeout, agent=agent,
+                        runtime_id=reuse_runtime, reused_process=(args.terminal, reuse_pty, original_incarnation))
+                    status, reason = full_readback['status'], full_readback['reason']
             else:
                 effective = payload.get('launch', {}).get('effective')
                 if isinstance(effective, dict) and all(effective.get(field) is not None for field in ('agent', 'model', 'effort')):
@@ -953,6 +1070,8 @@ def _main(args):
                'exit_code': host.returncode, 'readback_status': status, 'readback_reason': reason,
                'stdout': host.stdout, 'stderr': host.stderr,
                'full_readback': full_readback}
+    if reuse:
+        final['reuse_settings'] = {'status': 'unknown', 'model': None, 'effort': None}
     atomic_state(args.result, timing.add(final, 'readback_finished') if timing else final,
                  args.storage_capability)
     if status == 'observed' and args.lifecycle is not None:

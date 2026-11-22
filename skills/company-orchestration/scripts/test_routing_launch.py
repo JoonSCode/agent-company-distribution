@@ -948,7 +948,8 @@ print(json.dumps({'ok': True, 'result': result}))
             prior.write_text(json.dumps(binding))
             packet['evidence']['reuse'] = {'kind': 'host', 'ref': 'fixture:reuse', 'file': prior.name,
                                            'sha256': hashlib.sha256(prior.read_bytes()).hexdigest(), 'reuse_binding': binding}
-            origin = {'ok': True, 'result': {'dispatchId': 'origin', 'launch': {'effective': {'agent': 'codex',
+            origin = {'ok': True, '_meta': {'runtimeId': 'local-runtime'},
+                      'result': {'runId': 'goal-1', 'taskId': 'origin-task', 'dispatchId': 'origin', 'launch': {'effective': {'agent': 'codex',
                       'model': packet['selected']['model'], 'effort': packet['selected']['effort']}},
                       'prompt': {'processIncarnation': 'inc'}, 'effects': [{'kind': 'terminal', 'id': 'term'}]}}
             origin_path = root / 'origin.json'
@@ -960,21 +961,219 @@ print(json.dumps({'ok': True, 'result': result}))
             args = [*enrollment_flags(root), '--decision', str(decision), '--record', str(current), '--receipt', str(root / 'receipt.json'),
                     '--result', str(root / 'result.json'), '--from', 'sender', '--spec', 'reuse task',
                     '--worktree', 'current', '--terminal', 'term', '--reuse-dispatch', 'origin', '--origin-receipt', str(origin_path)]
-            live = {'ok': True, 'result': {'terminal': {'handle': 'term', 'incarnationId': 'inc'},
-                    'dispatch': {'assigneeHandle': 'term', 'processIncarnation': 'pty:inc'},
+            live = {'ok': True, '_meta': {'runtimeId': 'local-runtime'},
+                    'result': {'terminal': {'handle': 'term', 'ptyId': 'pty', 'incarnationId': 'inc'},
+                    'dispatch': {'id': 'origin', 'taskId': 'origin-task', 'assigneeHandle': 'term',
+                                 'runId': 'goal-1', 'processIncarnation': 'pty:inc'},
+                    'worker': {'dispatchId': 'origin', 'agentTerminalHandle': 'term',
+                               'startOptions': origin['result']},
                     'projection': {'liveness': {'verdict': 'live'}},
                     'observation': {'status': 'live', 'exactWorker': True}}}
             probe = SimpleNamespace(returncode=0, stdout=json.dumps(live), stderr='')
-            result = SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {'taskId': 'new-task', 'dispatchId': 'new-dispatch', 'effects': [{'kind': 'terminal', 'id': 'term'}]}}), stderr='')
+            result = SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {
+                'runId': 'goal-1', 'taskId': 'new-task', 'dispatchId': 'new-dispatch',
+                'effects': [{'kind': 'terminal', 'id': 'term', 'role': 'agent', 'action': 'reused'}]}}), stderr='')
+            full = copy.deepcopy(live)
+            full['result']['dispatch'].update(id='new-dispatch', taskId='new-task')
+            full['result']['worker'] = {'dispatchId': 'new-dispatch', 'agentTerminalHandle': 'term',
+                                        'effects': json.loads(result.stdout)['result']['effects'],
+                                        'startOptions': {'launch': {
+                                            'requested': origin['result']['launch']['effective'],
+                                            'effective': {'agent': 'codex', 'model': None, 'effort': None}}}}
+            full['result']['terminal']['preview'] = 'model and effort displayed in a terminal buffer'
+            full_probe = SimpleNamespace(returncode=0, stdout=json.dumps(full), stderr='')
             def actual_reuse_shape(argv, **kwargs):
                 if argv[2] == 'worker-show':
-                    return probe if '--full' in argv else SimpleNamespace(returncode=0, stdout=json.dumps({'ok': True, 'result': {'dispatchId': 'origin', 'state': 'ready'}}), stderr='')
+                    self.assertIn('--full', argv)
+                    return probe if argv[4] == 'origin' else full_probe
                 return result
             with patch('routing_launch.subprocess.run', side_effect=actual_reuse_shape) as host:
                 self.assertEqual(routing_launch.main(args), 0)
-                command = host.call_args.args[0]
+                self.assertEqual([call.args[0][2] for call in host.call_args_list],
+                                 ['worker-show', 'worker-start', 'worker-show'])
+                command = host.call_args_list[1].args[0]
                 self.assertIn('--terminal', command)
                 self.assertNotIn('--model', command)
+                self.assertEqual(command[command.index('--run') + 1], 'goal-1')
+            readback = json.loads((root / 'result.json').read_bytes())
+            self.assertEqual(readback['reuse_settings'], {
+                'status': 'unknown', 'model': None, 'effort': None})
+            prior = json.loads((root / 'receipt.json').read_bytes())['receipt']['reuse']
+            self.assertEqual(prior['prior_launch_effective'], origin['result']['launch']['effective'])
+            echoed = json.loads(result.stdout)
+            echoed['result'].update(prompt=origin['result']['prompt'], launch=origin['result']['launch'])
+            observed = SimpleNamespace(returncode=0, stdout=json.dumps(echoed), stderr='')
+            case_root, case_args = fresh_launch_case(root, args, Path(temp) / 'reuse-matching-readback')
+            with (patch('record_check.canonical_home', return_value=case_root),
+                  patch('routing_launch.subprocess.run', side_effect=[probe, observed]) as host):
+                self.assertEqual(routing_launch.main(case_args), 1)
+                self.assertEqual(host.call_count, 2)
+            readback = json.loads((case_root / 'result.json').read_bytes())
+            self.assertEqual(readback['readback_status'], 'unverified')
+            self.assertEqual(readback['launch_state'], 'unknown')
+            self.assertEqual(readback['stdout'], observed.stdout)
+            self.assertIsNone(readback['reuse_settings']['model'])
+            other_dispatch = copy.deepcopy(live)
+            other_dispatch['result']['dispatch']['id'] = 'other-dispatch'
+            mismatched_probe = SimpleNamespace(returncode=0, stdout=json.dumps(other_dispatch), stderr='')
+            case_root, case_args = fresh_launch_case(root, args, Path(temp) / 'reuse-other-dispatch')
+            with self.subTest(name='different-probed-dispatch'):
+                with (patch('record_check.canonical_home', return_value=case_root),
+                      patch('routing_launch.subprocess.run', side_effect=[mismatched_probe, result]) as host):
+                    self.assertEqual(routing_launch.main(case_args), 1)
+                    self.assertEqual([call.args[0][2] for call in host.call_args_list], ['worker-show'])
+                    self.assertFalse((case_root / 'receipt.json').exists())
+            case_root, case_args = fresh_launch_case(root, args, Path(temp) / 'reuse-missing-origin-task')
+            missing_origin = copy.deepcopy(origin)
+            del missing_origin['result']['taskId']
+            changed_origin = case_root / 'origin.json'
+            changed_origin.write_text(json.dumps(missing_origin))
+            changed_packet = json.loads((case_root / 'decision.json').read_bytes())
+            changed_packet['reuse_evidence']['origin_sha256'] = hashlib.sha256(changed_origin.read_bytes()).hexdigest()
+            (case_root / 'decision.json').write_text(json.dumps(changed_packet))
+            with (patch('record_check.canonical_home', return_value=case_root),
+                  patch('routing_launch.subprocess.run', side_effect=[probe, result]) as host):
+                self.assertEqual(routing_launch.main(case_args), 1)
+                self.assertNotIn('worker-start', [call.args[0][2] for call in host.call_args_list])
+                self.assertFalse((case_root / 'receipt.json').exists())
+            other_task = copy.deepcopy(live)
+            other_task['result']['dispatch']['taskId'] = 'another-task'
+            mismatched_task = SimpleNamespace(returncode=0, stdout=json.dumps(other_task), stderr='')
+            case_root, case_args = fresh_launch_case(root, args, Path(temp) / 'reuse-other-origin-task')
+            with (patch('record_check.canonical_home', return_value=case_root),
+                  patch('routing_launch.subprocess.run', side_effect=[mismatched_task, result]) as host):
+                self.assertEqual(routing_launch.main(case_args), 1)
+                self.assertEqual([call.args[0][2] for call in host.call_args_list], ['worker-show'])
+                self.assertFalse((case_root / 'receipt.json').exists())
+            for name, path, value in (
+                    ('wrong-origin-runtime', ('_meta', 'runtimeId'), 'different-runtime'),
+                    ('wrong-origin-run', ('result', 'dispatch', 'runId'), 'different-run'),
+                    ('wrong-origin-pty', ('result', 'dispatch', 'processIncarnation'), 'other:inc'),
+                    ('malformed-origin-launch', ('result', 'worker', 'startOptions', 'launch'), []),
+                    ('stale-origin-effort', ('result', 'worker', 'startOptions', 'launch', 'effective', 'effort'), 'other')):
+                with self.subTest(name=name):
+                    response = copy.deepcopy(live)
+                    target = response
+                    for key in path[:-1]:
+                        target = target[key]
+                    target[path[-1]] = value
+                    wrong = SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr='')
+                    case_root, case_args = fresh_launch_case(root, args, Path(temp) / name)
+                    with (patch('record_check.canonical_home', return_value=case_root),
+                          patch('routing_launch.subprocess.run', side_effect=[wrong, result, full_probe]) as host):
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual([call.args[0][2] for call in host.call_args_list], ['worker-show'])
+                        self.assertFalse((case_root / 'receipt.json').exists())
+                    blocked = json.loads((case_root / 'result.json').read_bytes())
+                    self.assertEqual(blocked['launch_state'], 'not_started')
+                    self.assertEqual(blocked['reuse_probe']['stdout'], wrong.stdout)
+            for name, changes in (
+                    ('repeated-task', {'taskId': 'origin-task'}),
+                    ('repeated-dispatch', {'dispatchId': 'origin'}),
+                    ('different-incarnation', {'prompt': {'processIncarnation': 'other-inc'}}),
+                    ('created-terminal', {'effects': [{'kind': 'terminal', 'id': 'term', 'action': 'created'}]}),
+                    ('different-agent', {'launch': {'effective': {'agent': 'other'}}}),
+                    ('different-model', {'launch': {'effective': {'model': 'other'}}}),
+                    ('different-effort', {'launch': {'effective': {'effort': 'other'}}})):
+                with self.subTest(name=name):
+                    response = json.loads(result.stdout)
+                    response['result'].update(changes)
+                    contradictory = SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr='')
+                    case_root, case_args = fresh_launch_case(root, args, Path(temp) / name)
+                    with (patch('record_check.canonical_home', return_value=case_root),
+                          patch('routing_launch.subprocess.run', side_effect=[probe, contradictory]) as host):
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual([call.args[0][2] for call in host.call_args_list],
+                                         ['worker-show', 'worker-start'])
+                        readback = json.loads((case_root / 'result.json').read_bytes())
+                        self.assertEqual(readback['readback_status'], 'failed')
+                        self.assertEqual(readback['launch_state'], 'unknown')
+                        self.assertEqual(readback['stdout'], contradictory.stdout)
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual(host.call_count, 2)
+            concise = {'ok': True, 'result': {'taskId': 'new-task', 'dispatchId': 'new-dispatch',
+                       'runId': 'goal-1', 'terminal': 'term', 'state': 'ready'}}
+            for field, value in (('launch', False), ('prompt', []), ('effects', '')):
+                with self.subTest(malformed_start_field=field):
+                    response = copy.deepcopy(concise)
+                    response['result'][field] = value
+                    malformed = SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr='')
+                    case_root, case_args = fresh_launch_case(root, args, Path(temp) / ('malformed-' + field))
+                    with (patch('record_check.canonical_home', return_value=case_root),
+                          patch('routing_launch.subprocess.run', side_effect=[probe, malformed, full_probe]) as host):
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual([call.args[0][2] for call in host.call_args_list],
+                                         ['worker-show', 'worker-start'])
+                    saved = json.loads((case_root / 'result.json').read_bytes())
+                    self.assertEqual(saved['readback_status'], 'unverified')
+                    self.assertEqual(saved['launch_state'], 'unknown')
+                    self.assertEqual(saved['stdout'], malformed.stdout)
+            for name in ('valid', 'explicit-null', 'different-process', 'different-terminal', 'different-runtime',
+                         'different-task', 'different-model', 'saved-model', 'saved-effort', 'not-reused',
+                         'created-after-match', 'other-terminal-after-match', 'malformed-after-match',
+                         'pty-exited', 'pty-unavailable', 'agent-dead', 'agent-unverifiable', 'missing-readback'):
+                with self.subTest(name='concise-reuse-'+name):
+                    case_root, case_args = fresh_launch_case(root, args, Path(temp) / ('reuse-full-'+name))
+                    case_args += ['--run', 'goal-1']
+                    current_decision = case_root / 'decision.json'
+                    selected_decision = json.loads(current_decision.read_bytes())
+                    selected_decision['binding']['run'] = 'goal-1'
+                    current_decision.write_text(json.dumps(selected_decision))
+                    current_record = case_root / 'record.json'
+                    selected_record = json.loads(current_record.read_bytes())
+                    selected_record['run'] = 'goal-1'
+                    current_record.write_text(json.dumps(selected_record))
+                    start_response = copy.deepcopy(concise)
+                    response = copy.deepcopy(full)
+                    if name == 'explicit-null':
+                        start_response['result'].update(launch=None, prompt=None, effects=None)
+                        response['result']['worker']['startOptions']['launch']['effective'] = None
+                    if name == 'different-process':
+                        response['result']['terminal']['incarnationId'] = 'other'
+                    if name == 'different-terminal':
+                        response['result']['worker']['agentTerminalHandle'] = 'another-term'
+                    if name == 'different-runtime':
+                        response['_meta']['runtimeId'] = 'another-runtime'
+                    if name == 'different-task':
+                        response['result']['dispatch']['taskId'] = 'another-task'
+                    if name == 'different-model':
+                        response['result']['worker']['startOptions']['launch']['effective']['model'] = 'another-model'
+                    if name in ('saved-model', 'saved-effort'):
+                        field = name.split('-')[1]
+                        response['result']['worker']['startOptions']['launch']['effective'][field] = packet['selected'][field]
+                    if name == 'not-reused':
+                        response['result']['worker']['effects'][0]['action'] = 'created'
+                    if name == 'created-after-match':
+                        response['result']['worker']['effects'].append(
+                            {'kind': 'terminal', 'id': 'term', 'role': 'agent', 'action': 'created'})
+                    if name == 'other-terminal-after-match':
+                        response['result']['worker']['effects'].append(
+                            {'kind': 'terminal', 'id': 'other', 'role': 'agent', 'action': 'reused'})
+                    if name == 'malformed-after-match':
+                        response['result']['worker']['effects'].append(None)
+                    if name in ('pty-exited', 'pty-unavailable'):
+                        response['result']['observation']['status'] = name.removeprefix('pty-')
+                    if name in ('agent-dead', 'agent-unverifiable'):
+                        response['result']['projection']['liveness']['verdict'] = name.removeprefix('agent-')
+                    if name == 'missing-readback':
+                        response = {'ok': False, 'error': 'readback unavailable'}
+                    replies = [probe] + [
+                        SimpleNamespace(returncode=0, stdout=json.dumps(value), stderr='')
+                        for value in (start_response, response)]
+                    valid = name in ('valid', 'explicit-null', 'agent-unverifiable')
+                    with (patch('record_check.canonical_home', return_value=case_root),
+                          patch('routing_launch.subprocess.run', side_effect=replies) as host):
+                        self.assertEqual(routing_launch.main(case_args), 0 if valid else 1)
+                        self.assertEqual([call.args[0][2] for call in host.call_args_list],
+                                         ['worker-show', 'worker-start', 'worker-show'])
+                        if not valid:
+                            self.assertEqual(routing_launch.main(case_args), 1)
+                            self.assertEqual(host.call_count, 3)
+                    saved = json.loads((case_root / 'result.json').read_bytes())
+                    self.assertEqual(saved['full_readback']['stdout'], json.dumps(response))
+                    self.assertEqual(saved['launch_state'], 'observed' if valid else 'unknown')
+                    self.assertEqual(saved['reuse_settings'], {'status': 'unknown', 'model': None, 'effort': None})
             root, args = fresh_launch_case(root, args, Path(temp) / 'reuse-denial')
             live['result']['terminal']['incarnationId'] = 'different'
             probe.stdout = json.dumps(live)
