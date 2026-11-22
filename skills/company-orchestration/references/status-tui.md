@@ -1,10 +1,12 @@
 # 조직·팀별 작업 상주 TUI
 
-`../scripts/status_tui.py`는 명시 파일을 사용하는 Company 제품 진입점이다. stdlib Python 3.13, 추가 설치/모델 호출/Claude 의존성 없음. 조직 회사→팀→lead/member와 Task/Dispatch/needs DAG를 **서로 다른 관계**로 유지한다. record 생성/수정, worker 실행, 스케줄링, 세션 탐색, cleanup을 하지 않는다. 일반 상주/once는 읽기 전용이며, 아래 명시 `--capture-context`만 새 private planning context 한 파일을 쓴다. 실제 Orca pane 생성은 이 프로그램이 아니라 승인된 host 소유자가 수행한다.
+`../scripts/status_tui.py`는 지정한 로컬 Orca Run 또는 명시 파일을 여는 Company 진입점이다. stdlib Python 3.13을 사용한다. 조직 회사→팀→lead/member와 Task/Dispatch/needs DAG를 **서로 다른 관계**로 유지한다. 상주와 once 모드는 읽기 전용이다. 아래 명시 `--capture-context`만 새 private planning context 한 파일을 쓴다. 실제 Orca pane은 호출자가 선택한다.
 
 ## 실행과 키
 
 ```sh
+python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --run run_EXACT_ID
+python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --run run_EXACT_ID --once --json
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --mode combined
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --record /private/run/record.json --once --json
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /private/run/view.json --mode combined
@@ -12,8 +14,8 @@ python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /p
 python3.13 -B /path/to/company-orchestration/scripts/status_tui.py --manifest /private/run/view.json --mode flow --once --json
 ```
 
-* 일반 사용은 `--record`로 **명시 선택한 기존 Company supplementary record**를 직접 연다. 매 read 때 현재 바이트를 새로 검증·투영하므로 Task/Dispatch 갱신마다 manifest를 만들거나 SHA를 수동 재작성할 필요가 없다. 파일을 만드는 producer나 실제 Run을 자동 선택하는 기능은 아니다.
-* `--record`와 기존 `--manifest`는 둘 중 정확히 하나만 선택한다. `--manifest`의 원래 고정 pin/strict 검증은 그대로다. 선택 `--metadata /private/run/view.json` 또는 `--context /private/view/context.json`은 `--record`와만 사용할 수 있고 서로 배타적이다. 아래 두 경계를 따른다.
+* `--run`은 호출자가 지정한 ID로 로컬 Orca의 작업 목록만 읽는다. 시작 당시 선택을 화면이 열린 동안 유지한다. 다른 Run이나 잘못된 작업 관계가 응답에 섞이면 마지막 정상 화면과 갱신 오류를 함께 표시한다. Task 제목, Orca 상태, 명시된 선행 조건만 화면에 사용한다. 부모 Task는 선행 조건과 별도로 원문 보기에서 확인할 수 있다. Orca에서 완료된 작업의 Company 수락과 사용자 확인은 미확인으로 표시한다. 프로그램이 pane을 열거나 기록을 쓰거나 작업을 실행하지 않는다.
+* `--record`는 **명시 선택한 기존 Company supplementary record**의 현재 바이트를 읽는다. `--manifest`는 고정 pin을 검증한다. `--run`, `--record`, `--manifest` 중 하나만 선택한다. 선택 `--metadata /private/run/view.json` 또는 `--context /private/view/context.json`은 `--record`와만 사용할 수 있고 서로 배타적이다.
 * 기본 combined + `--layout wide`: viewport를 채우는 네 필드 카드지도다. `o` 조직, `f` 흐름, `c` 통합, `n` 다음/`p` 이전 페이지, `q` 종료는 그대로이며 마지막 페이지에서 순환한다. `j/k` 작업 선택, `x` 보조 초점 지도, `w` 넓은 지도, `v` 전체 개요, `t` 팀, `r` 기록 위상 구간, `l` 선택 작업의 이름 있는 정확한 연결, `s` 원본·배정 근거, `Enter` 선택 진입/연결 반대편, `b` 뒤로를 추가한다. `f`를 초점 키로 덮어쓰지 않는다. `--layout focus`는 선택 작업과 실제 이웃만 보여 주며, `--layout legacy`는 이전 작은 slice 표현을 명시 선택하는 호환 경로다. 방향키/마우스는 지원하지 않는다.
 * 상주는 caller가 소유한 동일 stdin/stdout PTY에서만 실행한다. TERM=dumb/unknown, 파이프는 거부한다. PTY 소유권은 operator 책임이며 다른 terminal의 권한을 얻는 도구가 아니다.
 * `--once`만 비TTY/`--json`/`--width`/`--height` 허용. 기본 snapshot80×12. 상주는 실제 PTY 크기와 SIGWINCH 사용. width/height 양의 정수.

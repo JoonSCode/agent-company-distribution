@@ -21,7 +21,7 @@ if __name__ == '__main__':
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from status_tui_data import InputError, load_snapshot
-from status_tui_input import load_record_snapshot
+from status_tui_input import load_record_snapshot, load_run_snapshot
 from status_tui_context import capture_context
 import status_tui_graph as graph
 import status_tui_navigation as navigation
@@ -131,6 +131,21 @@ def _style_spans(line, spans):
     return ''.join(result)
 
 
+def _heading(snapshot, mode, ascii, failed):
+    run_id = snapshot['binding']['run_id'] if snapshot.get('input_mode') == 'orca_run' else None
+    prefix = 'Run ' + run_id + ' | ' if run_id is not None else ''
+    if snapshot.get('_refresh_error'):
+        return prefix + 'ERROR | last-good ' + str(snapshot.get('_last_good_age', 0)) + 's | ' + (
+            'stale' if ascii else '갱신 오류·오래된 화면')
+    if run_id is not None:
+        return prefix + ('Orca tasks | Acceptance unknown' if ascii else 'Orca 작업 | 수락 미확인')
+    earned = snapshot['overall_goal_acceptance']['earned_success']
+    goal_state = (('error' if failed else 'recorded pass' if earned else 'pending') if ascii else
+                  ('오류' if failed else '기록상 통과' if earned else '확인 대기'))
+    return 'Company [' + mode + '] ' + ('Goal: ' if ascii else '전체 목표: ') + goal_state + (
+        ' | User: unobserved' if ascii else ' | 사용자 확인: 미관측')
+
+
 def _legacy_frame(snapshot, width, height, mode='combined', page=0, color=False, *, ascii=False):
     """Pure cell-bounded product renderer; ASCII is an additive presentation seam."""
     if mode not in MODES: raise ValueError('unsupported mode')
@@ -139,12 +154,7 @@ def _legacy_frame(snapshot, width, height, mode='combined', page=0, color=False,
     goal = snapshot['overall_goal_acceptance']
     error = snapshot.get('_refresh_error')
     failed = goal.get('badge_kind') == 'error' or not snapshot['check']['ok']
-    goal_state = (('error' if failed else 'recorded pass' if goal['earned_success'] else 'pending') if ascii else
-                  ('오류' if failed else '기록상 통과' if goal['earned_success'] else '확인 대기'))
-    heading = ('Company ['+mode+'] ' + ('Goal: ' if ascii else '전체 목표: ') + goal_state +
-               (' | User: unobserved' if ascii else ' | 사용자 확인: 미관측'))
-    if error:
-        heading = 'ERROR | last-good '+str(snapshot.get('_last_good_age',0))+'s | '+('stale' if ascii else '갱신 오류·오래된 화면')
+    heading = _heading(snapshot, mode, ascii, failed)
     count = _legacy_page_count(snapshot,width+1,height,mode)
     index = max(0,page) % count
     names = {'org':'조직', 'flow':'작업 흐름', 'combined':'통합'}
@@ -170,14 +180,7 @@ def _legacy_frame(snapshot, width, height, mode='combined', page=0, color=False,
             continuation = graph.continuation(plan,index,ascii)
             if width < 35 or plan['room'] < plan['unit']:
                 continuation = 'Enlarge for node map; n/p text slices' if ascii else '확대 필요 · n/p 작업/연결 정보'
-        label = snapshot.get('input_label','unknown')
-        synthetic = 'synthetic' in label or snapshot.get('record_label') == 'synthetic'
-        coverage = snapshot.get('dependency_coverage')
-        provenance = (('SYNTHETIC DEMO' if synthetic else 'Recorded claims') + ' | ' +
-                      ('Partial links' if coverage == 'partial' else 'Links unknown') + ' | No live observation') if ascii else (
-                      ('합성 시연' if synthetic else '기록된 주장') + ' | ' +
-                      ('연결 일부만 기록' if coverage == 'partial' else '연결 정보 미확인') + ' | 실행 관측 없음')
-        lines = [heading,navigation,*body,continuation,provenance]
+        lines = [heading,navigation,*body,continuation,_provenance(snapshot, ascii)]
     lines = [fit(graph.safe(line,ascii),width) for line in lines[:capacity]]
     if color and not ascii and 'NO_COLOR' not in os.environ:
         for i,line in enumerate(lines):
@@ -186,6 +189,8 @@ def _legacy_frame(snapshot, width, height, mode='combined', page=0, color=False,
 
 
 def _provenance(snapshot, ascii=False):
+    if snapshot.get('input_mode') == 'orca_run':
+        return 'Local Orca | Task list | Acceptance unknown' if ascii else '로컬 Orca · Task 조회 · 수락 미확인'
     synthetic = 'synthetic' in snapshot.get('input_label', '') or snapshot.get('record_label') == 'synthetic'
     partial = snapshot.get('dependency_coverage') == 'partial'
     return ((('SYNTHETIC DEMO' if synthetic else 'Recorded claims') + ' | ' +
@@ -196,6 +201,8 @@ def _provenance(snapshot, ascii=False):
 
 def _compact_provenance(snapshot, width, ascii=False):
     if cell_width(_provenance(snapshot, ascii)) <= width: return []
+    if snapshot.get('input_mode') == 'orca_run':
+        return ['ORCA', 'NO VERDICT'] if ascii else ['로컬 Orca', '수락 미확인']
     synthetic = 'synthetic' in snapshot.get('input_label', '') or snapshot.get('record_label') == 'synthetic'
     partial = snapshot.get('dependency_coverage') == 'partial'
     words = (['SYNTHETIC' if synthetic else 'RECORDED', 'PART LINKS' if partial else 'LINKS ?', 'NO LIVE'] if ascii else
@@ -259,6 +266,8 @@ def _compact_frame(snapshot, width, height, mode, page, layout, state, ascii, pr
     canvas = wide.Canvas(W, H)
     failed = snapshot['overall_goal_acceptance'].get('badge_kind') == 'error' or not snapshot['check']['ok']
     label = ('ERROR ' if failed or snapshot.get('_refresh_error') else '') + screen + ' ' + str(index + 1) + '/' + str(meta['pages'])
+    if snapshot.get('input_mode') == 'orca_run' and cell_width(snapshot['binding']['run_id']) + len(label) + 3 <= W:
+        label += ' | ' + snapshot['binding']['run_id']
     canvas.put(0, 0, fit(label, W), 'title')
     for y, row in enumerate(body): canvas.put(0, y + 1, row)
     for y, row in enumerate(provenance): canvas.put(0, H - 1 - len(provenance) + y, row, 'accent')
@@ -296,15 +305,9 @@ def render_details(snapshot, width, height, mode='combined', page=0, color=False
     canvas = wide.Canvas(W, H)
     goal = snapshot['overall_goal_acceptance']
     failed = goal.get('badge_kind') == 'error' or not snapshot['check']['ok']
-    goal_state = (('error' if failed else 'recorded pass' if goal['earned_success'] else 'pending') if ascii else
-                  ('오류' if failed else '기록상 통과' if goal['earned_success'] else '확인 대기'))
-    heading = 'Company [' + mode + '] ' + ('Goal: ' if ascii else '전체 목표: ') + goal_state + (
-        ' | User: unobserved' if ascii else ' | 사용자 확인: 미관측')
-    if snapshot.get('_refresh_error'):
-        heading = 'ERROR | last-good ' + str(snapshot.get('_last_good_age', 0)) + 's | ' + ('stale' if ascii else '갱신 오류·오래된 화면')
     def text(y, value, role='secondary'):
         canvas.put(0, y, fit(graph.safe(value, ascii), W), role)
-    text(0, heading, 'ERR' if snapshot.get('_refresh_error') or failed else 'accent')
+    text(0, _heading(snapshot, mode, ascii, failed), 'ERR' if snapshot.get('_refresh_error') or failed else 'accent')
     by_id = {task['id']: task for task in snapshot['tasks']}
     scope = current.scope + (':' + current.value if current.value else '')
     if not ascii:
@@ -367,19 +370,25 @@ def render_frame(snapshot, width, height, mode='combined', page=0, color=False, 
 
 class RefreshState:
     """Bounded read-only refresh. A rejected candidate cannot mutate last-good."""
-    def __init__(self, manifest, interval: float = 1, *, record=False, metadata=None, context=None):
+    def __init__(self, manifest, interval: float = 1, *, record=False, metadata=None, context=None, run_id=None):
         if not math.isfinite(interval) or interval < .25: raise ValueError('interval must be finite and >=0.25')
         self.manifest, self.interval = manifest, interval
-        self.record, self.metadata, self.context = record, metadata, context
+        self.record, self.metadata, self.context, self.run_id = record, metadata, context, run_id
         self.snapshot, self.error, self.fingerprint = None, None, None
         self.last_good_at, self.next_read, self.idle = None, 0, interval
+
+    def read_snapshot(self):
+        if self.run_id is not None:
+            return load_run_snapshot(self.run_id)
+        if self.record:
+            return load_record_snapshot(self.manifest, self.metadata, context_path=self.context)
+        return load_snapshot(self.manifest)
 
     def refresh(self, now):
         if now < self.next_read: return False
         old_error = self.error
         try:
-            incoming = (load_record_snapshot(self.manifest, self.metadata, context_path=self.context) if self.record
-                        else load_snapshot(self.manifest))
+            incoming = self.read_snapshot()
             comparable = {k:v for k,v in incoming.items() if k != 'generated_at'}
             digest = hashlib.sha256(json.dumps(comparable,sort_keys=True,ensure_ascii=True).encode()).hexdigest()
             changed = digest != self.fingerprint
@@ -412,13 +421,11 @@ def _restore_terminal(fd, before):
             termios.tcflush(fd, termios.TCIFLUSH)
 
 
-def run(args):
+def run(args, refresh):
     if not (sys.stdin.isatty() and sys.stdout.isatty()) or os.ttyname(0) != os.ttyname(1):
         raise InputError('persistent mode requires the same caller-owned input/output PTY')
     if os.environ.get('TERM') in (None,'','dumb','unknown'):
         raise InputError('terminal lacks a supported persistent cursor surface')
-    refresh = RefreshState(args.record or args.manifest,args.interval,
-                           record=args.record is not None,metadata=args.metadata,context=args.context)
     refresh.refresh(time.monotonic())
     if refresh.snapshot is None: raise InputError('initial input rejected')
     before = termios.tcgetattr(0)
@@ -493,6 +500,7 @@ def main(argv=None):
     inputs=parser.add_mutually_exclusive_group(required=True)
     inputs.add_argument('--manifest',type=Path,help='strict source-pinned manifest-v1 attachment')
     inputs.add_argument('--record',type=Path,help='explicit ordinary Company record; observe current bytes each refresh')
+    inputs.add_argument('--run',help='explicit local Orca Run ID; observe only that Run')
     parser.add_argument('--metadata',type=Path,help='optional immutable manifest-v1 enrichment; requires --record')
     parser.add_argument('--context',type=Path,help='immutable captured planning context; requires --record')
     parser.add_argument('--capture-context',type=Path,help='explicitly capture --record/--metadata to a NEW private file, then exit')
@@ -520,16 +528,17 @@ def main(argv=None):
         if args.capture_context is not None:
             print(json.dumps(capture_context(args.record,args.metadata,args.capture_context),ensure_ascii=False))
             return 0
+        reader = RefreshState(args.record or args.manifest, args.interval, record=args.record is not None,
+                              metadata=args.metadata, context=args.context, run_id=args.run)
         if args.once:
-            snapshot=(load_record_snapshot(args.record,args.metadata,context_path=args.context) if args.record is not None
-                      else load_snapshot(args.manifest))
+            snapshot = reader.read_snapshot()
             if args.json: print(json.dumps(snapshot,ensure_ascii=False,indent=2))
             else:
                 frame=render_frame(snapshot,args.width or 80,args.height or 12,args.mode,ascii=args.ascii,
                                    layout=args.layout,palette=args.palette)
                 print(frame)
             return 0
-        return run(args)
+        return run(args, reader)
     except (InputError,OSError,ValueError) as exc:
         # Do not echo arbitrary source values, raw transcripts, paths or secrets.
         print('Company TUI: invalid input or unsupported terminal ('+type(exc).__name__+')',file=sys.stderr)

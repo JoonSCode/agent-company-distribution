@@ -237,7 +237,7 @@
     },
     {
       "path": "references/status-tui.md",
-      "sha256": "d20264a526c97871e8a26d1fa11d4f10c60a5bf5b644dd07ed73c1750cbd2fcc"
+      "sha256": "91eb45094c6ad378823d62a9c36ac3bbee559bfb2f62922100684f479e33812c"
     },
     {
       "path": "references/status-view.md",
@@ -409,7 +409,7 @@
     },
     {
       "path": "scripts/status_tui.py",
-      "sha256": "3c67a2330f2a05c453b2d575209f7cd3b63814389280ebb0a6e9ad17f643d0f8"
+      "sha256": "ca4082284a0ad0b127b9df4ef429081571afe4b0a63d5fd23ae9b5e043d57095"
     },
     {
       "path": "scripts/status_tui_context.py",
@@ -421,11 +421,11 @@
     },
     {
       "path": "scripts/status_tui_graph.py",
-      "sha256": "42290e8a3a6dcd94db5c6fadcea8e4d7b1725bbf38ea22255929cd9350ec8efe"
+      "sha256": "e7bcbf213ee0d340d01d906f6646f6cd3d4cc4e64a39f88ea04786e8a6c2bbdd"
     },
     {
       "path": "scripts/status_tui_input.py",
-      "sha256": "b643c81310dd9a644c85a3f73681867be1dcfaa35f3009886971b5519e6a1bf6"
+      "sha256": "c55aa4f8c976732ca3845d920a77eabe92a7fe0fb37ce6009927e28e7511ffd9"
     },
     {
       "path": "scripts/status_tui_navigation.py",
