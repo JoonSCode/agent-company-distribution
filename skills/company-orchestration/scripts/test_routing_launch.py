@@ -1049,6 +1049,7 @@ print(json.dumps({'ok': True, 'result': result}))
                     ('wrong-origin-runtime', ('_meta', 'runtimeId'), 'different-runtime'),
                     ('wrong-origin-run', ('result', 'dispatch', 'runId'), 'different-run'),
                     ('wrong-origin-pty', ('result', 'dispatch', 'processIncarnation'), 'other:inc'),
+                    ('malformed-origin-launch', ('result', 'worker', 'startOptions', 'launch'), []),
                     ('stale-origin-effort', ('result', 'worker', 'startOptions', 'launch', 'effective', 'effort'), 'other')):
                 with self.subTest(name=name):
                     response = copy.deepcopy(live)
@@ -1059,7 +1060,7 @@ print(json.dumps({'ok': True, 'result': result}))
                     wrong = SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr='')
                     case_root, case_args = fresh_launch_case(root, args, Path(temp) / name)
                     with (patch('record_check.canonical_home', return_value=case_root),
-                          patch('routing_launch.subprocess.run', side_effect=[wrong, result]) as host):
+                          patch('routing_launch.subprocess.run', side_effect=[wrong, result, full_probe]) as host):
                         self.assertEqual(routing_launch.main(case_args), 1)
                         self.assertEqual([call.args[0][2] for call in host.call_args_list], ['worker-show'])
                         self.assertFalse((case_root / 'receipt.json').exists())
@@ -1092,8 +1093,26 @@ print(json.dumps({'ok': True, 'result': result}))
                         self.assertEqual(host.call_count, 2)
             concise = {'ok': True, 'result': {'taskId': 'new-task', 'dispatchId': 'new-dispatch',
                        'runId': 'goal-1', 'terminal': 'term', 'state': 'ready'}}
-            for name in ('valid', 'different-process', 'different-terminal', 'different-runtime', 'different-task',
-                         'different-model', 'saved-model', 'saved-effort', 'not-reused', 'missing-readback'):
+            for field, value in (('launch', False), ('prompt', []), ('effects', '')):
+                with self.subTest(malformed_start_field=field):
+                    response = copy.deepcopy(concise)
+                    response['result'][field] = value
+                    malformed = SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr='')
+                    case_root, case_args = fresh_launch_case(root, args, Path(temp) / ('malformed-' + field))
+                    with (patch('record_check.canonical_home', return_value=case_root),
+                          patch('routing_launch.subprocess.run', side_effect=[probe, malformed, full_probe]) as host):
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual(routing_launch.main(case_args), 1)
+                        self.assertEqual([call.args[0][2] for call in host.call_args_list],
+                                         ['worker-show', 'worker-start'])
+                    saved = json.loads((case_root / 'result.json').read_bytes())
+                    self.assertEqual(saved['readback_status'], 'unverified')
+                    self.assertEqual(saved['launch_state'], 'unknown')
+                    self.assertEqual(saved['stdout'], malformed.stdout)
+            for name in ('valid', 'explicit-null', 'different-process', 'different-terminal', 'different-runtime',
+                         'different-task', 'different-model', 'saved-model', 'saved-effort', 'not-reused',
+                         'created-after-match', 'other-terminal-after-match', 'malformed-after-match',
+                         'pty-exited', 'pty-unavailable', 'agent-dead', 'agent-unverifiable', 'missing-readback'):
                 with self.subTest(name='concise-reuse-'+name):
                     case_root, case_args = fresh_launch_case(root, args, Path(temp) / ('reuse-full-'+name))
                     case_args += ['--run', 'goal-1']
@@ -1105,7 +1124,11 @@ print(json.dumps({'ok': True, 'result': result}))
                     selected_record = json.loads(current_record.read_bytes())
                     selected_record['run'] = 'goal-1'
                     current_record.write_text(json.dumps(selected_record))
+                    start_response = copy.deepcopy(concise)
                     response = copy.deepcopy(full)
+                    if name == 'explicit-null':
+                        start_response['result'].update(launch=None, prompt=None, effects=None)
+                        response['result']['worker']['startOptions']['launch']['effective'] = None
                     if name == 'different-process':
                         response['result']['terminal']['incarnationId'] = 'other'
                     if name == 'different-terminal':
@@ -1121,22 +1144,35 @@ print(json.dumps({'ok': True, 'result': result}))
                         response['result']['worker']['startOptions']['launch']['effective'][field] = packet['selected'][field]
                     if name == 'not-reused':
                         response['result']['worker']['effects'][0]['action'] = 'created'
+                    if name == 'created-after-match':
+                        response['result']['worker']['effects'].append(
+                            {'kind': 'terminal', 'id': 'term', 'role': 'agent', 'action': 'created'})
+                    if name == 'other-terminal-after-match':
+                        response['result']['worker']['effects'].append(
+                            {'kind': 'terminal', 'id': 'other', 'role': 'agent', 'action': 'reused'})
+                    if name == 'malformed-after-match':
+                        response['result']['worker']['effects'].append(None)
+                    if name in ('pty-exited', 'pty-unavailable'):
+                        response['result']['observation']['status'] = name.removeprefix('pty-')
+                    if name in ('agent-dead', 'agent-unverifiable'):
+                        response['result']['projection']['liveness']['verdict'] = name.removeprefix('agent-')
                     if name == 'missing-readback':
                         response = {'ok': False, 'error': 'readback unavailable'}
                     replies = [probe] + [
                         SimpleNamespace(returncode=0, stdout=json.dumps(value), stderr='')
-                        for value in (concise, response)]
+                        for value in (start_response, response)]
+                    valid = name in ('valid', 'explicit-null', 'agent-unverifiable')
                     with (patch('record_check.canonical_home', return_value=case_root),
                           patch('routing_launch.subprocess.run', side_effect=replies) as host):
-                        self.assertEqual(routing_launch.main(case_args), 0 if name == 'valid' else 1)
+                        self.assertEqual(routing_launch.main(case_args), 0 if valid else 1)
                         self.assertEqual([call.args[0][2] for call in host.call_args_list],
                                          ['worker-show', 'worker-start', 'worker-show'])
-                        if name != 'valid':
+                        if not valid:
                             self.assertEqual(routing_launch.main(case_args), 1)
                             self.assertEqual(host.call_count, 3)
                     saved = json.loads((case_root / 'result.json').read_bytes())
                     self.assertEqual(saved['full_readback']['stdout'], json.dumps(response))
-                    self.assertEqual(saved['launch_state'], 'observed' if name == 'valid' else 'unknown')
+                    self.assertEqual(saved['launch_state'], 'observed' if valid else 'unknown')
                     self.assertEqual(saved['reuse_settings'], {'status': 'unknown', 'model': None, 'effort': None})
             root, args = fresh_launch_case(root, args, Path(temp) / 'reuse-denial')
             live['result']['terminal']['incarnationId'] = 'different'

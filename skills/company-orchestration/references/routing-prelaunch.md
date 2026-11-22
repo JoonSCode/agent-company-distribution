@@ -74,7 +74,8 @@ start. The launcher retains a failed origin probe in the `not_started` result.
 
 After the start, the launcher checks the new Task and Dispatch against the same
 Run and process in a fresh `worker-show --full` response with a reused terminal
-effect. On the supported Orca terminal path, this response projects stored
+effect and an exact live PTY. A reported dead agent leaves the start unresolved.
+On the supported Orca terminal path, this response projects stored
 `startOptions.launch` alongside live process evidence. It provides no current
 model or effort observation for the reused process. The receipt records the
 original pair as `prior_launch_effective` and the result records both current

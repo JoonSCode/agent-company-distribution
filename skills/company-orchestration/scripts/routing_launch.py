@@ -277,6 +277,26 @@ def storage_launch_guard(args, reserve=False, capability=None):
     return reference
 
 
+def optional_reuse_object(value, field):
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError(f'malformed reuse {field}')
+    return value
+
+
+def read_reuse_effects(value):
+    if not isinstance(value, list):
+        raise ValueError('reuse effects must be an array')
+    for effect in value:
+        if (not isinstance(effect, dict) or not isinstance(effect.get('kind'), str) or
+                not effect['kind'].strip() or any(
+                    member is not None and (not isinstance(member, str) or not member.strip())
+                    for member in map(effect.get, ('id', 'action', 'role', 'state', 'surface')))):
+            raise ValueError('malformed reuse effect')
+    return value
+
+
 def full_launch_readback(executable, payload, selected, timeout, *, agent='codex', runtime_id=None,
                          reused_process=None):
     """Read the host's exact Dispatch and effective settings or incarnation."""
@@ -310,14 +330,27 @@ def full_launch_readback(executable, payload, selected, timeout, *, agent='codex
         if reused_process is not None:
             handle, pty_id, incarnation = reused_process
             terminal = data['result']['terminal']
+            observation = data['result']['observation']
+            projection = optional_reuse_object(data['result'].get('projection'), 'worker projection')
+            liveness = optional_reuse_object(projection.get('liveness'), 'worker liveness')
             if (dispatch.get('assigneeHandle') != handle or worker.get('agentTerminalHandle') != handle or
                     worker.get('runtimeEpoch') not in (None, runtime_id) or
-                    data['result'].get('observation', {}).get('exactWorker') is not True or
+                    observation.get('exactWorker') is not True or observation.get('status') != 'live' or
+                    liveness.get('verdict') == 'dead' or
                     terminal.get('handle') != handle or terminal.get('ptyId') != pty_id or
                     terminal.get('incarnationId') != incarnation or
-                    dispatch.get('processIncarnation') != f'{pty_id}:{incarnation}' or
-                    not any(effect.get('kind') == 'terminal' and effect.get('action') == 'reused' and
-                            effect.get('id') == handle for effect in worker['effects'])):
+                    dispatch.get('processIncarnation') != f'{pty_id}:{incarnation}'):
+                return result
+            matched_terminal = False
+            for effect in read_reuse_effects(worker['effects']):
+                action = effect.get('action')
+                if action == 'created':
+                    return result
+                if effect['kind'] == 'terminal':
+                    if action != 'reused' or effect.get('id') != handle:
+                        return result
+                    matched_terminal = True
+            if not matched_terminal:
                 return result
             if effective is not None and not isinstance(effective, dict):
                 return result
@@ -769,7 +802,8 @@ def _main(args):
             dispatch = live['dispatch']
             prior_worker = live['worker']
             reuse_pty = terminal['ptyId']
-            prior_effective = (prior_worker.get('startOptions', {}).get('launch') or {}).get('effective')
+            prior_launch = optional_reuse_object(prior_worker.get('startOptions', {}).get('launch'), 'prior launch')
+            prior_effective = prior_launch.get('effective')
             unchanged = source.get('reuse_binding', {})
             evidence_bytes = (args.decision.parent / source['file']).read_bytes()
             observed_at = datetime.fromisoformat(unchanged['observed_at'].replace('Z', '+00:00'))
@@ -975,8 +1009,12 @@ def _main(args):
             elif args.run and payload.get('runId') != args.run:
                 status, reason = ('unverified', 'host Run identity missing') if payload.get('runId') is None else ('failed', 'host Run identity differs')
             elif reuse:
-                incarnation = (payload.get('prompt') or {}).get('processIncarnation')
-                effective = (payload.get('launch') or {}).get('effective')
+                prompt = optional_reuse_object(payload.get('prompt'), 'prompt')
+                launch = optional_reuse_object(payload.get('launch'), 'launch')
+                incarnation = prompt.get('processIncarnation')
+                effective = launch.get('effective')
+                effects = payload.get('effects')
+                effects = [] if effects is None else read_reuse_effects(effects)
                 reported_terminal = payload.get('terminal')
                 if payload['taskId'] == original_task_id or payload['dispatchId'] == args.reuse_dispatch:
                     status, reason = 'failed', 'reuse did not return a new Task and Dispatch'
@@ -986,9 +1024,9 @@ def _main(args):
                     status, reason = 'failed', 'reuse returned a different terminal incarnation'
                 elif payload.get('runId') != original_run or response_runtime not in (None, reuse_runtime):
                     status, reason = 'unverified', 'reuse host response does not identify the original Run and runtime'
-                elif any(effect.get('kind') == 'terminal' and
+                elif any(effect['kind'] == 'terminal' and
                          (effect.get('id') != args.terminal or effect.get('action') not in (None, 'reused'))
-                         for effect in (payload.get('effects') or ())):
+                         for effect in effects):
                     status, reason = 'failed', 'reuse returned a contradictory terminal effect'
                 elif effective is not None and not isinstance(effective, dict):
                     status, reason = 'unverified', 'reuse response contains malformed effective settings'
