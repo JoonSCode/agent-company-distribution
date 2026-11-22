@@ -98,6 +98,24 @@ independent review, and an installer journal supplies no deployment verdict.
 SHA-256 pins establish consistency with the supplied bytes. Current host state,
 receipt authorship, authority, and operational gains require their own evidence.
 
+## Optional launcher timing
+
+Add `--record-timing` to an enrolled checked launch to retain timings in its
+existing private result. Include that exact result under `launch` in the
+manifest above. For an observed launch, use the Task ID returned by Orca. The
+projection adds `launch_timing` with the local process epoch, individual
+spans, clock reversals and attribution.
+
+The spans measure enrollment preparation, lock acquisition, preparation while
+holding the lock, the local worker-start subprocess, and response readback.
+The lock span includes acquiring and validating the protected namespace. The
+worker-start span includes local transport and may include timeout handling.
+Each duration comes from the same launcher's monotonic clock. Keep request and
+provider work, time between recorded spans, and the lifetime of the worker
+outside these spans. These values describe observations by the launcher process.
+Use observed host readback to attach them to a Dispatch. If a stage was missed
+or the operation stopped, the projection reports the gap from the saved state.
+
 ## Offline outcome replay
 
 Pass the same manifest and an explicit assessment JSON to

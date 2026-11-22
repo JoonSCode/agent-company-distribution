@@ -1,6 +1,8 @@
 """Synthetic prelaunch checks; no actual Orca worker is launched."""
 import copy
+from contextlib import redirect_stdout, redirect_stderr
 import hashlib
+from io import StringIO
 import json
 import os
 from pathlib import Path
@@ -68,6 +70,116 @@ class LaunchFixture(unittest.TestCase):
         executable = patch('routing_launch.shutil.which', side_effect=lambda value: value)
         executable.start()
         self.addCleanup(executable.stop)
+
+
+def timing_fixture(base):
+    root = launch_root(base)
+    run, spec = 'run-timing', '  한글・日本語\r\n\n'
+    binding = {'task': 'planned-local', 'planned': True, 'attempt': 'planned:planned-local',
+               'revision': 'a' * 40, 'parent_task': None, 'run': run,
+               'spec_sha256': hashlib.sha256(spec.encode()).hexdigest()}
+    (root / 'decision').write_text(json.dumps({'binding': binding}))
+    (root / 'record').write_text(json.dumps({'goal': fixture_goal(), 'run': run}))
+    args = [*enrollment_flags(root), '--decision', str(root / 'decision'), '--record', str(root / 'record'),
+            '--receipt', str(root / 'receipt'), '--result', str(root / 'result'),
+            '--from', 'term-sender', '--spec', spec, '--run', run, '--worktree', 'current']
+    checked = {'ok': True, 'label': 'real', 'errors': [], 'receipt': {
+        'format': 'company-routing-decision/v1', 'binding': binding,
+        'selected': {'route': 'codex', 'model': 'model', 'effort': 'high'}}}
+    host = {'ok': True, 'result': {'taskId': 'task-timing', 'dispatchId': 'dispatch-timing',
+                                  'runId': run, 'terminal': 'term-fixture',
+                                  'launch': {'effective': {'agent': 'codex', 'model': 'model', 'effort': 'high'}}}}
+    return root, args, checked, SimpleNamespace(returncode=0, stdout=json.dumps(host), stderr='')
+
+
+class TimingLaunchTests(LaunchFixture):
+    def test_opt_in_receipt_transport_and_outcomes(self):
+        from stage_timeline import project
+
+        for case, expected, expected_spans in (
+                ('legacy', 'observed', None),
+                ('observed', 'observed', ('measured',) * 5),
+                ('denied', 'not_started', ('measured',) * 3 + ('unknown',) * 2),
+                ('timeout', 'unknown', ('measured',) * 4 + ('unknown',)),
+                ('oserror', 'unknown', ('measured',) * 4 + ('unknown',)),
+                ('readback_failure', 'unknown', ('measured',) * 5),
+                ('interrupted', 'invocation_pending', ('measured',) * 3 + ('unknown',) * 2)):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                root, args, check, response = timing_fixture(tmp)
+                if case != 'legacy':
+                    args += ['--record-timing']
+                if case == 'denied':
+                    check['ok'] = False
+                if case == 'readback_failure':
+                    reply = json.loads(response.stdout)
+                    reply['result']['launch']['effective']['model'] = 'wrong'
+                    response.stdout = json.dumps(reply)
+                error = {'timeout': subprocess.TimeoutExpired('offline', 1, output=b'raw-timeout'),
+                         'oserror': OSError('offline'), 'interrupted': KeyboardInterrupt()}.get(case)
+                result = root / 'result'
+
+                def fake_host(*_a, **_k):
+                    self.assertEqual(json.loads(result.read_bytes())['launch_state'], 'invocation_pending')
+                    if error is not None:
+                        raise error
+                    return response
+
+                output = StringIO()
+                with patch('routing_launch.check_routing', side_effect=lambda *_a, **_k: copy.deepcopy(check)), \
+                        patch('routing_launch.subprocess.run', side_effect=fake_host) as host, \
+                        redirect_stdout(output), redirect_stderr(StringIO()):
+                    if case == 'interrupted':
+                        with self.assertRaises(KeyboardInterrupt):
+                            routing_launch.main(args)
+                    else:
+                        self.assertEqual(routing_launch.main(args), 0 if expected == 'observed' else 1)
+                    self.assertEqual(host.call_count, int(case != 'denied'))
+                    actual = result.read_bytes()
+                    if case != 'denied':
+                        self.assertEqual(routing_launch.main(args), 1)
+                        self.assertEqual(host.call_count, 1)
+                        self.assertEqual(result.read_bytes(), actual)
+                document = json.loads(actual)
+                self.assertEqual(document['launch_state'], expected)
+                self.assertEqual(result.stat().st_mode & 0o777, 0o600)
+                self.assertNotIn(b'raw-timeout', actual)
+                launch_ref = {'file': result.name, 'sha256': hashlib.sha256(actual).hexdigest()}
+                receipt = root / 'receipt'
+                if case == 'denied':
+                    self.assertFalse(receipt.exists())
+                    receipt = root / 'check'
+                    receipt.write_text(output.getvalue())
+                receipt_ref = {'file': receipt.name, 'sha256': hashlib.sha256(receipt.read_bytes()).hexdigest()}
+                selector = {'id': 'primary', 'run': 'run-timing', 'task': 'task-timing',
+                            'revision': 'a' * 40, 'launch': launch_ref, 'precheck': receipt_ref}
+                row, = project({'version': 1, 'current': 'primary', 'attempts': [selector]}, root)['attempts']
+                if case == 'legacy':
+                    self.assertNotIn('timing', document)
+                    self.assertNotIn('launch_timing', row)
+                    continue
+                if case != 'denied':
+                    self.assertEqual(document['timing']['receipt_sha256'], receipt_ref['sha256'])
+                timing = row['launch_timing']
+                self.assertEqual(tuple(span['status'] for span in timing['spans']), expected_spans)
+                self.assertEqual(timing['attribution'],
+                                 'observed_dispatch' if expected == 'observed' else 'launcher_process_only')
+                if case == 'timeout':
+                    self.assertLess(len(actual), 4096)
+                    self.assertEqual(timing['spans'][3]['reason'], 'host_start_timeout')
+                if case == 'readback_failure':
+                    self.assertEqual(timing['spans'][4]['reason'], 'failed')
+
+    def test_contended_lock_creates_no_timing_or_host_effect(self):
+        import run_completion as rc
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root, args, _, _ = timing_fixture(tmp)
+            with rc.lifecycle_lock(root.parents[1], root), patch('routing_launch.subprocess.run') as host, \
+                    redirect_stdout(StringIO()):
+                self.assertEqual(routing_launch.main([*args, '--record-timing']), 1)
+                host.assert_not_called()
+                self.assertFalse((root / 'result').exists())
+                self.assertFalse((root / 'receipt').exists())
 
 
 class AgyLaunchTests(LaunchFixture):

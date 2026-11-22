@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from time import monotonic_ns
 
 # Select Python's normal cache prefix before importing Company modules.
 # Restrict this to the CLI process; callers importing a module are unchanged.
@@ -32,6 +33,34 @@ from company_config import resolve, resource_manifest_check
 
 
 from atomic_persistence import atomic_state
+
+
+class LaunchTiming:
+    """Opt-in observations from one launcher invocation, stored in its existing result."""
+
+    def __init__(self, args):
+        self.origin = monotonic_ns()
+        self.marks = {}
+        self.mark('entry')
+        self.epoch = secrets.token_hex(16)
+        self.binding = {
+            key + '_sha256': hashlib.sha256(value.encode('utf-8', 'surrogatepass')).hexdigest()
+            if value is not None else None
+            for key, value in (('run', args.run), ('requested_task', args.task), ('retry_of', args.retry_of))
+        }
+        self.decision_sha256 = None
+        self.receipt_sha256 = None
+
+    def mark(self, name):
+        elapsed_ns = monotonic_ns() - self.origin
+        self.marks[name] = [datetime.now(timezone.utc).isoformat(), elapsed_ns]
+
+    def add(self, state, reason):
+        return {**state, 'timing': {
+            'version': 1, 'epoch': self.epoch, **self.binding,
+            'decision_sha256': self.decision_sha256, 'receipt_sha256': self.receipt_sha256,
+            'reason': reason, 'marks': dict(self.marks),
+        }}
 
 
 def logical_attempt(binding):
@@ -286,6 +315,7 @@ def full_launch_readback(executable, payload, selected, timeout, *, agent='codex
 def main(argv=None):
     # Parse all arguments before creating the lock or result (including --help).
     args = argument_parser().parse_args(argv)
+    timing = args.timing = LaunchTiming(args) if args.record_timing else None
     if args.spec_file is not None:
         from native_operations import regular
         try:
@@ -310,7 +340,11 @@ def main(argv=None):
     path = args.result
     try:
         import run_completion as rc
+        if timing is not None:
+            timing.mark('lock_enter')
         with rc.lifecycle_lock(Path(enrollment['sejong_home']), Path(enrollment['run'])) as capability:
+            if timing is not None:
+                timing.mark('lock_acquired')
             args.storage_capability = capability
             if (os.path.lexists(path.with_name(path.name + '.reprepare')) or
                     (args.reprepare_inventory and (os.path.lexists(path) or os.path.lexists(args.receipt)))):
@@ -333,7 +367,9 @@ def main(argv=None):
                 except (OSError, ValueError, AttributeError):
                     print(json.dumps({'ok': False, 'error': 'result already exists; reconciliation required'}))
                     return 1
-            atomic_state(path, {'launch_state_version': 1, 'launch_state': 'not_started'}, capability)
+            initial = {'launch_state_version': 1, 'launch_state': 'not_started'}
+            args.initial_launch_state = timing.add(initial, 'preparation_incomplete') if timing else initial
+            atomic_state(path, args.initial_launch_state, capability)
             from measurement_lifecycle import launch_guard
             try:
                 with launch_guard(args, capability) as lifecycle:
@@ -342,6 +378,14 @@ def main(argv=None):
             except (ValueError, KeyError, TypeError, AttributeError, sqlite3.Error, subprocess.SubprocessError) as exc:
                 print(json.dumps({'ok': False, 'error': 'measurement lifecycle blocked', 'detail': str(exc)}))
                 return 1
+            finally:
+                if timing is not None and 'prepared' not in timing.marks:
+                    timing.mark('preparation_stopped')
+                    try:
+                        atomic_state(path, timing.add(initial, 'preparation_stopped'), capability)
+                    except (OSError, ValueError):
+                        # The incomplete observation is sufficient if enrichment cannot be persisted.
+                        pass
     except (OSError, ValueError, KeyError, TypeError) as exc:
         print(json.dumps({'ok': False, 'error': 'result persistence failed', 'detail': str(exc)}))
         return 1
@@ -360,6 +404,8 @@ def argument_parser():
     parser.add_argument('--record', required=True, type=Path)
     parser.add_argument('--receipt', required=True, type=Path)
     parser.add_argument('--result', required=True, type=Path)
+    parser.add_argument('--record-timing', action='store_true',
+                        help='include private launcher timing in the retained result')
     parser.add_argument('--from', dest='sender', required=True)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--spec')
@@ -422,7 +468,7 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
             decision['selected']['route'] == 'codex' and inventory.get('source') != 'orca_model_catalog' and
             pin_error in errors and bool(errors & drift_errors) and errors <= {pin_error, *drift_errors},
             'reprepare is limited to an inventory-only hash denial')
-    require(json.loads(args.result.read_bytes()) == {'launch_state_version': 1, 'launch_state': 'not_started'},
+    require(json.loads(args.result.read_bytes()) == args.initial_launch_state,
             'reprepare requires authoritative local not_started before any host invocation')
     path = (args.decision.parent / inventory['file']).resolve()
     require(path == (canonical_home() / 'models_cache.json').resolve(), 'inventory is not canonical')
@@ -481,6 +527,7 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
 
 
 def _main(args):
+    timing = args.timing
     parser = argument_parser()
     executable = resolve_orca(args.orca)
     if not shutil.which(executable):
@@ -496,6 +543,8 @@ def _main(args):
     if error:
         print(json.dumps({'ok': False, 'errors': [error]}))
         return 2
+    if timing is not None:
+        timing.decision_sha256 = decision_hash
     record, error, record_hash = read_json_snapshot(args.record)
     if error:
         print(json.dumps({'ok': False, 'errors': [error]}))
@@ -535,6 +584,8 @@ def _main(args):
             return 1
     result['receipt'].update(decision_sha256=decision_hash, record_sha256=record_hash, spec_sha256=spec_hash,
                              requested_run=args.run)
+    if timing is not None:
+        timing.decision_sha256 = decision_hash
     profile_binding = decision.get('profile_binding')
     result['receipt']['profile_unit'] = profile_binding.get('unit_id') if isinstance(profile_binding, dict) else None
     if refresh is not None:
@@ -790,19 +841,32 @@ def _main(args):
     with rc.parent_fd(args.storage_capability.fd, receipt_ref) as (parent, name):
         receipt_handle = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
     with os.fdopen(receipt_handle, 'w', encoding='utf-8') as receipt:
-        json.dump(result, receipt, ensure_ascii=False, indent=2)
-        receipt.write('\n')
+        if timing is None:
+            json.dump(result, receipt, ensure_ascii=False, indent=2)
+            receipt.write('\n')
+        else:
+            payload = json.dumps(result, ensure_ascii=False, indent=2) + '\n'
+            receipt.write(payload)
+            timing.receipt_sha256 = hashlib.sha256(payload.encode('utf-8')).hexdigest()
         receipt.flush()
         os.fsync(receipt.fileno())
     if args.lifecycle is not None:
         args.lifecycle.pending(command, args.receipt)
     args.storage_capability.verify()
-    atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'invocation_pending',
-                               'decision_sha256': decision_hash}, args.storage_capability)
+    pending = {'launch_state_version': 1, 'launch_state': 'invocation_pending',
+               'decision_sha256': decision_hash}
+    if timing is not None:
+        timing.mark('prepared')
+        pending = timing.add(pending, 'invocation_pending')
+    atomic_state(args.result, pending, args.storage_capability)
     try:
         args.storage_capability.verify()
+        if timing is not None:
+            timing.mark('start_enter')
         host = subprocess.run(command, check=False, capture_output=True, text=True, timeout=args.start_timeout)
     except subprocess.TimeoutExpired as exc:
+        if timing is not None:
+            timing.mark('start_exit')
         partial = {'format': 'company-launch-timeout/v1',
                    'stdout': timeout_stream_metadata(exc.output),
                    'stderr': timeout_stream_metadata(exc.stderr)}
@@ -810,6 +874,8 @@ def _main(args):
                  'decision_sha256': decision_hash, 'error_code': 'host_start_timeout',
                  'error': 'host start timed out; outcome unknown', 'partial_output': partial,
                  'diagnostic_reference': 'self'}
+        if timing is not None:
+            state = timing.add(state, 'host_start_timeout')
         diagnostic = 'available'
         try:
             write_timeout_state(args.result, state)
@@ -822,10 +888,17 @@ def _main(args):
                           'diagnostic': diagnostic}))
         return 1
     except (OSError, subprocess.SubprocessError) as exc:
-        atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'unknown',
-                                   'decision_sha256': decision_hash, 'error': str(exc)}, args.storage_capability)
+        state = {'launch_state_version': 1, 'launch_state': 'unknown',
+                 'decision_sha256': decision_hash, 'error': str(exc)}
+        if timing is not None:
+            if 'start_enter' in timing.marks:
+                timing.mark('start_exit')
+            state = timing.add(state, 'host_start_error')
+        atomic_state(args.result, state, args.storage_capability)
         print(json.dumps({'ok': False, 'error': 'host outcome unknown; reconciliation required'}))
         return 1
+    if timing is not None:
+        timing.mark('start_exit')
     status, reason = ('failed', 'host returned nonzero') if host.returncode else ('unverified', 'host result lacks required readback')
     full_readback = None
     try:
@@ -867,12 +940,16 @@ def _main(args):
                     status, reason = full_readback['status'], full_readback['reason']
     except (ValueError, KeyError, TypeError, AttributeError):
         pass
+    if timing is not None:
+        timing.mark('readback_done')
     args.storage_capability.verify()
-    atomic_state(args.result, {'launch_state_version': 1, 'launch_state': 'observed' if status == 'observed' else 'unknown',
+    final = {'launch_state_version': 1, 'launch_state': 'observed' if status == 'observed' else 'unknown',
                'decision_sha256': decision_hash, 'prelaunch_receipt_sha256': hashlib.sha256(args.receipt.read_bytes()).hexdigest(),
                'exit_code': host.returncode, 'readback_status': status, 'readback_reason': reason,
                'stdout': host.stdout, 'stderr': host.stderr,
-               'full_readback': full_readback}, args.storage_capability)
+               'full_readback': full_readback}
+    atomic_state(args.result, timing.add(final, 'readback_finished') if timing else final,
+                 args.storage_capability)
     if status == 'observed' and args.lifecycle is not None:
         args.lifecycle.bind()
     sys.stdout.write(host.stdout)

@@ -233,7 +233,7 @@
     },
     {
       "path": "references/stage-timeline.md",
-      "sha256": "6405f484082db3ca049865022a38a8665cedde4bc08d77be5f4e58b951e3539b"
+      "sha256": "9dc7e376dec68511830b2fd9aaa86400ef6c524f5a79543df165b04fcb1b3ff7"
     },
     {
       "path": "references/status-tui.md",
@@ -389,7 +389,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "4ee0c07f7ce474827b6f2ee73b42a76efc2540088151355c3ba4552979597459"
+      "sha256": "25ff4fa0dcb53468dc7149784a00589e0a59a1bebb9789c3f95427af55b1cc19"
     },
     {
       "path": "scripts/routing_prepare.py",
@@ -405,7 +405,7 @@
     },
     {
       "path": "scripts/stage_timeline.py",
-      "sha256": "91d210380f103eb91a2c0245824e55394fdbbce42f523d9289ac1c1940d22b6a"
+      "sha256": "3d0abe7aec6298dc71a54ff0b355205e944ce9770eff7e5ef3fcd10bbffa72ef"
     },
     {
       "path": "scripts/status_tui.py",
@@ -477,7 +477,7 @@
     },
     {
       "path": "scripts/test_routing_launch.py",
-      "sha256": "eaf3e5688b03cdbe49ada5da04bee2d421b43620136188f5e4c92d12b70c2088"
+      "sha256": "0d5a755d5d0d6d2c684d93bfc66c4ce53f3f4a658c1326c21d2b517fc86f9fec"
     },
     {
       "path": "scripts/test_routing_preflight.py",
