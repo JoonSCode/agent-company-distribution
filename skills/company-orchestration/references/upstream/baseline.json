@@ -185,7 +185,7 @@
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "c27f26d24a292f82a9c705fa1188b9d1c165c40d06c1423e94f3209ae6cb06ff"
+      "sha256": "0ef3c396b2015f067aaa4d99c05f4abbc7b74c5348930d171fbe5d8cc280ff53"
     },
     {
       "path": "references/organization-evidence.md",
@@ -237,7 +237,7 @@
     },
     {
       "path": "references/status-tui.md",
-      "sha256": "91eb45094c6ad378823d62a9c36ac3bbee559bfb2f62922100684f479e33812c"
+      "sha256": "7d2fea9efb84ecb38fda54a44dd3f89ce5caba9c75d1f35811a1f8987309b9f5"
     },
     {
       "path": "references/status-view.md",
@@ -406,6 +406,10 @@
     {
       "path": "scripts/stage_timeline.py",
       "sha256": "3d0abe7aec6298dc71a54ff0b355205e944ce9770eff7e5ef3fcd10bbffa72ef"
+    },
+    {
+      "path": "scripts/open_run_view.py",
+      "sha256": "08a0e22db4d40f8860a36f3aa0d00899d31179794ad237885e44e47b4cf2c216"
     },
     {
       "path": "scripts/status_tui.py",

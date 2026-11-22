@@ -7,7 +7,17 @@ description: Only for explicit Agent Company requests; coordinate goals through 
 
 ## Orca fork entry
 
-Before routing, read [configuration](../company-orchestration/references/configuration.md) and run the installed snapshot `scripts/agent_company_config.py explain`. It reads common rules, the selected preset and private user overrides. Apply an explicit current-task document last. No configuration grants authentication or launch authority. Claude Code direct and Antigravity Claude are distinct routes. A Claude-only Company head needs no Codex/Astra policy pin; the packaged native roles and hook currently target Codex, so verify the actual host adapter before execution.
+Before routing, read [configuration](../company-orchestration/references/configuration.md).
+Read `snapshot_id` from `${CODEX_HOME:-$HOME/.codex}/agent-company/active.json`.
+Use that exact ID in the absolute installed script path
+`${CODEX_HOME:-$HOME/.codex}/agent-company/snapshots/SNAPSHOT_ID/repo/scripts/agent_company_config.py`
+and run the script with Python 3.13 and the `explain` argument. Check its exit
+status separately before routing. It reads common rules, the selected preset
+and private user overrides. Apply an explicit current-task document last. No
+configuration grants authentication or launch authority. Claude Code direct and
+Antigravity Claude are distinct routes. A Claude-only Company head needs no
+Codex/Astra policy pin; the packaged native roles and hook currently target
+Codex, so verify the actual host adapter before execution.
 
 For this dedicated Orca fork, start or resume the user's Company goal through
 [Company orchestration](../company-orchestration/SKILL.md). That self-contained
@@ -15,6 +25,18 @@ package is the active policy for staffing, model/path/effort, context/tokens,
 records and actual Orca execution. Preserve the explicit-only front door and
 continuous-session attribution below. Read only the package references needed
 for the task; it does not require global orchestration or ultrawork skills.
+
+## Open the team view in Orca
+
+On explicit Company entry in a local Orca coordinator pane, run the installed
+[Run view opener](../company-orchestration/scripts/open_run_view.py) yourself.
+Use the existing Python 3.13 runner, for example
+`uv run --offline --no-python-downloads --no-project --python 3.13 python -B PATH_TO_OPEN_RUN_VIEW`,
+where the path is the installed helper above. If the Run is bound already, this
+opens its team view in the same tab. If no Run is bound, continue with the
+requested work and run the helper immediately after creating or resuming a Run
+actually binds it to this coordinator. Follow the
+[Company Orca contract](../company-orchestration/references/orca-contract.md).
 
 The Core route/job/TeamExecutor history is retained in the source checkout's
 `docs/legacy-core-baseline.md` under "Archived skill invocation contract"; it is not a required installed-skill input. It is not this fork's
