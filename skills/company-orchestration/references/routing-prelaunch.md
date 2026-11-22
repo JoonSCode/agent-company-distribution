@@ -96,13 +96,15 @@ Read-only host checks precede the single worker-start call. Pass placement again
 default; the value is a single executable, not shell syntax. All probes and the
 launch use that same selection. This does not authenticate the host.
 
-The exclusive result path serializes only callers sharing that path. Before the
-worker-start subprocess the launcher flushes an `invocation_pending` state;
-any pending, damaged or unknown result requires reconciliation and must not be
-retried merely because no success was recorded. An observed result records
-bound host readback, not provider verification. No authoritative absence query,
-idempotency contract or host-wide reservation is established by this local file.
-Using a different result path or an unchecked host entrypoint is not protected.
+The checked launcher holds the enrolled Run lifecycle lock through host start
+and readback. For the same bound Task and attempt, a prior pending, unknown or
+observed result, or an existing launch receipt, blocks a start even with new
+result and receipt paths. Preserve the original artifacts and reconcile
+unavailable or damaged state before deciding how to proceed. Another Run and
+unchecked host entrypoints fall outside this local guard. Orca's original-request
+lookup describes a single recorded mutation. Host reservations, global duplicate
+prevention, provider completion and definitive absence of a start each require
+their own evidence.
 
 An explicit Run on a new-spec launch also requires the record and decision Run
 binding; it does not change the coordinator's session binding. The resulting
