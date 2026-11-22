@@ -185,7 +185,7 @@
     },
     {
       "path": "references/orca-contract.md",
-      "sha256": "57199e1bba70f099532f548b3b547d49ef2211ed47ff6f3bf0c64c71dbc94eae"
+      "sha256": "0ef3c396b2015f067aaa4d99c05f4abbc7b74c5348930d171fbe5d8cc280ff53"
     },
     {
       "path": "references/organization-evidence.md",
@@ -409,7 +409,7 @@
     },
     {
       "path": "scripts/open_run_view.py",
-      "sha256": "380c793f63d82f8e2a1172e463ebabd62bb1039de34811e92f2ee4e23e58c71a"
+      "sha256": "08a0e22db4d40f8860a36f3aa0d00899d31179794ad237885e44e47b4cf2c216"
     },
     {
       "path": "scripts/status_tui.py",

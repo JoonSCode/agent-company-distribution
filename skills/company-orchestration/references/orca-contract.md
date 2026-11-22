@@ -62,13 +62,13 @@ ORCA orchestration worker-start --spec "<self-contained brief>" --worktree <exac
 
 When explicit Company entry has no bound Run, call the installed
 [Run view opener](../scripts/open_run_view.py) once the local coordinator's Run
-is actually bound by `run-create` or `run-use`. The checked Company worker
-launcher requires an enrolled Run, so open the view when binding succeeds and
-before dispatching the first worker. The opener resolves the current coordinator
-and uses its own tab. Its private attempt claim prevents a second automatic
-split for that tab and Run, including when the host response was uncertain.
-The regular task work
-continues if the pane is unavailable.
+is actually bound. In the checked Company flow this happens via `run-create`
+or `run-use` before the first dispatch, because the launcher requires an
+enrolled Run. The same opener can be called after any already-authorized Orca
+action that established the binding. It resolves the current coordinator and
+uses its own tab. The local account's private attempt cache prevents a second
+automatic split for that tab and Run across Company installation homes and
+after an uncertain host response. Continue the task if the pane is unavailable.
 
 Pass model/effort only when supported and authorized. Standing user authorization
 can permit per-task selection without the user naming a model each time; the

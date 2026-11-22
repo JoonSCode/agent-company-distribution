@@ -16,7 +16,6 @@ if __name__ == '__main__':
     sys.pycache_prefix = os.path.join(os.path.abspath(os.path.expanduser('~')), '.cache', 'agent-company', 'python')
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from company_config import canonical_home
 from orca_contract import resolve_orca
 
 
@@ -46,7 +45,9 @@ def owned_run(orca, handle):
 
 
 def claim_split(tab, run_id):
-    root = canonical_home() / 'agent-company/state/run-view'
+    # Orca's tab and Run belong to the local account even when a caller
+    # uses a different Company installation (CODEX_HOME).
+    root = Path.home() / '.cache/agent-company/run-view'
     if root.resolve() != root:
         raise ValueError('unsafe Run view state path')
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
