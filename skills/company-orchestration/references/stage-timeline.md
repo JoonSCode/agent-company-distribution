@@ -103,7 +103,7 @@ receipt authorship, authority, and operational gains require their own evidence.
 Add `--record-timing` to an enrolled checked launch to retain timings in its
 existing private result. Include that exact result under `launch` in the
 manifest above. For an observed launch, use the Task ID returned by Orca. The
-projection adds `launcher_timing` with the local process epoch, individual
+projection adds `launch_timing` with the local process epoch, individual
 spans, clock reversals and attribution.
 
 The spans measure enrollment preparation, lock acquisition, preparation while

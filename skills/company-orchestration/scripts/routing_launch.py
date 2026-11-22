@@ -368,7 +368,8 @@ def main(argv=None):
                     print(json.dumps({'ok': False, 'error': 'result already exists; reconciliation required'}))
                     return 1
             initial = {'launch_state_version': 1, 'launch_state': 'not_started'}
-            atomic_state(path, timing.add(initial, 'preparation_incomplete') if timing else initial, capability)
+            args.initial_launch_state = timing.add(initial, 'preparation_incomplete') if timing else initial
+            atomic_state(path, args.initial_launch_state, capability)
             from measurement_lifecycle import launch_guard
             try:
                 with launch_guard(args, capability) as lifecycle:
@@ -467,7 +468,7 @@ def reprepare_inventory(args, decision, record, rejected, original_hash):
             decision['selected']['route'] == 'codex' and inventory.get('source') != 'orca_model_catalog' and
             pin_error in errors and bool(errors & drift_errors) and errors <= {pin_error, *drift_errors},
             'reprepare is limited to an inventory-only hash denial')
-    require(json.loads(args.result.read_bytes()) == {'launch_state_version': 1, 'launch_state': 'not_started'},
+    require(json.loads(args.result.read_bytes()) == args.initial_launch_state,
             'reprepare requires authoritative local not_started before any host invocation')
     path = (args.decision.parent / inventory['file']).resolve()
     require(path == (canonical_home() / 'models_cache.json').resolve(), 'inventory is not canonical')

@@ -233,7 +233,7 @@
     },
     {
       "path": "references/stage-timeline.md",
-      "sha256": "b4286117a4a6b840069c78e7b7a4b3caca62db1850187b965dfe0fb6eb5eab90"
+      "sha256": "9dc7e376dec68511830b2fd9aaa86400ef6c524f5a79543df165b04fcb1b3ff7"
     },
     {
       "path": "references/status-tui.md",
@@ -389,7 +389,7 @@
     },
     {
       "path": "scripts/routing_launch.py",
-      "sha256": "9b3d626f6c8c51ad3d9f5ed5e1f13e42d7709b429dc90d5f3e6c2f1592165506"
+      "sha256": "25ff4fa0dcb53468dc7149784a00589e0a59a1bebb9789c3f95427af55b1cc19"
     },
     {
       "path": "scripts/routing_prepare.py",
