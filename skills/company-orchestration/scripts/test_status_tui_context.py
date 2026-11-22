@@ -218,7 +218,8 @@ class ContextTests(unittest.TestCase):
         self.assertEqual(self.path.read_bytes(), frozen)
         link = self.root/'link.json'; link.symlink_to(self.path)
         with self.assertRaises(data.InputError): context.capture_context(self.record_path, self.metadata, link)
-        directory = self.root/'output'; directory.mkdir(mode=0o755)
+        directory = self.root/'output'; directory.mkdir()
+        directory.chmod(0o755)  # Set the fixture mode independently of the runner's umask.
         with self.assertRaises(data.InputError): context.capture_context(self.record_path, self.metadata, directory/'context.json')
         safe = self.root/'safe'; safe.mkdir(mode=0o700); alias = self.root/'alias'; alias.symlink_to(safe, target_is_directory=True)
         with self.assertRaises(data.InputError): context.capture_context(self.record_path, self.metadata, alias/'context.json')

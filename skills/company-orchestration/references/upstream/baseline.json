@@ -553,7 +553,7 @@
     },
     {
       "path": "scripts/test_status_tui_context.py",
-      "sha256": "026a745b88a5f6a0ee8cc5cd62f94098dc75911a301f99aef09f2ee9d001081c"
+      "sha256": "afcd6faedfd92ae9795b734973e4c33491f0ef5c58abe87a06a8b1c931ec9ceb"
     },
     {
       "path": "scripts/test_status_tui_input.py",
